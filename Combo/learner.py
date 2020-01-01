@@ -10,16 +10,74 @@ from inspect import signature
 
 
 class Features:
-	def __init__(self,filename):
+	def __init__(self,filename,skipChar='x'):
 		f = open(filename, "r")
 		lines = f.readlines()
 		self.featureNames = [i.strip() for i in lines[0].split('\t')[1:]]
 		self.featureValues = {}
+		self.skipChar = skipChar
 		for i in lines[1:]:
 			l = [j.strip() for j in i.split('\t')]
 			self.featureValues[l[0]]=[val for val in l[1:]]
 			# so this is now just numbers AND x's, all as str
-	''' feature value 'x' is treated in this class as 'unspecified' and therefore matches with anything'''
+			''' feature value skipChar is treated in this class as 'unspecified' and therefore matches with anything'''
+
+		
+	
+	#TODO make a str() function
+	
+	def exists(self,featureList,add = False): # a list of tuples of (value,feature)
+		'''Checks whether the list of feature values corresponds to a real segment in the feature set.  Returns the label of that feature set, or None if not found'''
+		fs = [[str(i) for i,j in featureList if i!=self.skipChar],[str(j) for i,j in featureList if i!=self.skipChar]] 
+		# This will be [[values],[features]], skipping over 'x' entries
+		# skip over 'x' entries
+		# create a new version of self.featureValues, pared down to just the features that appear in s
+		indices = [self.featureNames.index(f) for f in fs[1]]
+		newFeatureValues = [(i,[j[k] for k in indices]) for i,j in self.featureValues.items()]
+		segID = [i for i,j in newFeatureValues if j == fs[0]]
+		#print(segID) # List of all items corresponding to the given list of features
+		if len(segID)==0:
+			if add:
+				print("Looks like you've provided a set of features that doesn't correspond to any segment:")
+				print([i for i in zip(fs[0],fs[1])])
+				choice = input("Would you like to add a segment for this set of features? (y/n)")
+				while choice =='y':
+					segToAdd = input("Please type the single character you would like to represent this set of features (or press enter to cancel): ")
+					if segToAdd=='':
+						choice == 'n'
+					if choice =='y' and (segToAdd not in self.featureValues.keys()):
+						newsegFeatureValues = ['x']*len(self.featureNames)
+						for i in range(len(indices)):
+							newsegFeatureValues[indices[i]] = fs[0][i]
+						self.featureValues[segToAdd] = newsegFeatureValues
+						print('Ok, added!')
+						choice =='n'
+
+					else:
+						print("Sorry, ",segToAdd, " is already a phone in your feature set.  Please try another.")
+			else:
+				return None
+		
+		elif len(segID)>1:
+			if add:
+				print([i for i in zip(fs[0],fs[1])])
+				print("This set of feature values corresponds to multiple segments.  Here they are:")
+				print(segID)
+				print("To manually choose one, just type the character for the segment you would like to use (or press enter to return None)")
+				choice = input("Please type a choice: ")
+				if choice in segID:
+					return choice
+				elif choice == '':
+					return None
+				else:
+					print("Couldn't interpret your response.  exiting...")
+					return None
+			else:  #TODO think about this decision a little more.  Perhaps return the list of possible segments instead?
+				return None
+		elif len(segID) ==1:
+			return segID[0]
+		else:
+			print("Yikes something has gone horribly wrong!")				
 	
 	def stringToF(self,string,seglabels = None):
 		'''Convert a string to features '''
@@ -45,57 +103,8 @@ class Features:
 		'''converts a segment dictionary and an ordering to a string '''
 		S = [] # in which to store the segments as we find them
 		for s in order: # go through the segment labels in order
-			# Create a list of feature values for the segment s, using the dictionary 'segs'
-			fs = [[str(i) for i,j in segs[s]],[str(j) for i,j in segs[s]]] # This will be [[values],[features]]
-			#TODO skip any 'x' entries
-			# for sorting:
-			# create a new version of self.featureValues, pared down to just the features that appear in s
-			indices = [self.featureNames.index(f) for f in fs[1]]
-			newFeatureValues = [(i,[j[k] for k in indices]) for i,j in self.featureValues.items()]
-			segID = [i for i,j in newFeatureValues if j == fs[0]]
-			print(segID)
-			if len(segID)==0:
-				print("Looks like you've provided a set of features that doesn't correspond to any segment:")
-				print("seg label: '" + s + "'")
-				print([i for i in zip(fs[0],fs[1])])
-				choice = input("Would you like to add a segment for this set of features? (y/n)")
-				if choice=='y':
-					segToAdd = input("Please type the single character you would like to represent this set of features: ")
-					#TODO check that it does not already exist
-					
-					# create a list of feature values, including unspecifieds
-					newsegFeatureValues = ['x']*len(self.featureNames)
-					# just create a list of 'x's
-					# now, fill in appropriate indices
-
-					for i in range(len(indices)):
-						newsegFeatureValues[indices[i]] = fs[0][i]
-					self.featureValues[segToAdd] = newsegFeatureValues
-					print("Ok, added!")
-					S.append(segToAdd)
-				if choice !='y':
-					print("Ok, ending...")
-					return None
-			elif len(segID)>1:
-				print("seg label: '" + s + "'")
-				print([i for i in zip(fs[0],fs[1])])
-				print("This set of feature values corresponds to multiple segments.  Here they are:")
-				print(segID)
-				print("What would you like to do?  To manually choose one, just type the character for the segment you would like to use.  To end, type 'END'")
-				choice = input("Please type a choice: ")
-				if choice in segID:
-					S.append(choice)
-				elif choice == 'END':
-					return None
-				else:
-					print("Couldn't interpret your response.  exiting...")
-					return None
-			elif len(segID)==1:
-				S.append(segID[0])			
-			else:
-				print("Yikes something has gone horribly wrong")
-				
-		return "".join(S)
+			S.append(self.exists(segs[s],add=True))
+		return "".join([str(s) for s in S])
 	
 
 
@@ -116,14 +125,16 @@ class candidate:
 
 
 class richCand(candidate):
-	def __init__(self,c,violations,observedProb,segsDict,segsList,segsOrder=None,activitys=None,suprasegmentals = None,surfaceForm=None):
+	def __init__(self,c,violations,observedProb,segsDict,segsList,segsOrder=None,activitys=None,suprasegmentals = None,surfaceForm=None,):
 		candidate.__init__(self,c,violations,observedProb,surfaceForm)
 		self.segsDict = segsDict # This should be a dictionary with keys for segments, and values that are lists of tuples defining the features of each seg.
 		# Example: {seg1: [(0, "front"),(1, "high"),(0,"back"),(0,"low")]}
 		self.segsList = segsList # list of all segments
 		self.segsOrder = segsOrder if segsOrder else [i for i in range(1,len(segsList)+1)]
 		# set segsOrder to the order of the segments in segsList if a particular order is not specified
+		#TODO think about if there is any circumstance in which this should NOT correspond to the linear order of segsList
 		self.activitys = activitys if activitys else [1 for i in segsList] # set all activitys to 1 by default
+		# These should/will only be non-1 values under Zimmerman-style GSRS (Z-GSRs)
 		self.suprasegmentals = suprasegmentals
 		
 	def __repr__(self):
@@ -586,14 +597,68 @@ class PFC: #Contains function(s) for calculating a PFC's violations
 		
 # 
 
-def createTableau(lexemes,constraints,featureSet,scramble=False):
+#class Grammar(constraints, operations, EVAL='MaxEnt', theory='RST'):
+	
+
+def createTableau(lexemes,constraints,operations,featureSet,scramble=False):
 	# lexemes is an ordered list of lexemes, or a single lexeme
+	# TODO FOR NOW limited to two lexemes only TODO
 	#          lexeme() object
 	#          TODO scramble parameter will create candidates with the lexemes in any order (if set to True)
-	# constraints is a list of constraints (cannot be a single constraint)
+	# constraints is a list of constraints (cannot be a single constraint, but can be a list of one constraint)
 	#          constraints are a function         (a constraint() class???)
+	if not scramble:
+		individualCands = []
+		for l in lexemes:
+			individualCands.append(l.toRichCand(featureSet))
+		faiths = list(itertools.product(individualCands[0],individualCands[1]))
+		# This is where it's limited to two lexemes only
+		#print(faiths)
+		
+	# concatenate richCands
+	fcs = []
+	for fc in faiths:
+		#begin creating the new richCand
+		newSegsList = fc[0].segsList[:]
+		newSegsDict = fc[0].segsDict.copy()
+		newActivitys = fc[0].activitys[:]
+		newSuprasegmentals = fc[0].suprasegmentals[:] if fc[0].suprasegmentals else []
+		for i in range(1,len(fc)): # go through morphemes
+			#concatenate seglist
+			newSegsList +=[seg+'_w'+str(i+1) for seg in fc[i].segsList[:]]
+			for seg in fc[i].segsList:
+				#concatenate segsDict
+				newSegsDict[seg+'_w'+str(i+1)] = fc[i].segsDict[seg][:]
+			newActivitys += fc[i].activitys[:]
+			newSuprasegmentals += fc[i].suprasegmentals[:] if fc[i].suprasegmentals else [] #Note that suprasegmentals is now an empty list if there are none, instead of NoneType
+#TODO perhaps change richCand() so that empty list is the default if there are no suprasegmentals?
+		newC = featureSet.featureToS(newSegsDict,newSegsList)
+
+		fcs.append(richCand(newC,[],0,newSegsDict,newSegsList,None,newActivitys,newSuprasegmentals,surfaceForm=None))
+		
+		
+	#Next: Generate other candidates
+	cs = [c.c for c in fcs]
+	unfcs = []
+	for o in operations:
+		for fc in fcs:
+			candidates = o(fc,featureSet)
+			#Always grab the first thing returned
+			if len(candidates)>1:
+				candidates, *_ = candidates
+			print(candidates)
+			unfcList = [unfc for unfc in candidates if unfc.c not in cs]
+			cs += [c.c for c in unfcList]
+			unfcs += unfcList
 	
-	return 1
+	#TODO this needs to be recursive - keep running the operations until you can't
+	# Keep runing operations as long as you get improvement on some markedness constraint?
+	# Use whatever that thing Canaan mentioned?
+			
+	# For now: just go through each one once I guess.
+	
+		
+	return fcs,unfcs
 
 
 
