@@ -194,3 +194,8 @@ class Grammar:
 
 
 	def update(self):
+        
+        
+    def learn(self):
+    
+    def epoch(self):
