@@ -219,11 +219,10 @@ def read_input(file_name, sheet_number):
     return input_np
         
         
-    
-input_ = read_input("learning_input.xlsx", 0)
-new_grammar = Grammar(input_)
-
-print (new_grammar.learningData)
+#testing for read_input   
+#input_ = read_input("learning_input.xlsx", 0)
+#new_grammar = Grammar(input_)
+#print (new_grammar.learningData)
         
         
  
