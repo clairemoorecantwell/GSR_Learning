@@ -1,5 +1,7 @@
 # import things that need to be imported here
-
+from pandas import read_excel
+import numpy as np 
+import math
 #####################################################
 
 
@@ -45,8 +47,10 @@ class Lexicon:
             self.freqList.append(l.freq)
 
 
-    def sample(self, n):  # sample 
-        break
+    def sample(self, n):
+        # sample 
+        #break
+        return 0
         
 
         
@@ -187,15 +191,38 @@ class Grammar:
             if len(w)==len(self.constraints):
                 self.w=w
             else:
-				print("WARNING: you tried to initialize weights with a list that's not the same length as your list of constraints.	 This probably didn't work so well.")
+                print("WARNING: you tried to initialize weights with a list that's not the same length as your list of constraints.	 This probably didn't work so well.")
 				# This will print a warning, but it won't actually stop you from initializing constraints badly?  Maybe this is a problem that should be fixed.
 
 
 
 
-	def update(self):
+    def update(self):
+        return 0
         
         
     def learn(self):
+        return 0
     
     def epoch(self):
+        return 0
+        
+    
+    
+def read_input(file_name, sheet_number):
+        
+    #reading excel into dataframe
+    input_dt_frame = read_excel(file_name, sheet_number ) #this is for the sheet#1; 
+        #dataframe into np array
+    input_np = input_dt_frame.to_numpy()
+
+    return input_np
+        
+        
+#testing for read_input   
+#input_ = read_input("learning_input.xlsx", 0)
+#new_grammar = Grammar(input_)
+#print (new_grammar.learningData)
+        
+        
+ 
