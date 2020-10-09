@@ -29,6 +29,7 @@ class lexeme:
 
 
 class Lexicon:
+    
     def __init__(self):
         self.lexemeList = []  #initialise empty list for storing lexemes in
         self.freqList = []    #empty list for storing each lexeme's frequency - used for sampling
@@ -45,12 +46,22 @@ class Lexicon:
         self.freqList = []
         for l in self.lexemeList:
             self.freqList.append(l.freq)
-
-
+    
     def sample(self, n):
         # sample 
         #break
         return 0
+            
+    
+            
+            
+            
+    
+    
+    
+
+    
+
         
 
         
@@ -193,9 +204,44 @@ class Grammar:
             else:
                 print("WARNING: you tried to initialize weights with a list that's not the same length as your list of constraints.	 This probably didn't work so well.")
 				# This will print a warning, but it won't actually stop you from initializing constraints badly?  Maybe this is a problem that should be fixed.
+   
+    def calculate_sample_weights(self,frequencies):
+    
+        #helper function; calculates weights for the weighted sample
+        #takes a list of word frequencies as input 
+        #returns a set of weights 
+        
+        total = sum(frequencies)
+        weights = [ round(freq / total, 10) for freq in frequencies] 
+        return weights
+            
+        
+    
+    
+    def sample(self, n,learning_data_object):
+    #returns a weighted sample 
+    # takes word list and freq list from grammar.learning_data object
+        
+        rows,columns = learning_data_object.shape 
+        frequencies = learning_data_object[:rows,4]
+    #calculate weights 
+        weights = calculate_sample_weights (frequencies)  
+        lexicon = list(learning_data_object[:rows,0])
+        weighted_sample = np.random.choice(lexicon,n,p=weights)
+        return weighted_sample
+        
+        #sample
+        #break
 
+#remove after testing 
 
-
+    def check_sample(self,sample,input_np):
+        rows,colums = input_np.shape
+        lexicon = list(input_np[:rows,0])
+        list_sample = list(sample) 
+        for word in lexicon:
+            print(str(word) + " occured " + str(list_sample.count(word)) + " times in the sample")
+        return 0
 
     def update(self):
         return 0
@@ -217,12 +263,25 @@ def read_input(file_name, sheet_number):
     input_np = input_dt_frame.to_numpy()
 
     return input_np
-        
-        
-#testing for read_input   
-#input_ = read_input("learning_input.xlsx", 0)
-#new_grammar = Grammar(input_)
+
+
+#testing for read_input and sampling  
+
+#read input and initialize the grammar object
+#new_grammar = Grammar(read_input("learning_input.xlsx", 0))
+#test sample function using the learniing data from grammar object
+#new_sample = new_grammar.sample(1000,new_grammar.learningData)
+#print(new_sample)
+#new_lexicon.check_sample(new_sample,new_grammar.learningData)
 #print (new_grammar.learningData)
+
+
+
+
+
+    
+
+
         
         
  
