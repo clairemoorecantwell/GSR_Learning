@@ -268,10 +268,10 @@ def read_input(file_name, sheet_number):
 #testing for read_input and sampling  
 
 #read input and initialize the grammar object
-new_grammar = Grammar(read_input("learning_input.xlsx", 0))
+#new_grammar = Grammar(read_input("learning_input.xlsx", 0))
 #test sample function using the learniing data from grammar object
-new_sample = new_grammar.sample(1000,new_grammar.learningData)
-print(new_sample)
+#new_sample = new_grammar.sample(1000,new_grammar.learningData)
+#print(new_sample)
 #new_lexicon.check_sample(new_sample,new_grammar.learningData)
 #print (new_grammar.learningData)
 
