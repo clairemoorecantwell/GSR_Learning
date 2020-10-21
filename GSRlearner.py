@@ -12,8 +12,7 @@ class lexeme:
         self.allomorphs = allomorphs # list of allomorphs, in the following format:
 
 # [[ 'string', 1],    <-- number is activity level of thematic C.  We will assume that thematic C's are firs in suffixes, last in roots
-#  [ 'tagis',  0.7],        
-#  [ 'tagi',   0.0],
+#  [ 'tagis',  0.7]
 #  ...
 # ]]
 
