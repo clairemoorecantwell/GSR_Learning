@@ -3,6 +3,6 @@ candidate = ""
 
 def OCP(candidate):
     if re.search('(a{2}|e{2}|i{2}|o{2}|u{2})',candidate):
-        return(False)
+        return(1)
     else:
-        return(True)
+        return(0)

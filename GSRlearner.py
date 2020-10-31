@@ -11,18 +11,21 @@ class lexeme:
         self.tag = tag # label for the lexeme, so the humans can easily see what it is.  ex. 'tagi' '-ina', even things like 'PV' or '3rdsing'
         self.allomorphs = allomorphs # list of allomorphs, in the following format:
 
-# [[ 'string', 1],    <-- number is activity level of thematic C.  We will assume that thematic C's are firs in suffixes, last in roots
-#  [ 'tagis',  0.7],        
-#  [ 'tagi',   0.0],
-#  ...
-# ]]
-
-# [[ 'ia',  0.0],
-#  [ 'ina', 0.0],
-#  [ 'a',  0.0],
-#  [ 'sia', 0.4],
+# allomorph lists for roots only have one entry
+# w/ C
+# [[ 'tagis', 0.4]]    <-- number is activity level of thematic C.  We will assume that thematic C's are firs in suffixes, last in roots
+# w/o C
+# [[ 'apa',  0.0]]
+#
+# Affixes may have more than one entry
+# [[ 'sia',  0.3],
+#  [ 'mia', 0.2],
+#  [ 'fia',  0.3],
+#  [ 'tia', 0.6],
 # ...
-# ]]
+#  [ 'ina', 0.0],
+#  [ 'a', 0.0]
+# ]
 
         self.kind = kind # string specifying what kind of morpheme it is.  'root' 'suffix' 'prefix' etc.
         self.freq = 0   #initialize at zero, increase during learning
@@ -177,7 +180,8 @@ class candidate:
 			print("It looks like your candidates' probabilities can't all be converted to floats.  Check if there's some text in that column")
 		self.harmony = 0 # Not specified at initialization.	 This will be filled out in learning
 		self.predictedProb = 0 # Again, to be filled out during learning.
-		self.checkViolationsSign() # On initialization, make sure all violations are negative
+#		self.checkViolationsSign() # On initialization, make sure all violations are negative
+		self.activityLevel = 0.0 # float of activity level of thematic C of the candidate for calculating violations
 
 
 

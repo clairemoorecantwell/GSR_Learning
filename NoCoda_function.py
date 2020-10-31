@@ -3,6 +3,6 @@ candidate = ""
 
 def NoCoda(candidate):
     if re.search('.*([^aeiou\)]|[^aeiou]\))$',candidate):
-        return(False)
+        return(1)
     else:
-        return(True)
+        return(0)
