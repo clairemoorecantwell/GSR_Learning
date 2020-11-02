@@ -11,6 +11,10 @@ Created on Sat Oct  3 12:32:22 2020
 #HH roots, and trisyllabic roots never violate Prosody
 #function takes three strings : candidate, root, suffix 
 
+import re
+import GenerateCandidate_function
+import GSRlearner as gsrln
+
 vowels = ['a', 'o', 'i', 'u', 'e']
 
 
@@ -89,13 +93,35 @@ print(syllable_structure("tagi:"))
 #print(prosody_violations("o:siina", "to", "ina"))  # violation 1 
 
 
-
-def uniformity (candidate, suffix, root):
+#uniformity looks for (rs) in the candidate string 
+#return 1 if there is a violation, 0 if there is no violation
+def uniformity (candidate):
     
+    violation = 0
     
-    
-    
-    violation =0
-    
-    
+    rs = re.search('(rs)',candidate)
+    print(rs)
+    if rs:
+        violation =1
+        #if re returns a match violation =1
     return violation
+
+#testing uniformity function#
+#CASE 1b:
+rt2 = [['tagis', 0.4]]
+rt_lex = gsrln.lexeme('tagi', rt2, 'root')
+
+sf2 = [['ina', 0.3], ['a', 0.3], ['sia', 0.3], ['tia', 0.2], ['fia', 0.4], ['mia', 0.3]]
+sf_lex = gsrln.lexeme('PV', sf2, 'suffix')
+
+
+cands =GenerateCandidate_function.generate_candidate(rt_lex, sf_lex)
+
+
+print (len(cands))
+
+for i in range(len(cands)):
+    print(cands[i].c)
+    print(uniformity(cands[i].c))
+
+
