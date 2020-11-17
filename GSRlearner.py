@@ -182,7 +182,13 @@ class candidate:
 		self.predictedProb = 0 # Again, to be filled out during learning.
 #		self.checkViolationsSign() # On initialization, make sure all violations are negative
 		self.activityLevel = 0.0 # float of activity level of thematic C of the candidate for calculating violations
-
+	
+	def applyConstraints(self, constraints):
+		# for i in constraints:
+		#  apply i(self.c)  <-- research, what is the best way to store list of functions.  lambda functions?  [min(),max()...]  [i(cand) for i in list]
+		#  append result to self.violations
+		#  self.violations.append(MAX(self.c))
+		#  ...
 
 
 
