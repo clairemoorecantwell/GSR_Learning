@@ -66,6 +66,11 @@ def prosody(candidate, suffix=None):
 	return violation 
 
 
+def prosody_simple(candidate):
+	#returns 1 if a candidate has an odd number of moras, otherwise 0
+	#counts diphthongs as two moras, and long vowels as two moras
+	return 1 if len(re.findall('[aeiou:]',candidate.c))%2 else 0
+
 
 
 #uniformity looks for (rs) in the candidate string 
@@ -101,8 +106,8 @@ def NoCoda(candidate):
 		return(0)
 
 def MAX(cand):
-	return cand.activityLevel #each candidate's activity level equals their reward points 
+	return -cand.activityLevel #each candidate's activity level equals their reward points 
 
 
-con = [prosody,uniformity,OCP,DEP,NoCoda,MAX]
+con = [prosody_simple,uniformity,OCP,DEP,NoCoda,MAX]
 conNames = ['prosody','uniformity','OCP','DEP','NoCoda','MAX']

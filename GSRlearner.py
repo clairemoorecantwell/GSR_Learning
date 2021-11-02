@@ -52,11 +52,6 @@ class Lexicon:
 		self.freqList = []
 		for l in self.lexemeList:
 			self.freqList.append(l.freq)
-	
-	def sample(self, n):
-		# sample 
-		#break
-		return 0
 			
 	def read_input(self,file_name, sheet_number):  # sheet_number starts from 1
 		# TODO add functionality to check if its an excel file or .txt; and then also be able to read .txt
@@ -114,6 +109,10 @@ class Lexicon:
 			allomorphs.append([y+'i']+[0])
 		self.add_lexeme(lexeme(tag,allomorphs,'suffix'))
 		
+		tag = 'zero'
+		allomorphs=['']
+		self.add_lexeme(lexeme(tag,allomorphs,'suffix'))
+		
 		
 # hard-coding suffixes for now
 
@@ -145,6 +144,8 @@ class Tableau:
 		self.predProbsList = [] # list of each candidate's predicted probability; used in sampling
 								# gets filled (and updated) during learning
 		self.obsProbsList = [] 	# list of each candidate's observed probability; used in sampling
+		
+		self.HList = [] # list of each candidate's harmony; for straight or Noisy HG
 
 
 	def generate_candidates(self,root, suffix, observed):
@@ -220,7 +221,9 @@ class Tableau:
 		# suppressPFC is used in case you would normally calculate harmony with PFCs but you want to ignore the PFC weights just this time (like, to predict the harmonies if this LexEntry were really a nonword)
 
 		self.probDenom=0 # Reset probDenom.  Even though this function is dedicated to calculating the harmony, it's still useful to take this opportunity to calculate the MaxEnt denominator.  If you're managing to use this program to do Noisy HG or something, this will be meaningless.
-		
+		#print('resetting...')
+		#for c in self.candidates:
+		#	print(c.c)
 		for cand in self.candidates:
 			# Calculate that good 'ole dot product!
 			cand.harmony = sum(viol*weight for viol,weight in zip(cand.violations,w))
@@ -228,6 +231,11 @@ class Tableau:
 
 			try:
 				self.probDenom += pow(math.e,cand.harmony)
+				#print("probDenom for ",cand.c)
+				#print("H:",cand.harmony)
+				#print("change:", pow(math.e,cand.harmony))
+				#print("probDenom:", self.probDenom)
+
 			except OverflowError:
 				print("Something's wrong with the exponentiation in calculating the MaxEnt denominator.  Python's patience with giant exponents only stretches so far...")
 				print(self.inpt)
@@ -252,8 +260,9 @@ class Tableau:
 				print(self.pfc)
 			except ZeroDivisionError:
 				print("Somehow your MaxEnt denominator is zero!  Can't calculate probabilities this way")
-				print(self.ur)
+				print(self.inpt)
 				print(cand.c)
+				print(cand.violations)
 				print(cand.harmony)
 				print(w)
 				print(self.pfc)
@@ -271,6 +280,7 @@ class Tableau:
 
 		# create sub-tableau
 		tab_rip = Tableau(self.inpt)
+		#print("RIP")
 		for c in self.candidates:
 			if c.observedProb > 0.0:
 				tab_rip.addCandidate(c)
@@ -290,15 +300,18 @@ class Tableau:
 		self.predictProbs(w)
 		pred, predCandidate=self.getPredWinner() # Sample from predicted distribution
 		obs, obsCandidate=self.getObsWinner_RIP(w) # Via Robust Interpretive parsing
+		for c in self.candidates:
+			 if c.c==obs:
+				 obsCandidate = c
 
-		error = (0 if obs==pred else 1)
+		error = (0 if obs==pred else 1) 
 
 		return error, obsCandidate, predCandidate
 		
 		
   
 class candidate: 
-	def __init__(self,c,violations,observedProb,activityLevel,surfaceForm=None):
+	def __init__(self,c,violations,observedProb,activityLevel,surfaceForm=None): 
 		self.c = c # the actual candidate 
 		self.surfaceForm = surfaceForm
 		self.violations = violations # list of violations, in same order as constraints
@@ -396,7 +409,8 @@ class Grammar:
 		for cand in tab.candidates:
 			try:
 				cand.applyConstraints()
-			except:
+			except Exception as e:
+				print(e)
 				print(cand)
 				print(datum)
 				print(datum[1].allomorphs)
@@ -404,10 +418,12 @@ class Grammar:
 			print(cand.c,cand.surfaceForm,cand.observedProb,cand.violations)
 		# Generate a prediction
 		e, obs, pred = tab.compareObsPred(self.w)
-		print(e,obs.c,pred.c,obs.violations,pred.violations)
+
+		print(e,obs.c,pred.c,obs.violations,pred.violations,obs.harmony,obs.predictedProb,pred.harmony,pred.predictedProb)
 		if e:
 			#update general weight: perceptron update
-			self.w = [wt+(p-o)*self.learningRate for wt,p,o in zip(self.w,pred.violations,obs.violations) ]
+			self.w = [wt-(p-o)*self.learningRate for wt,p,o in zip(self.w,pred.violations,obs.violations) ]
+			#self.w = [0 if w<0]
 			
 			#update activity levels of correct thematic C, if any
 			# First, boost activity levels on thematic C's if an (r), (s), or (rs) candidate was observed (regardless of predicted candidate)
@@ -438,6 +454,7 @@ class Grammar:
 						a[1]-=self.activityUpdateRate
 						a[1] = 0.0 if a[1]<0.0 else a[1] #bottom out activity levels at zero
 		self.t+=1
+		print(self.w) 
 		return e
 		
 	
@@ -448,6 +465,8 @@ class Grammar:
 			print(start+i)
 			
 		error_rate = errors/niter
+		# print out list of weights
+		# print out SSE
 		return error_rate
 		
 		
@@ -456,7 +475,8 @@ class Grammar:
 		
 		playlist = self.createLearningPlaylist(nIterations*nEpochs)
 		for i in range(0,nEpochs):
-			self.epoch(playlist,nIterations,start=nIterations*i)
+			rate = self.epoch(playlist,nIterations,start=nIterations*i)
+			print(rate)
 
 	
 
