@@ -147,15 +147,25 @@ class richCand(candidate):
 		out += '\n'.join([i+": "+' '.join([str(k) for k in j]) for i,j in self.segsDict.items()]) + '\n\n'
 		out += 'Suprasegmentals:' + '\n' + '\n'.join([str(i) for i in self.suprasegmentals]) if self.suprasegmentals else 'No suprasegmentals'
 		return out	
-	
 
-		
+
+
+
 def exampleCand():
 	seg1 = [(0,"back"),(1,"high"),(1,"front"),(0,"low")]  # i
 	seg2 = [(1,"back"),(1,"high"),(0,"front"),(0,"low")]  # u
 	seg3 = [(0,"back"),(0,"high"),(0,"front"),(1,"low")]  # a
 	segs = {"seg1":seg1,"seg2":seg2,"seg3":seg3}
 	order = ["seg1","seg3","seg2"]
+	suprasegmentals = [(0,"stress1syll"),(1,"stress2syll"),(0,"stress3syll")]
+	return richCand('iau',[1,0,1],1,segs,order,suprasegmentals = suprasegmentals)
+
+def exampleCand22():
+	seg1 = [(0,"back"),(1,"high"),(1,"front"),(0,"low")]  # i
+	seg2 = [(1,"back"),(1,"high"),(0,"front"),(0,"low")]  # u
+	seg3 = [(0,"back"),(0,"high"),(0,"front"),(1,"low")]  # a
+	segs = {"seg1":seg1,"seg2":seg2,"seg3":seg3}
+	order = ["seg1","seg2","seg3"]
 	suprasegmentals = [(0,"stress1syll"),(1,"stress2syll"),(0,"stress3syll")]
 	return richCand('iau',[1,0,1],1,segs,order,suprasegmentals = suprasegmentals)
 
@@ -483,7 +493,31 @@ class lexeme:
 			a = [self.activitys[self.segLabels.index(i)] for i  in c ]
 			rcs.append(richCand(''.join(c),[],0,segsDict,segsList,activitys=a))		
 		return rcs
-	
+
+
+
+def exlex_joli():
+	#joli    A simple adjective with nothing fancy
+	return lexeme('joli',kind='Adj')
+
+def exlex_petit():
+	#petit    An adjective with partial activation on the final t
+	p = lexeme('petit',kind='Adj')
+	p.activitys = [1,1,1,1,0.4]
+	return p
+
+def exlex_ami():
+	#ami    Noun with three competing segments in first position
+	a = lexeme('ami',segmentList = ['t','z','n','a','m','i'],kind='Noun')
+	a.linearSegOrder = [1,1,1,2,3,4]
+	a.activitys = [0.6,0.6,0.6,1,1,1]
+	return a
+
+def exlex_hero():
+	#hero    A noun that lacks and liason consonants in its lexical representation
+	return lexeme('ero',kind='Noun')
+
+
 
 class PFC: #Contains function(s) for calculating a PFC's violations
 	def __init__(self,w,feature=None,seg=None,seg2=None,typ='feature_on_segment'):
@@ -547,6 +581,28 @@ class PFC: #Contains function(s) for calculating a PFC's violations
 # otherwise: candidate generation
 		
 # 
+
+def createTableau(lexemes,constraints,featureSet,scramble=False):
+	# lexemes is an ordered list of lexemes, or a single lexeme
+	#          lexeme() object
+	#          TODO scramble parameter will create candidates with the lexemes in any order (if set to True)
+	# constraints is a list of constraints (cannot be a single constraint)
+	#          constraints are a function         (a constraint() class???)
+	
+	return 1
+
+
+
+
+class constraint:
+	def __init__(self,func = lambda x:0,MF='M',operation=None):
+		self.assignViolations = func
+		self.MF = MF
+		self.operation = operation # This one is the operation for creating candidates, expected for faithfulness constraints
+		#examine func to see what kind of constraint this is
+		self.params = set(signature(func).parameters.keys())
+
+
 
 
 def diffCands(cbase,cdiff): # Use Damerau-Levenshtein distance, but with n features different as 'weights'
