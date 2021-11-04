@@ -11,6 +11,12 @@ def Max(rC):
 	candidates= []
 	for i in range(0,len(rC.segsList)):
 		newSegsList = rC.segsList[:i]+rC.segsList[i+1:]
+		newSegsDict = rC.segsDict.copy()
+		newSegsOrder = rC.segsOrder[:i]+rC.segsOrder[i+1:]
+		newActivitys = rC.activitys[:i]+rC.activitys[i+1:]
+		newSurfaceForm = 
+		activity = rC.activitys[i]
+		candidates.append(richCand(rC.c,rC.violations[:],rC.observedProb,newSegsDict,newSegsList,newSegsOrder,rC.newActivitys,rC.suprasegmentals[:],surfaceForm=newSurfaceForm))
 		#newSegsDict = 
 
 	
