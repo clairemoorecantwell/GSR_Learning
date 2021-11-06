@@ -8,16 +8,9 @@
 
 
 def Max(rC,features):
-	candidates= []
-	for i in range(0,len(rC.segsList)):
-		newSegsList = rC.segsList[:i]+rC.segsList[i+1:]
-		newSegsDict = rC.segsDict.copy()
-		newSegsOrder = rC.segsOrder[:i]+rC.segsOrder[i+1:]
-		newActivitys = rC.activitys[:i]+rC.activitys[i+1:]
-		activity = rC.activitys[i]
-		newC = features.featureToS(newSegsDict,newSegsList)
-		candidates.append(l.richCand(newC,rC.violations[:]+[activity],rC.observedProb,newSegsDict,newSegsList,newSegsOrder,newActivitys,rC.suprasegmentals,surfaceForm=None))
-	
+	candidates,activitys = delete(rC,features)
+	for c,a in candidates,activitys:
+		c.violations.append(a)
 	return candidates
 
 def Uniformity(rC,features):
@@ -58,7 +51,7 @@ def Uniformity(rC,features):
 # testing script:
 Uniformity(l.exlex_ami().toRichCand(l.Features('features.txt'))[0],l.Features('features.txt'))
 
-Max(l.exlex_ami().toRichCand(l.Features('features.txt'))[0],l.Features('features.txt'))
+delete(l.exlex_ami().toRichCand(l.Features('features.txt'))[0],l.Features('features.txt'))
 
 
 
@@ -74,6 +67,9 @@ def delete(rC,features):
 		newActivitys = rC.activitys[:i]+rC.activitys[i+1:]
 		activity = rC.activitys[i]
 		newC = features.featureToS(newSegsDict,newSegsList)
+		newC = [q for q in newC]
+		newC.insert(i,'(_)')
+		newC = ''.join(newC)
 		candidates.append(l.richCand(newC,rC.violations[:],rC.observedProb,newSegsDict,newSegsList,newSegsOrder,newActivitys,rC.suprasegmentals,surfaceForm=None))
 		activitys.append(activity)
 		
