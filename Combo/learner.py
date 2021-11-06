@@ -43,19 +43,15 @@ class Features:
 	
 	def featureToS(self,segs,order):
 		'''converts a segment dictionary and an ordering to a string '''
-		S = [] # store the segments as we find them
-		for s in order:
-			print(s)
-			print(segs[s])
-			fs = [[i for i,j in segs[s]],[j for i,j in segs[s]]] # This will be [[values],[features]]
+		S = [] # in which to store the segments as we find them
+		for s in order: # go through the segment labels in order
+			# Create a list of feature values for the segment s, using the dictionary 'segs'
+			fs = [[str(i) for i,j in segs[s]],[str(j) for i,j in segs[s]]] # This will be [[values],[features]]
 			#TODO skip any 'x' entries
-			print(fs)
 			# for sorting:
 			# create a new version of self.featureValues, pared down to just the features that appear in s
 			indices = [self.featureNames.index(f) for f in fs[1]]
-			print(indices)
 			newFeatureValues = [(i,[j[k] for k in indices]) for i,j in self.featureValues.items()]
-			print(newFeatureValues)
 			segID = [i for i,j in newFeatureValues if j == fs[0]]
 			print(segID)
 			if len(segID)==0:
@@ -155,7 +151,7 @@ class richCand(candidate):
 def exampleCand():
 	seg1 = [(0,"back"),(1,"high"),(1,"front"),(0,"low")]  # i
 	seg2 = [(1,"back"),(1,"high"),(0,"front"),(0,"low")]  # u
-	seg3 = [(0,"back"),(0,"high"),(0,"front"),(1,"low")]  # a
+	seg3 = [(1,"back"),(0,"high"),(0,"front"),(1,"low")]  # a
 	segs = {"seg1":seg1,"seg2":seg2,"seg3":seg3}
 	order = ["seg1","seg3","seg2"]
 	suprasegmentals = [(0,"stress1syll"),(1,"stress2syll"),(0,"stress3syll")]
@@ -164,13 +160,20 @@ def exampleCand():
 def exampleCand22():
 	seg1 = [(0,"back"),(1,"high"),(1,"front"),(0,"low")]  # i
 	seg2 = [(1,"back"),(1,"high"),(0,"front"),(0,"low")]  # u
-	seg3 = [(0,"back"),(0,"high"),(0,"front"),(1,"low")]  # a
+	seg3 = [(1,"back"),(0,"high"),(0,"front"),(1,"low")]  # a
 	segs = {"seg1":seg1,"seg2":seg2,"seg3":seg3}
 	order = ["seg1","seg2","seg3"]
 	suprasegmentals = [(0,"stress1syll"),(1,"stress2syll"),(0,"stress3syll")]
 	return richCand('iau',[1,0,1],1,segs,order,suprasegmentals = suprasegmentals)
 
-
+def exampleCandDup():
+	seg1 = [(0,"back"),(1,"high"),(1,"front"),(0,"low")]  # i
+	seg2 = [(0,"back"),(1,"high"),(1,"front"),(0,"low")]  # i
+	seg3 = [(1,"back"),(0,"high"),(0,"front"),(1,"low")]  # a
+	segs = {"seg1":seg1,"seg2":seg2,"seg3":seg3}
+	order = ["seg1","seg2","seg3"]
+	suprasegmentals = [(0,"stress1syll"),(1,"stress2syll"),(0,"stress3syll")]
+	return richCand('iau',[1,0,1],1,segs,order,suprasegmentals = suprasegmentals)
 
 class Tableaux:
 	def __init__(self,filename,noisy = False):
