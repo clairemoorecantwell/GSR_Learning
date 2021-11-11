@@ -89,6 +89,8 @@ def delete(rC,features):
 	activitys = []
 	for i in range(0,len(rC.segsList)):
 		newSegsList = rC.segsList[:i]+rC.segsList[i+1:]
+		if len(newSegsList) ==0:
+			break
 		newSegsDict = rC.segsDict.copy()
 		newSegsOrder = rC.segsOrder[:i]+rC.segsOrder[i+1:]
 		newActivitys = rC.activitys[:i]+rC.activitys[i+1:]

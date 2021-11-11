@@ -6,6 +6,7 @@ from itertools import chain
 import itertools
 import re
 from inspect import signature
+import random
 
 
 
@@ -640,27 +641,53 @@ def createTableau(lexemes,constraints,operations,featureSet,scramble=False):
 		
 	#Next: Generate other candidates
 	cs = [c.c for c in fcs]
-	unfcs = []
-	for o in operations:
-		for fc in fcs:
-			candidates = o(fc,featureSet)
+#	unfcs = []
+#	for o in operations:
+#		for fc in fcs:
+#			candidates = o(fc,featureSet)
 			#Always grab the first thing returned
-			if len(candidates)>1:
-				candidates, *_ = candidates
-			print(candidates)
-			unfcList = [unfc for unfc in candidates if unfc.c not in cs]
-			cs += [c.c for c in unfcList]
-			unfcs += unfcList
+#			if len(candidates)>1:
+#				candidates, *_ = candidates
+			#print(candidates)
+#			unfcList = [unfc for unfc in candidates if unfc.c not in cs]
+#			cs += [c.c for c in unfcList]
+#			unfcs += unfcList
+			
+	#multiple operations:
+	# TODO First, check whether each operation has a mode where it can efficiently return a single random output.  If it doesn't then just sample after the fact, but print a warning the first time you do it to warn the user
+	
 	
 	#TODO this needs to be recursive - keep running the operations until you can't
 	# Keep runing operations as long as you get improvement on some markedness constraint?
 	# Use the Dirichlet process based on similarity?
-			
-	# For now: just go through each one once I guess.
+	allCands = fcs
+
+	# While loop
+	# TODO: add in concept of harmonic improvement as probabilistic factor?
+	# Each new candidate is tested on whether or not it improves overall on markedness constraints
+	# How much it improves over its parent determines the probability of keeping it around
 	
-	print(unfcs)
-	print(fcs)
-	allCands = fcs+unfcs
+	moarCandidates = 1
+	t = 1
+	A = .5
+	while moarCandidates:
+		for o in operations:
+			for c in allCands:
+				# apply o with probability A/t
+				if random.random()<A/t:
+					try:
+						candidates = o(c,featureSet)
+					except:
+						print("Error, trying to apply operation  to candidate ", c)
+					if type(candidates)==tuple:
+						candidates, *_ = candidates
+					#print(candidates)
+					candidates = [c for c in candidates if c.c not in cs]
+					allCands+=candidates
+					cs += [c.c for c in candidates]
+		t+=1
+		if random.random()<(1-(A/t))**(len(operations)):
+			moarCandidates = 0
 	
 	# assign (markedness) violations:
 	for c in constraints:
