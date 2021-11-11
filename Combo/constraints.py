@@ -20,18 +20,21 @@ def Uniformity(rC,features):
 		c.violations.append(1)
 	return(candidates)
 
-def NoCoda(rC):
-	'''This will only work for Samoan!'''
+def NoCoda(rC,featureSet):
+	'''This will only work for no onset cluster languages!'''
 	#Essentially, a C has to be covered by a V
 	coda = 0
+	consonantLast = 0
 	for i in rC.segsList:
 		if ('0','syllabic') in rC.segsDict[i]:
-			coda = 1
+			if consonantLast == 1:
+				coda +=1
+			consonantLast = 1
 		else:
-			coda = 0
+			consonantLast =0
 	return coda
 
-def Hiatus(rC):
+def Hiatus(rC,featureSet):
 	hiatus = 0
 	vowelLast = 0
 	for i in rC.segsList:

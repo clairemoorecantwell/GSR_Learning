@@ -519,6 +519,7 @@ def exlex_petit():
 	#petit    An adjective with partial activation on the final t
 	p = lexeme('petit',kind='Adj')
 	p.activitys = [1,1,1,1,0.4]
+	p.PFCs = []
 	return p
 
 def exlex_ami():
@@ -653,15 +654,26 @@ def createTableau(lexemes,constraints,operations,featureSet,scramble=False):
 	
 	#TODO this needs to be recursive - keep running the operations until you can't
 	# Keep runing operations as long as you get improvement on some markedness constraint?
-	# Use whatever that thing Canaan mentioned?
+	# Use the Dirichlet process based on similarity?
 			
 	# For now: just go through each one once I guess.
 	
-		
-	return fcs,unfcs
+	print(unfcs)
+	print(fcs)
+	allCands = fcs+unfcs
+	
+	# assign (markedness) violations:
+	for c in constraints:
+		for cand in allCands:
+			cand.violations.append(c(cand,featureSet))
+			
+	
+	# assign PFC violations:
+	
+	return allCands
 
 
-
+# test code:
 
 class constraint:
 	def __init__(self,func = lambda x:0,MF='M',operation=None):
