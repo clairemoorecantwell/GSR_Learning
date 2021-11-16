@@ -7,6 +7,14 @@
 #Onset
 import learner as l
 
+class constraint:
+	def __init__(self,name,func = lambda x:0,MF='M',operation=None):
+		self.name = name
+		self.assignViolations = func
+		self.MF = MF
+		self.operation = operation # This one is the operation for creating candidates, expected for faithfulness constraints
+
+
 
 def Max(rC,features):
 	candidates,activitys = delete(rC,features)
@@ -34,6 +42,8 @@ def NoCoda(rC,featureSet):
 			consonantLast =0
 	return coda
 
+
+
 def Hiatus(rC,featureSet):
 	hiatus = 0
 	vowelLast = 0
@@ -46,7 +56,7 @@ def Hiatus(rC,featureSet):
 			vowelLast = 0
 	return hiatus
 	
-constraints = [NoCoda,Hiatus]	
+constraints = [constraint("NoCoda",NoCoda),constraint("Hiatus",Hiatus)]	
 
 # testing script:
 #Uniformity(l.exlex_ami().toRichCand(l.Features('features.txt'))[0],l.Features('features.txt'))
@@ -73,12 +83,12 @@ def morphFeature(rC,features,featureName,values = ['1','0']):
 				if seg: # if morphing the feature leads to something that exists, add the new candidate
 					newSegsDict = rC.segsDict.copy()
 					newSegsDict[s] = newSegs
-					newC = features.featureToS(newSegsDict,rC.segsList[:])
+					surfaceC = features.featureToS(newSegsDict,rC.segsList[:])
 					#assuming that segsList is in the correct order
-					newC = [q for q in newC]
+					newC = [q for q in surfaceC]
 					newC.insert(rC.segsList.index(s)+1,'(f)')
 					newC = ''.join(newC)
-					candidates.append(l.richCand(newC,rC.violations[:],rC.observedProb,newSegsDict,rC.segsList[:],rC.segsOrder[:],rC.activitys[:],rC.suprasegmentals,surfaceForm=None))
+					candidates.append(l.richCand(newC,rC.violations[:],0.0,newSegsDict,rC.segsList[:],rC.segsOrder[:],rC.activitys[:],rC.suprasegmentals,surfaceForm=surfaceC,operations = rC.operations[:]+["morph_feature"]))
 	
 	return candidates
 		
@@ -88,19 +98,21 @@ def delete(rC,features):
 	candidates = []
 	activitys = []
 	for i in range(0,len(rC.segsList)):
-		newSegsList = rC.segsList[:i]+rC.segsList[i+1:]
+		newSegsList = rC.segsList[:]
+		deleted = newSegsList.pop(i)
 		if len(newSegsList) ==0:
 			break
 		newSegsDict = rC.segsDict.copy()
+		newSegsDict.pop(deleted)
 		newSegsOrder = rC.segsOrder[:i]+rC.segsOrder[i+1:]
 		newActivitys = rC.activitys[:i]+rC.activitys[i+1:]
 		activity = rC.activitys[i]
-		newC = features.featureToS(newSegsDict,newSegsList)
+		surfaceC = features.featureToS(newSegsDict,newSegsList)
 		#Assuming that segsList is in the correct order (such that rC.segsOrder is redundant)
-		newC = [q for q in newC]
+		newC = [q for q in surfaceC]
 		newC.insert(i,'(_)')
 		newC = ''.join(newC)
-		candidates.append(l.richCand(newC,rC.violations[:],rC.observedProb,newSegsDict,newSegsList,newSegsOrder,newActivitys,rC.suprasegmentals,surfaceForm=None))
+		candidates.append(l.richCand(newC,[],0.0,newSegsDict,newSegsList,newSegsOrder,newActivitys,rC.suprasegmentals,surfaceForm=surfaceC,operations=rC.operations[:]+["delete"]))
 		activitys.append(activity)
 		
 	return(candidates,activitys)
@@ -134,11 +146,11 @@ def merge_same(rC,features):
 					newSegsDict.pop(rC.segsList[s])
 					#print(newSegsDict)
 					#print(newSegsList)
-					newC = features.featureToS(newSegsDict,newSegsList)
-					newC = [q for q in newC]
+					surfaceC = features.featureToS(newSegsDict,newSegsList)
+					newC = [q for q in surfaceC]
 					newC.insert(s,'(m)')
 					newC = ''.join(newC)
-					candidates.append(l.richCand(newC,rC.violations[:],rC.observedProb,newSegsDict,newSegsList,newSegsOrder,newActivitys,rC.suprasegmentals,surfaceForm=None))
+					candidates.append(l.richCand(newC,[],0.0,newSegsDict,newSegsList,newSegsOrder,newActivitys,rC.suprasegmentals,surfaceForm=surfaceC,operations=rC.operations[:]+["merge"]))
 	return((candidates))
 
 

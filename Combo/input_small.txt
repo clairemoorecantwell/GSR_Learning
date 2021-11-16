@@ -1,0 +1,8 @@
+input	lexeme	surface	obs.prob	tab.prob
+petit_ami	it_a	ita	1	1
+le_ami	xz_a	xza	1	1
+un_ami	un_a	una	1	1
+joli_ami	i_a	ia	1	1
+petit_hero	i_e	ie	1	1
+petite_kope	it_kx	itkx	1	1
+petite_traktur	it_tx	ittx	1	1
