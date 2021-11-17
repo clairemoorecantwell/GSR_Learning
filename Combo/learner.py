@@ -449,7 +449,7 @@ class Tableau:
 				subTab.addCandidate(cand)
 			winCandidate = subTab.getPredWinner(w,theory)
 		else:
-			winCandidate = matchCands[0].c, matchCands[0]
+			winCandidate = matchCands[0]
 			
 		return winCandidate
 	
@@ -516,13 +516,10 @@ class Grammar:
 		return weights
 			
 
-#######################
-		# Need to start with creating the playlist
-		#And, add a observed output arg to the tableau creation
 	def update(self,datum): # datum is an entry from playlist
 		# Start with a learning datum
 		# Create a tableau
-		tab = createTableau(datum[0], self.constraints, self.operations, self.featureSet,datum[1])
+		tab,constraintList,w = createTableau(datum[0], self.constraints, self.operations, self.featureSet,datum[1])
 
 		e, obs, pred = tab.compareObsPred(self.w)
 
@@ -802,11 +799,17 @@ class trainingData:
 			l = [j.strip() for j in i.split('\t')]
 			lex = l[0].split("_")
 			if specialLex:
-				spLex = l[1].split("_")
+				splex = l[1].split("_")
+				outputIndex = 2
 			else:
 				splex = lex
+				outputIndex = 1
 			lexList = []
-			for item,sp in lex,spLex:
+			print(lex)
+			print(splex)
+			for item,sp in zip(lex,splex):
+				print(item)
+				print(sp)
 				if item not in self.lexTags:
 					if specialLex:
 						self.lexicon.append(lexeme(item,[ch for ch in sp]))
@@ -814,7 +817,7 @@ class trainingData:
 						self.lexicon.append(lexeme(item))
 					self.lexTags.append(item)
 				lexList.append(self.lexicon[self.lexTags.index(item)])
-			self.learnData.append([lexList,l[1]])
+			self.learnData.append([lexList,l[outputIndex]])
 			self.sampler.append(float(l[3]))
 		self.sampler = [s/sum(self.sampler) for s in self.sampler] # convert to a well-formed distribution
 
@@ -845,6 +848,7 @@ def createTableau(lexemes,constraints,operations,featureSet,obsOutput,w = None,s
 		
 	# concatenate richCands
 	fcs = [] #'fc' = 'faithful candidate'
+	containsObsOut = 0
 	for fc in faiths:
 		#begin creating the new richCand
 		newSegsList = fc[0].segsList[:]
@@ -862,9 +866,11 @@ def createTableau(lexemes,constraints,operations,featureSet,obsOutput,w = None,s
 #TODO change richCand() so that empty list is the default if there are no suprasegmentals
 		newC = featureSet.featureToS(newSegsDict,newSegsList)
 		obsProb = 1 if newC==obsOutput else 0
+		containsObsOut = 1 if newC==obsOutput else 0
 
 		fcs.append(richCand(newC,[],obsProb,newSegsDict,newSegsList,None,newActivitys,newSuprasegmentals,surfaceForm=newC))
 		
+
 	#Assign markedness violations to faithful candidates
 	cs = [c.c for c in fcs]
 	for fc in fcs:
@@ -882,7 +888,7 @@ def createTableau(lexemes,constraints,operations,featureSet,obsOutput,w = None,s
 		for o in operations:
 			for c in allCands:
 				# apply o with probability A/t
-				if random.random()<A/t:
+				if random.random()<A/t or not(containsObsOut): #Continue to generate candidates until you generate the observed output
 					try:
 						candidates = o(c,featureSet)
 					except:
@@ -895,18 +901,24 @@ def createTableau(lexemes,constraints,operations,featureSet,obsOutput,w = None,s
 					for possibleCand in candidates:
 						for con in constraints:
 								possibleCand.violations.append(con.assignViolations(possibleCand,featureSet))
-						possibleCand.harmony = -sum(viol*weight for viol,weight in zip(possibleCand.violations,w))
-						Hdiff = possibleCand.harmony - c.harmony
-						p_keep = (1/2)*Hdiff/math.sqrt(s+Hdiff**2)+0.5
-						if random.random()<p_keep:
-							possibleCand.observedProb = 1 if possibleCand.surfaceForm==obsOutput else 0
+						if possibleCand.surfaceForm == obsOutput:
+							containsObsOut=1
+							possibleCand.observedProb=1
 							allCands.append(possibleCand)
 							cs.append(possibleCand.c)
-							
+						else:
+							possibleCand.harmony = -sum(viol*weight for viol,weight in zip(possibleCand.violations,w))
+							Hdiff = possibleCand.harmony - c.harmony
+							p_keep = (1/2)*Hdiff/math.sqrt(s+Hdiff**2)+0.5
+							if random.random()<p_keep:
+								possibleCand.observedProb = 1 if possibleCand.surfaceForm==obsOutput else 0
+								allCands.append(possibleCand)
+								cs.append(possibleCand.c)
+								
 						
 
 		t+=1
-		if random.random()<(1-(A/t))**(len(operations)):
+		if random.random()<(1-(A/t))**(len(operations)) or not(containsObsOut):
 			#Halt candidate generation
 			moarCandidates = 0
 	
@@ -933,7 +945,7 @@ def createTableau(lexemes,constraints,operations,featureSet,obsOutput,w = None,s
 				w.append(pfc.w)
 		wNum+=1
 
-	tab = Tableau("petitami")
+	tab = Tableau("_".join([l.tag for l in lexemes]))
 	for cand in allCands:
 		tab.addCandidate(cand)
 	
