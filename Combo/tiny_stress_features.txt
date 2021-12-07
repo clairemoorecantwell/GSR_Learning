@@ -1,0 +1,3 @@
+seg	stress
+I	1
+O	0

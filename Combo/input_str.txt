@@ -1,0 +1,5 @@
+input	lexeme	surface	obs.prob	tab.prob
+1syll	I	I	1	1
+2syll	IO	IO	1	1
+3syll	IOO	IOO	1	1
+3syll2	OIO	OIO	1	1

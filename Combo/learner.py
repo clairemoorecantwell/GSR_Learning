@@ -481,8 +481,9 @@ class Grammar:
 		self.w = [] # Weights, starts empty
 		self.initializeWeights() # Initialize weights when Tableaux object is created (to zero, or some other vector depending on how you call this function.)
 		self.t = 0	# For learning, t starts at 0
-		self.learningRate = 0.1
+		self.learningRate = 0.01
 		self.activityUpdateRate = 0.05
+		self.PFC_lrate = 0.1
 		self.PFC_startW = 10
 		self.PFC_decay = 0.0001
 	
@@ -518,47 +519,68 @@ class Grammar:
 
 	def update(self,datum): # datum is an entry from playlist
 		# Start with a learning datum
+		# Decay the existing PFCs affiliated with each lexeme:
+		for lex in datum[0]:
+			lex.decayPFC(self.t,self.PFC_decay,decayType="static")
+			lex.lastSeen = self.t
+			lex.freq += 1
+			if len(lex.PFCs)>len(self.featureSet.featureNames)*len(lex.segLabels)*4:
+				print("WARNING: too many PFCs")
+				break
 		# Create a tableau
-		tab,constraintList,w = createTableau(datum[0], self.constraints, self.operations, self.featureSet,datum[1])
+		tab,constraintList,w = createTableau(datum[0], self.constraints, self.operations, self.featureSet,datum[1],w=self.w[:])
+		#print(tab)
+		#print(w)
 
 		e, obs, pred = tab.compareObsPred(self.w)
 
-		print(e,obs.c,pred.c,obs.violations,pred.violations,obs.harmony,obs.predictedProb,pred.harmony,pred.predictedProb)
+		#print(e,obs.c,pred.c,obs.violations,pred.violations,obs.harmony,obs.predictedProb,pred.harmony,pred.predictedProb)
+		#print(constraintList)
 		if e:
 			#update general weight: perceptron update
-			self.w = [wt-(p-o)*self.learningRate for wt,p,o in zip(self.w,pred.violations,obs.violations) ]
-			#self.w = [0 if w<0]
+			self.w = [wt+(p-o)*self.learningRate for wt,p,o in zip(self.w,pred.violations,obs.violations) ]
+			print(self.w)
+			self.w=[i if i>0 else 0 for i in self.w] # limit to positve constraint weights
+			# update existing PFCs
+			if len(constraintList)>len(self.w):
+				for pfc,p,o in zip(constraintList[len(self.w):],pred.violations[len(self.w):],obs.violations[len(self.w):]):
+					pfc[1].w+=(p-o)*self.PFC_lrate
+					pfc[1].w = 0 if pfc[1].w<0 else pfc[1].w
 			
-			#update activity levels of correct thematic C, if any
-			# First, boost activity levels on thematic C's if an (r), (s), or (rs) candidate was observed (regardless of predicted candidate)
-			if re.search('\(r',obs.c): #if (r) or (rs) is the observed form)
-				C = re.search("(.)(\(r)",obs.c).group(1) # grab out the thematic C
-				for a in datum[1].allomorphs: # Find the thematic C in the allomorphs of the root that we are learning with
-					if a[0][-1]==C: 
-						a[1]+=self.activityUpdateRate
-						
-			if re.search('s\)',obs.c): #if (s) or (rs) is the observed form
-				C = re.search("(s\))(.)",obs.c).group(2) # grab out the thematic C
-				for a in datum[2].allomorphs: # Find the thematic C in the allomorphs of the root that we are learning with
-					if a[0][0]==C: 
-						a[1]+=self.activityUpdateRate
-						
-			# Next, decrease activity rate if pred form has a thematic C and obs. did not
-			if not re.search('\(',obs.c) and re.search('\(r',pred.c):
-				C = re.search("(.)(\(r)",pred.c).group(1) # grab out the thematic C
-				for a in datum[1].allomorphs: # Find the thematic C in the allomorphs of the root that we are learning with
-					if a[0][-1]==C: 
-						a[1]-=self.activityUpdateRate
-						a[1] = 0.0 if a[1]<0.0 else a[1] #bottom out activity levels at zero
+			# induce new PFCs
+			newPFCs = inducePFCs(obs,pred,self.featureSet)
+			#pfcs_to_words = [[]]*len(datum[0])
+			for pfc in newPFCs: #loop through and determine which goes with which lexeme
+				if len(pfc)>2:
+					wd = re.search('(_)(w)([1234567890])',pfc[2])
+					if wd:
+						newPFC = PFC(self.PFC_startW,pfc[1],re.sub('_w.*','',pfc[2]))
+						if newPFC not in datum[0][int(wd.groups()[2])-1].PFCs:
+							#print("yes")
+							datum[0][int(wd.groups()[2])-1].PFCs.append(newPFC)
+					else:
+						newPFC = PFC(self.PFC_startW,pfc[1],pfc[2])
+						if newPFC not in datum[0][0].PFCs:
+							#print("yes")
+							datum[0][0].PFCs.append(newPFC)
+				else:
+					for lex in datum[0]:
+						newPFC = PFC(self.PFC_startW,pfc[1])
+						if newPFC not in lex.PFCs:
+							lex.PFCs.append(newPFC)
+						#somewhat odd strat: affiliate exists_feature constraints with all lexemes
+	
 			
-			if not re.search('\(',obs.c) and re.search('s\)',pred.c):
-				C = re.search("(s\))(.)",pred.c).group(2) # grab out the thematic C
-				for a in datum[2].allomorphs: # Find the thematic C in the allomorphs of the root that we are learning with
-					if a[0][0]==C: 
-						a[1]-=self.activityUpdateRate
-						a[1] = 0.0 if a[1]<0.0 else a[1] #bottom out activity levels at zero
+				
+			# induce PFCs
+			# compare against existing PFCs
+			# update if they already exist, otherwise induce
+			# Don't update every PFC???
+				
+
+
 		self.t+=1
-		print(self.w) 
+		#print(self.w) 
 		return e
 		
 	
@@ -589,7 +611,7 @@ class lexeme:
 	def __init__(self, tag, segmentList = None, kind=None):
 		self.tag = tag # label for the lexeme, so the humans can easily see what it is.  ex. 'tagi' '-ina', even things like 'PV' or '3rdsing'
 		self.segmentList = segmentList if segmentList else [i for i in tag]  # Human-readable list of segments, corresponding to feature lookup tables, if using
-		self.segLabels = [self.segmentList[0]]+[self.segmentList[i] if self.segmentList[i] not in self.segmentList[:i-1] else self.segmentList[i]+str(i) for i in range(1,len(self.segmentList))] #create list of unique segment labels, to be used in candidate generation and evaluation by PFCs
+		self.segLabels = [self.segmentList[0]]+[self.segmentList[i] if self.segmentList[i] not in self.segmentList[:i] else self.segmentList[i]+str(i) for i in range(1,len(self.segmentList))] #create list of unique segment labels, to be used in candidate generation and evaluation by PFCs
 		self.activitys = [1 for i in self.segmentList] # List of float value activity levels for self.segs.  Defaults to 1 for all
 		self.linearSegOrder = [i for i in range(1,len(self.segmentList)+1)] # integers specifying the linear order of segs in self.segs. starts at 1
 		# Example: t/z/n ami:
@@ -598,7 +620,8 @@ class lexeme:
 		# self.linearSegOrder = [1, 1, 1, 2, 3, 4]
 		self.kind = kind # string specifying what kind of morpheme it is.  'root' 'suffix' 'prefix' etc. Optional
 		self.freq = 0   #initialize at zero, increase during learning.  This number reflects the actual frequency of the lexeme during learning, rather than the frequency in the training data
-		self.PFCs = None # list of PFC objects, optional.
+		self.PFCs = [] # list of PFC objects, optional.
+		self.lastSeen =0
 		
 	def __str__(self):
 		out = 'Lexeme ' + str(self.tag) +' (' + str(self.kind) + ', f:' + str(self.freq) + ' )\n'
@@ -609,8 +632,19 @@ class lexeme:
 		out += '\n'
 		out += segform.format(*[str(i) for i in self.linearSegOrder])
 		out += '\n'
-		out += [print(i)+'\n' for i in self.PFCs] if self.PFCs else 'No PFCs'
+		out += ''.join([i.name+": "+str(i.w)+'\n' for i in self.PFCs]) if self.PFCs else 'No PFCs'
 		return out	
+	
+	def decayPFC(self,t,decayRate,decayType='static'):
+		for pfc in self.PFCs:
+			if decayType=='static':
+				pfc.w-=(float(t)-self.lastSeen)*decayRate
+			elif decayType=='L1':
+				for i in range(self.lastSeen,t):
+					pfc.w -=decayRate*pfc.w
+			elif decayType=='L2':
+				for i in range(self.lastSeen,t):
+					pfc.w -=(decayRate/2)*(pfc.w**2)
 	
 	def toRichCand(self,featureSet):
 		''' produces the faithful candidate for just this one lexeme, given a Feature object, featureSet '''
@@ -621,12 +655,10 @@ class lexeme:
 		segLabelsInOrder = []
 		for i in range(1,max(self.linearSegOrder)+1):
 			indices = [index for index,value in enumerate(self.linearSegOrder) if value ==i]
-			print(indices)
 			if len(indices)>0:
 				segsInOrder.append([self.segmentList[i] for i in indices])
 				segLabelsInOrder.append([self.segLabels[i] for i in indices])
 		cands = list(itertools.product(*segLabelsInOrder))
-		print(cands)
 		# violations: empty
 		# observedProb: empty
 		
@@ -763,8 +795,14 @@ class PFC: #Contains function(s) for calculating a PFC's violations
 			self.typ = 'exists_feature'
 			self.name = str(feature)
 		
-		self.name = seg+":"+str(feature)
+		self.name = '_'.join([str(param) for param in [feature,seg,seg2] if param])
 		
+	def __eq__(self,other):
+		same = 0
+		if self.feature == other.feature and self.seg == other.seg and self.seg2 ==other.seg2:
+			same = 1
+		return same
+	
 	def evaluate(self,cand): #evaluates a richCand object
 		if self.typ=='feature_on_segment':
 			viol = 0 if self.feature in cand.segsDict.get(self.seg,[]) else 1
@@ -791,39 +829,88 @@ class trainingData:
 		self.lexTags = []
 		self.learnData = []
 		self.sampler = []
+		self.noisy = True
+		self.tableaux = []
+		
+		# What kind of input file is this
+		candidates = False
+		hidden = False
+		freq_weighted = False
+		specialLex = False
+		
 		f = open(filename, "r")
 		lines = f.readlines()
-		if lines[0].split('\t')[1]=='lexeme':
+		header = lines[0].split('\t')
+		if 'input' in header:
+			iIndex = header.index('input')
+		else:
+			print("ERROR: No column of your input file is labeled 'input'.  This column is required, and must be labelled exactly.  Please check your input file and try again")
+		if 'obs.prob' in header:
+			oIndex = header.index('obs.prob')
+		else:
+			print("ERROR: No column of your input file is labeled 'obs.prob'.  This column is required, and must be labelled exactly.  Please check your input file and try again")
+		if 'candidate' in header:
+			candidates = True
+			cIndex = header.index('candidate')
+			if self.noisy:
+				print("Your input file contains candidates, therefore candidates will not be generated for you.")
+		if 'surface' in header:
+			hidden = True
+			sIndex = header.index('surface')
+			if self.noisy:
+				print("Your input file contains hidden structure!  Yay!  I'll try to fit that with Expectation-Maximization according to Jarosz (2013)")
+		if 'tab.prob' in header:
+			freq_weighted = True
+			tpIndex = header.index('tab.prob')
+			if self.noisy:
+				print("Your input file contains input frequency information (it's the column labelled, somewhat opaquely, 'tab.prob')  Learning will therefore proceed according to this frequency-weighting. \n Note that you can turn off frequency weighting by... ") # TODO include note about how to turn off frequency weighting
+		if 'lexeme' in header:
 			specialLex = True
+			lIndex = header.index('lexeme')
+			if self.noisy:
+				print("Your input file contains specially defined lexemes.  I'll use lexeme names from the 'input' column, but lexeme phonemes from the 'lexeme' column.")
+		
+		# For now, if there are candidates, just read in straight tableaux
+		#if candidates:
+		#	self.learnData = Tableaux(filename)
+		inpt_s = []
+		tabProbs = []
 		for i in lines[1:]:
 			l = [j.strip() for j in i.split('\t')]
-			lex = l[0].split("_")
-			if specialLex:
-				splex = l[1].split("_")
-				outputIndex = 2
-			else:
-				splex = lex
-				outputIndex = 1
-			lexList = []
-			print(lex)
-			print(splex)
-			for item,sp in zip(lex,splex):
-				print(item)
-				print(sp)
-				if item not in self.lexTags:
-					if specialLex:
-						self.lexicon.append(lexeme(item,[ch for ch in sp]))
-					else:
-						self.lexicon.append(lexeme(item))
-					self.lexTags.append(item)
-				lexList.append(self.lexicon[self.lexTags.index(item)])
-			self.learnData.append([lexList,l[outputIndex]])
-			self.sampler.append(float(l[3]))
-		self.sampler = [s/sum(self.sampler) for s in self.sampler] # convert to a well-formed distribution
+			inpt = l[iIndex]
+			if inpt not in inpt_s: #If we haven't seen this input before
+				inpt_s.append(inpt)
+				p = l[tpIndex]
+				tabProbs.append(p) #add it to the list of input sampling probabilities.  Note that only the first tab.prob value in a tableau with many candidates will be recorded.
+				if candidates:
+					self.tableaux.append(Tableau(inpt,p,hidden))
+				
+			
+			
+				lex = l[iIndex].split("_")
+				if specialLex:
+					splex = l[lIndex].split("_")
+				else:
+					splex = lex
+					
+				lexList = [] #to be filled with lexeme objects
+				for item,sp in zip(lex,splex):
+					if item not in self.lexTags:
+						if specialLex:
+							self.lexicon.append(lexeme(item,[ch for ch in sp]))
+						else:
+							self.lexicon.append(lexeme(item))
+						self.lexTags.append(item)
+					lexList.append(self.lexicon[self.lexTags.index(item)])
+				self.learnData.append([lexList,l[sIndex]])
+				if freq_weighted:
+					self.sampler.append(float(l[tpIndex]))
+				else:
+					self.sampler.append(1.0)
+			self.sampler = [s/sum(self.sampler) for s in self.sampler] # convert to a well-formed distribution
 
 	
 
-#class Grammar(constraints, operations, trainingData, featureSet, w=None, EVAL='MaxEnt', theory='RST'):
 	
 	
 
@@ -841,8 +928,11 @@ def createTableau(lexemes,constraints,operations,featureSet,obsOutput,w = None,s
 		individualCands = []
 		for l in lexemes:
 			individualCands.append(l.toRichCand(featureSet))
-		faiths = list(itertools.product(individualCands[0],individualCands[1]))
-		# This is where it's limited to two lexemes only
+		if len(lexemes)>1:
+			faiths = list(itertools.product(individualCands[0],individualCands[1]))
+		else:
+			faiths = individualCands
+		# TODO This is where it's limited to two lexemes only
 	
 	#TODO implement scramble option
 		
@@ -878,12 +968,14 @@ def createTableau(lexemes,constraints,operations,featureSet,obsOutput,w = None,s
 			fc.violations.append(con.assignViolations(fc,featureSet))
 
 	allCands = fcs
+	#for c in allCands:
+	#	print(c)
 
 	# Generate new candidates, dropping off at a rate controlled by A as you get farther down the 'tree' and rejecting them if they are not harmonically improving, according to s 	
 	moarCandidates = 1
-	t = 1
-	A = .5
-	s = 20 # sigmoid parameter
+	t = 1  # 'time', or the depth in the tree
+	A = 10 # higher -> more candidates (keep traversing the tree)
+	s = 20 # sigmoid parameter  higher--> more candidates
 	while moarCandidates:
 		for o in operations:
 			for c in allCands:
@@ -896,11 +988,19 @@ def createTableau(lexemes,constraints,operations,featureSet,obsOutput,w = None,s
 					if type(candidates)==tuple:
 						candidates, *_ = candidates
 					#print(candidates)
-					candidates = [c for c in candidates if c.c not in cs]
+					candidates = [can for can in candidates if can.c not in cs]
 					# TODO check operations list also to establish sameness
 					for possibleCand in candidates:
 						for con in constraints:
-								possibleCand.violations.append(con.assignViolations(possibleCand,featureSet))
+							#print('1')
+							#	print(con.name)
+							possibleCand.violations.append(con.assignViolations(possibleCand,featureSet))
+							#	print("violations: ",possibleCand.c)
+							#	print(possibleCand.violations)
+						
+					#for possibleCand in candidates:
+					#	print(possibleCand.violations)
+						
 						if possibleCand.surfaceForm == obsOutput:
 							containsObsOut=1
 							possibleCand.observedProb=1
@@ -941,7 +1041,7 @@ def createTableau(lexemes,constraints,operations,featureSet,obsOutput,w = None,s
 					for cand in allCands:
 						cand.violations.append(pfc.evaluate(cand))
 						cand.harmony += -cand.violations[-1]*pfc.w
-				constraintList.append(pfc.name)
+				constraintList.append((pfc.name,pfc))
 				w.append(pfc.w)
 		wNum+=1
 
@@ -994,16 +1094,13 @@ def diffCands(cbase,cdiff,skipChar='x'): # Use Damerau-Levenshtein distance, but
 	# Fill in costs
 	for row in range(1, len(cbase.segsList) +1):
 		seg_base = [f for f in cbase.segsDict[cbase.segsList[row-1]] if f[0] !=skipChar]
-		print(seg_base)
+		
 		
 		
 		#last_match_col = 0  # column of last match on this row
 		
 		for col in range(1, len(cdiff.segsList)+1):
 			seg_diff = [f for f in cdiff.segsDict[cdiff.segsList[col-1]] if f[0]!=skipChar]
-			print(seg_diff)
-			
-			print(matrix[row][col])
 			
 			# fill in last row:
 			#last_matching_row = last_row.get(tuple(seg_diff), 0)
@@ -1082,15 +1179,16 @@ def inducePFCs(cbase,cdiff,featureSet,lamb = 5):
 	listOfPFCs = []
 	for ch,seg in zip(backtrace[::-1],cbase.segsList):
 		for f in ch[1]:
-			# feature_on_segment
-			listOfPFCs.append((10,f,seg))
-			#TODO 10 is the initial weight of PFC's - a parameter of learning
+			if ch != 'EPEN':
+				# feature_on_segment
+				listOfPFCs.append((10,f,seg))
+				#TODO 10 is the initial weight of PFC's - a parameter of learning
 			
-			# feature exists
-			listOfPFCs.append((10,f))
-	print(listOfPFCs)
+				# feature exists
+				listOfPFCs.append((10,f))
 			
 	nPFCs = np.random.poisson(lamb,1)[0]
+	nPFCs = len(listOfPFCs) if len(listOfPFCs)<= nPFCs else nPFCs
 	return random.sample(listOfPFCs,nPFCs)
 
 

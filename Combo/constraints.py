@@ -6,6 +6,7 @@
 
 #Onset
 import learner as l
+import re
 
 class constraint:
 	def __init__(self,name,func = lambda x:0,MF='M',operation=None):
@@ -55,8 +56,14 @@ def Hiatus(rC,featureSet):
 		else:
 			vowelLast = 0
 	return hiatus
-	
-constraints = [constraint("NoCoda",NoCoda),constraint("Hiatus",Hiatus)]	
+
+alignR = constraint("align-R",lambda rC,f:0 if re.search('I$',re.sub('\(.*\)','',rC.c)) else 1)
+alignL = constraint("align-L",lambda rC,f:0 if re.search('^I',re.sub('\(.*\)','',rC.c)) else 1)
+nonFin = constraint("nonFin",lambda rC,f:0 if re.search('O$',re.sub('\(.*\)','',rC.c)) else 1)
+haveStress = constraint("haveStress",lambda rC,f: 0 if re.search('^O*IO*$',re.sub('\(.*\)','',rC.c)) else 1)
+
+constraints = [alignR,alignL,nonFin,haveStress]
+#constraints = [constraint("NoCoda",NoCoda),constraint("Hiatus",Hiatus)]	
 
 # testing script:
 #Uniformity(l.exlex_ami().toRichCand(l.Features('features.txt'))[0],l.Features('features.txt'))
@@ -67,7 +74,7 @@ constraints = [constraint("NoCoda",NoCoda),constraint("Hiatus",Hiatus)]
 
 
 
-def morphFeature(rC,features,featureName,values = ['1','0']):
+def morphFeature(rC,features,featureName='stress',values = ['1','0']):
 	candidates = []
 	for s in rC.segsList:
 		# go through each segment
@@ -88,7 +95,7 @@ def morphFeature(rC,features,featureName,values = ['1','0']):
 					newC = [q for q in surfaceC]
 					newC.insert(rC.segsList.index(s)+1,'(f)')
 					newC = ''.join(newC)
-					candidates.append(l.richCand(newC,rC.violations[:],0.0,newSegsDict,rC.segsList[:],rC.segsOrder[:],rC.activitys[:],rC.suprasegmentals,surfaceForm=surfaceC,operations = rC.operations[:]+["morph_feature"]))
+					candidates.append(l.richCand(newC,[],0.0,newSegsDict,rC.segsList[:],rC.segsOrder[:],rC.activitys[:],rC.suprasegmentals,surfaceForm=surfaceC,operations = rC.operations[:]+["morph_feature"]))
 	
 	return candidates
 		
@@ -154,4 +161,4 @@ def merge_same(rC,features):
 	return((candidates))
 
 
-operations = [delete, merge_same]
+operations = [morphFeature]
