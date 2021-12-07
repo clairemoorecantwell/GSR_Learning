@@ -831,6 +831,7 @@ class trainingData:
 		self.sampler = []
 		self.noisy = True
 		self.tableaux = []
+		self.constraintNames = []
 		
 		# What kind of input file is this
 		candidates = False
@@ -884,6 +885,7 @@ class trainingData:
 				tabProbs.append(p) #add it to the list of input sampling probabilities.  Note that only the first tab.prob value in a tableau with many candidates will be recorded.
 				if candidates:
 					self.tableaux.append(Tableau(inpt,p,hidden))
+					
 				
 			
 			
