@@ -826,9 +826,10 @@ class trainingData:
 	'''essentially, a list of lexeme sets paired with correct surface forms, and frequencies '''
 	def __init__(self,filename):
 		self.lexicon = [] # a list of lexemes
-		self.lexTags = []
-		self.learnData = []
-		self.sampler = []
+		self.lexTags = [] # tags belonging to the lexemes in lexicon
+		self.learnData = [] # each entry is a list: [lexemes,surface].  lexemes is itself a list, of all lexemes involved in the entry
+		self.sampler = [] # summed to 1, sampler for each learnData entry
+		                  # derived from
 		self.noisy = True
 		self.tableaux = []
 		self.constraintNames = []
@@ -842,38 +843,48 @@ class trainingData:
 		f = open(filename, "r")
 		lines = f.readlines()
 		header = lines[0].split('\t')
+		constraintsStartAt = 0
 		if 'input' in header:
 			iIndex = header.index('input')
+			constraintsStartAt += 1
 		else:
 			print("ERROR: No column of your input file is labeled 'input'.  This column is required, and must be labelled exactly.  Please check your input file and try again")
+			exit()
+			
 		if 'obs.prob' in header:
 			oIndex = header.index('obs.prob')
+			constraintsStartAt += 1
 		else:
 			print("ERROR: No column of your input file is labeled 'obs.prob'.  This column is required, and must be labelled exactly.  Please check your input file and try again")
+			exit()
 		if 'candidate' in header:
 			candidates = True
 			cIndex = header.index('candidate')
+			constraintsStartAt += 1
 			if self.noisy:
 				print("Your input file contains candidates, therefore candidates will not be generated for you.")
 		if 'surface' in header:
-			hidden = True
+			hidden = True  # Its always going to be hidden, right? cause if there are no candidates then the tableau generation system will generate hidden structure
 			sIndex = header.index('surface')
+			constraintsStartAt += 1
 			if self.noisy:
 				print("Your input file contains hidden structure!  Yay!  I'll try to fit that with Expectation-Maximization according to Jarosz (2013)")
 		if 'tab.prob' in header:
 			freq_weighted = True
 			tpIndex = header.index('tab.prob')
+			constraintsStartAt += 1
 			if self.noisy:
 				print("Your input file contains input frequency information (it's the column labelled, somewhat opaquely, 'tab.prob')  Learning will therefore proceed according to this frequency-weighting. \n Note that you can turn off frequency weighting by... ") # TODO include note about how to turn off frequency weighting
 		if 'lexeme' in header:
 			specialLex = True
 			lIndex = header.index('lexeme')
+			constraintsStartAt += 1
 			if self.noisy:
 				print("Your input file contains specially defined lexemes.  I'll use lexeme names from the 'input' column, but lexeme phonemes from the 'lexeme' column.")
 		
-		# For now, if there are candidates, just read in straight tableaux
-		#if candidates:
-		#	self.learnData = Tableaux(filename)
+		if len(header)> constraintsStartAt:
+			self.constraintNames=header[constraintsStartAt:]
+		
 		inpt_s = []
 		tabProbs = []
 		for i in lines[1:]:
@@ -885,31 +896,75 @@ class trainingData:
 				tabProbs.append(p) #add it to the list of input sampling probabilities.  Note that only the first tab.prob value in a tableau with many candidates will be recorded.
 				if candidates:
 					self.tableaux.append(Tableau(inpt,p,hidden))
+					self.tableaux[-1].constraintNames = self.constraintNames
+					# create a new Tableau object for a unique input
 					
-				
+			if candidates: # If there are candidates, populate the tableaux
+				c = l[cIndex]
+				s = l[sIndex] if hidden else c # surface form, defaults to candidate form if no hidden struct
+				v = [float(viol) for viol in l[constraintsStartAt:]] # Note that this could be empty
+				self.tableaux[-1].addCandidate(candidate(c,v,l[oIndex],s))
 			
-			
-				lex = l[iIndex].split("_")
-				if specialLex:
-					splex = l[lIndex].split("_")
-				else:
-					splex = lex
+			# Add lexemes
+			lex = inpt.split("_")
+			if specialLex:
+				splex = l[lIndex].split("_")
+				parsed = []
+				for sp in splex:    #faqa_alo-f-ia
+					split = sp.split('-')
+					for m in range(0,len(split)):
+						if m%2:
+							prev = parsed[-1] # [segments, activities]
+							segments = prev[0]+split[m] # 'alof'    'faqaf'   'falof'
+							act = prev[1]+[0 for c in split[m]] # [1,1,1,0]    [0,1,1,1,0]
+							parsed.append([segments,act])
+						elif m>1: #greater than 1 and NOT even - entry before was liason
+							segments = split[m-1]+split[m]   # 'fia'    'falo'
+							act = [1 for c in split[m-1]]+[0 for c in split[m]] # [0,1,1]  [0,1,1,1]
+							parsed.append([segments,act])
+						else: #m=0, the first thing
+							segments = split[m]
+							act = [1 for c in split[m]]
+							parsed.append([segments,act])
+				if len(parsed) != len(lex):
+					continue
+					#TODO functionality for if the input has a LOT of ambiguous material '-asdhjk-' split over multiple morphemes
+				splex = parsed
+	
+			else:
+				splex = lex
 					
-				lexList = [] #to be filled with lexeme objects
-				for item,sp in zip(lex,splex):
-					if item not in self.lexTags:
-						if specialLex:
-							self.lexicon.append(lexeme(item,[ch for ch in sp]))
-						else:
-							self.lexicon.append(lexeme(item))
-						self.lexTags.append(item)
-					lexList.append(self.lexicon[self.lexTags.index(item)])
+			lexList = [] #to be filled with lexeme objects
+			for item,sp in zip(lex,splex):
+				if item not in self.lexTags:
+					if specialLex:
+						self.lexicon.append(lexeme(item,[character for character in sp[0]]))
+						self.lexicon[-1].activitys = sp[1]
+					else:
+						self.lexicon.append(lexeme(item,[character for character in sp]))
+					self.lexTags.append(item)
+				lexList.append(self.lexicon[self.lexTags.index(item)])
+			
+			#TODO check
+			#self.learnData.append([lexList,l[sIndex]])# This line is meant to represent *correct* output
+			# There are two ways this can go:
+			# 1) they give a simple input file, with each observed output on a separate line, with obs.prob indicating how often that appears
+			# 2) they give an input file with whole tableaux in it, so need to calculate which are the observed outputs (which have any probability)
+			
+			# ok wait this is easier than I think
+			if hidden:
 				self.learnData.append([lexList,l[sIndex]])
-				if freq_weighted:
-					self.sampler.append(float(l[tpIndex]))
-				else:
-					self.sampler.append(1.0)
-			self.sampler = [s/sum(self.sampler) for s in self.sampler] # convert to a well-formed distribution
+			elif candidates:
+				self.learnData.append([lexList,l[cIndex]])
+			else:
+				print("ERROR: no column with surface forms in it.  Please add either a 'candidate' column, or a 'surface' column")
+				exit()
+			if freq_weighted:
+				self.sampler.append(float(l[tpIndex])*float(l[oIndex]))
+			else:
+				self.sampler.append(float(l[oIndex]))
+				
+		self.sampler = [s/sum(self.sampler) for s in self.sampler] # convert to a well-formed distribution
 
 	
 
