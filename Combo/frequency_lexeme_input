@@ -1,0 +1,7 @@
+input	surface	obs.prob
+xn_@pl	xn@pl	90
+xn_@pl	x@pl	10
+xn_tri	xtri	200
+xn	xn	300
+@pl	Q@apl	360
+@pl	@apl	40

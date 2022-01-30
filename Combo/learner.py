@@ -7,6 +7,7 @@ import itertools
 import re
 from inspect import signature
 import random
+import sys
 
 
 
@@ -829,10 +830,12 @@ class trainingData:
 		self.lexTags = [] # tags belonging to the lexemes in lexicon
 		self.learnData = [] # each entry is a list: [lexemes,surface].  lexemes is itself a list, of all lexemes involved in the entry
 		self.sampler = [] # summed to 1, sampler for each learnData entry
-		                  # derived from
-		self.noisy = True
-		self.tableaux = []
-		self.constraintNames = []
+		                  # derived from either obs.prob, or tab.prob*obs.prob, if tab.prob is present
+		
+		self.noisy = True # If true, will print out lots of junk as it reads in
+		self.tableaux = [] # If candidates appear in the input file, this will contain tableaux, otherwise it will be empty
+		self.tabProb = [] # a separate sampler for tableaux specifically, for use in simple tableau-based learning.
+		self.constraintNames = [] # If columns appear after all the pre-determined column types, they will be interpreted as constraints
 		
 		# What kind of input file is this
 		candidates = False
@@ -843,20 +846,21 @@ class trainingData:
 		f = open(filename, "r")
 		lines = f.readlines()
 		header = lines[0].split('\t')
-		constraintsStartAt = 0
+		header = [label.strip() for label in header]
+		constraintsStartAt = 0 # At which column do the constraint names start
 		if 'input' in header:
 			iIndex = header.index('input')
 			constraintsStartAt += 1
 		else:
 			print("ERROR: No column of your input file is labeled 'input'.  This column is required, and must be labelled exactly.  Please check your input file and try again")
-			exit()
+			sys.exit()
 			
 		if 'obs.prob' in header:
 			oIndex = header.index('obs.prob')
 			constraintsStartAt += 1
 		else:
 			print("ERROR: No column of your input file is labeled 'obs.prob'.  This column is required, and must be labelled exactly.  Please check your input file and try again")
-			exit()
+			sys.exit()
 		if 'candidate' in header:
 			candidates = True
 			cIndex = header.index('candidate')
@@ -869,6 +873,7 @@ class trainingData:
 			constraintsStartAt += 1
 			if self.noisy:
 				print("Your input file contains hidden structure!  Yay!  I'll try to fit that with Expectation-Maximization according to Jarosz (2013)")
+				#TODO create more nuanced printout for lexeme files
 		if 'tab.prob' in header:
 			freq_weighted = True
 			tpIndex = header.index('tab.prob')
@@ -886,18 +891,22 @@ class trainingData:
 			self.constraintNames=header[constraintsStartAt:]
 		
 		inpt_s = []
-		tabProbs = []
 		for i in lines[1:]:
 			l = [j.strip() for j in i.split('\t')]
 			inpt = l[iIndex]
 			if inpt not in inpt_s: #If we haven't seen this input before
 				inpt_s.append(inpt)
-				p = l[tpIndex]
-				tabProbs.append(p) #add it to the list of input sampling probabilities.  Note that only the first tab.prob value in a tableau with many candidates will be recorded.
 				if candidates:
+					if freq_weighted:
+						p = l[tpIndex]
+					else:
+						p=1
+						
+					self.tabProb.append(p)  #Note that only the first tab.prob value in a tableau with many candidates will be recorded.
 					self.tableaux.append(Tableau(inpt,p,hidden))
 					self.tableaux[-1].constraintNames = self.constraintNames
 					# create a new Tableau object for a unique input
+
 					
 			if candidates: # If there are candidates, populate the tableaux
 				c = l[cIndex]
@@ -958,7 +967,7 @@ class trainingData:
 				self.learnData.append([lexList,l[cIndex]])
 			else:
 				print("ERROR: no column with surface forms in it.  Please add either a 'candidate' column, or a 'surface' column")
-				exit()
+				sys.exit()
 			if freq_weighted:
 				self.sampler.append(float(l[tpIndex])*float(l[oIndex]))
 			else:
@@ -967,7 +976,31 @@ class trainingData:
 		self.sampler = [s/sum(self.sampler) for s in self.sampler] # convert to a well-formed distribution
 
 	
+	def __str__(self):
+		trainTags = []
+		for i, k in zip(self.learnData,self.sampler):
+			entry = []
+			for j in i[0]:
+				entry.append(j.tag)
+			entry =["+".join(entry)]
+			entry.append(i[1])
+			entry.append(str(round(k,4)))
+			trainTags.append(entry)
 
+		maxLen_lex = str(max([len(i[0]) for i in trainTags]+[7])+1)
+		maxLen_out = str(max([len(i[1]) for i in trainTags]+[7])+1)
+		segform = ('{:' + maxLen_lex + 's} ') + ('{:' + maxLen_out + 's} ') + ('{:8}')
+		
+		out = "Training Data: "
+		out += '\n'
+		out += segform.format("lexemes","surface","training probability")
+		for i in trainTags:
+			out += '\n'
+			out += segform.format(*i)
+			
+		return out
+		
+		
 	
 	
 
