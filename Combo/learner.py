@@ -473,7 +473,7 @@ class Tableau:
 		
 
 class Grammar:
-	def __init__(self,filename,constraints,operations,featureSet):
+	def __init__(self,filename,featureSet,constraints=None,operations=None,generateCandidates=False,addViolations=False):
 		self.trainingData = trainingData(filename)  # An array or something containing the learning data
 		self.featureSet = featureSet
 		self.constraints = constraints
@@ -486,7 +486,9 @@ class Grammar:
 		self.PFC_lrate = 0.1
 		self.PFC_startW = 10
 		self.PFC_decay = 0.0001
-	
+		
+		self.generateCandidates = generateCandidates # defaults to False, meaning you'll use the given candidates IF they exist
+		self.addViolations = addViolations # whether or not to use the constraint file to add extra violations to each candidate
 	
 	def createLearningPlaylist(self,n):
 		# n is total number of learning simulations
@@ -527,8 +529,20 @@ class Grammar:
 			if len(lex.PFCs)>len(self.featureSet.featureNames)*len(lex.segLabels)*4:
 				print("WARNING: too many PFCs")
 				break
+			
+		# check for tableau
+		if self.trainingData.tableaux and not self.generateCandidates:  # if tableaux is empty it should evaluate to false
+			tab = self.trainingData.tableaux[self.trainingData.tableauxTags.index(datum[2])]
+			if self.addViolations and self.constraints: # if constraints actually exist, and if we've decided to add violations on the fly
+				# Then, apply those constraints to fill out the tableau
+				for cand in tab.candidates:
+					for con in self.constraints:
+						cand.violations.append(con.assignViolations(cand,self.featureSet))
+		# TODO check for PFCs, and assign violations
 		# Create a tableau
-		tab,constraintList,w = createTableau(datum[0], self.constraints, self.operations, self.featureSet,datum[1],w=self.w[:])
+		elif self.constrints and self.operations:
+			tab,constraintList,w = createTableau(datum[0], self.constraints, self.operations, self.featureSet,datum[1],w=self.w[:])
+		
 		#print(tab)
 		#print(w)
 
@@ -548,7 +562,8 @@ class Grammar:
 					pfc[1].w = 0 if pfc[1].w<0 else pfc[1].w
 			
 			# induce new PFCs
-			newPFCs = inducePFCs(obs,pred,self.featureSet)
+			if self.PFC_startW>0:
+				newPFCs = inducePFCs(obs,pred,self.featureSet)
 			#pfcs_to_words = [[]]*len(datum[0])
 			for pfc in newPFCs: #loop through and determine which goes with which lexeme
 				if len(pfc)>2:
@@ -834,6 +849,7 @@ class trainingData:
 		self.noisy = True # If true, will print out lots of junk as it reads in
 		self.tableaux = [] # If candidates appear in the input file, this will contain tableaux, otherwise it will be empty
 		self.tabProb = [] # a separate sampler for tableaux specifically, for use in simple tableau-based learning.
+		self.tableauxTags = [] # tag of each tableau.  Should correspond to the 'input' column in the data
 		self.constraintNames = [] # If columns appear after all the pre-determined column types, they will be interpreted as constraints
 		
 		# What kind of input file is this
@@ -903,7 +919,8 @@ class trainingData:
 						
 					self.tabProb.append(p)  #Note that only the first tab.prob value in a tableau with many candidates will be recorded.
 					self.tableaux.append(Tableau(inpt,p,hidden))
-					self.tableaux[-1].constraintNames = self.constraintNames
+					self.tableaux[-1].constraintNames = self.constraintNames # Assign each tableau the constraint names from the input file
+					self.tableauxTags.append(self.tableaux[-1].tag)
 					# create a new Tableau object for a unique input
 
 					
@@ -961,9 +978,9 @@ class trainingData:
 			
 			# ok wait this is easier than I think
 			if hidden:
-				self.learnData.append([lexList,l[sIndex]])
+				self.learnData.append([lexList,l[sIndex],inpt])
 			elif candidates:
-				self.learnData.append([lexList,l[cIndex]])
+				self.learnData.append([lexList,l[cIndex],inpt])
 			else:
 				print("ERROR: no column with surface forms in it.  Please add either a 'candidate' column, or a 'surface' column")
 				sys.exit()
@@ -973,6 +990,7 @@ class trainingData:
 				self.sampler.append(float(l[oIndex]))
 				
 		self.sampler = [s/sum(self.sampler) for s in self.sampler] # convert to a well-formed distribution
+		# TODO do I have to worry about these getting too small
 
 	
 	def __str__(self):

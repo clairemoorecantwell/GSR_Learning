@@ -1,0 +1,12 @@
+Tableau le_ami
+                                 NoCoda *hiatus Max Dep Uniformity 
+       leznami 0.0   EMPTY EMPTY  1.0     0.0   1.0 1.0    0.0     
+    lez(lr)ami 1.0   EMPTY EMPTY  0.0     0.0   1.0 0.0    1.0     
+     lez(l)ami 1.0   EMPTY EMPTY  0.0     0.0   0.5 0.5    0.0     
+     lez(r)ami 1.0   EMPTY EMPTY  0.0     0.0   0.5 0.5    0.0     
+         leami 0.0   EMPTY EMPTY  0.0     1.0   0.0 0.0    0.0     
+        letami 0.0   EMPTY EMPTY  0.0     0.0   0.5 0.5    0.0     
+        lenami 0.0   EMPTY EMPTY  0.0     0.0   0.5 0.5    0.0     
+        leqami 0.0   EMPTY EMPTY  0.0     0.0   0.0 1.0    0.0     
+       leztami 0.0   EMPTY EMPTY  1.0     0.0   1.0 1.0    0.0     
+       lezzami 0.0   EMPTY EMPTY  1.0     0.0   1.0 1.0    0.0     
