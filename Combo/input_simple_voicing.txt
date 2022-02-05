@@ -1,0 +1,7 @@
+input	candidate	obs.prob	tab.prob	*b	*d	*g	*voicelessObs	*voice
+b	b	0	1	1	0	0	0	1
+b	p	1	1	0	0	0	1	0
+d	d	1	100	0	1	0	0	1
+d	t	0	100	0	0	0	1	0
+g	g	0	1	0	0	1	0	1
+g	k	1	1	0	0	0	1	0

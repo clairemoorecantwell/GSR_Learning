@@ -460,8 +460,8 @@ class Tableau:
 
 
 	def compareObsPred(self,w,theory='MaxEnt'):
-		predCandidate=self.getPredWinner(w,theory)
-		obsCandidate=self.getObsCandidate(w,theory) 
+		predCandidate=self.getPredWinner(w=w,theory=theory)
+		obsCandidate=self.getObsCandidate(w=w,theory=theory) 
 #		for c in self.candidates:
 #			 if c.c==obs:
 #				 obsCandidate = c
@@ -484,7 +484,7 @@ class Grammar:
 		self.learningRate = 0.01
 		self.activityUpdateRate = 0.05
 		self.PFC_lrate = 0.1
-		self.PFC_startW = 10
+		self.PFC_startW = 0
 		self.PFC_decay = 0.0001
 		
 		self.generateCandidates = generateCandidates # defaults to False, meaning you'll use the given candidates IF they exist
@@ -499,13 +499,15 @@ class Grammar:
 	def initializeWeights(self,w=None):
 		'''Function to initialize the weights - can take an argument, which is hopefully the same length as the number of constraints in the Tableaux object.  If it doesn't get that argument, it will initialize them to zero. '''
 		# TODO (low priority atm) Add functionality to initialize weights to random values
+		# figure out how many constraints we have all together
+		nC = len(self.trainingData.constraintNames) + (len(self.constraints) if self.constraints else 0)
 		if w is None:
-			self.w = [0]*len(self.constraints)
+			self.w = [0]*nC
 		else:
-			if len(w)==len(self.constraints):
+			if len(w)==nC:
 				self.w=w
 			else:
-				print("WARNING: you tried to initialize weights with a list that's not the same length as your list of constraints.	 This probably didn't work so well.")
+				print("ERROR: you tried to initialize weights with a list of length ", len(w), ", but you have a total of ", nC, " constraints.  addViolations is set to ", self.addViolations)
 				# This will print a warning, but it won't actually stop you from initializing constraints badly?  Maybe this is a problem that should be fixed.
    
 	def calculate_sample_weights(self,frequencies):
@@ -532,14 +534,18 @@ class Grammar:
 			
 		# check for tableau
 		if self.trainingData.tableaux and not self.generateCandidates:  # if tableaux is empty it should evaluate to false
+			constraintList = self.trainingData.constraintNames
 			tab = self.trainingData.tableaux[self.trainingData.tableauxTags.index(datum[2])]
 			if self.addViolations and self.constraints: # if constraints actually exist, and if we've decided to add violations on the fly
+				constraintList+=[c.name for c in self.constraints]
 				# Then, apply those constraints to fill out the tableau
 				for cand in tab.candidates:
 					for con in self.constraints:
 						cand.violations.append(con.assignViolations(cand,self.featureSet))
 		# TODO check for PFCs, and assign violations
-		# Create a tableau
+			# make sure to add PFC names to constraintList			
+		
+		# Create a tableau if no candidates exist
 		elif self.constrints and self.operations:
 			tab,constraintList,w = createTableau(datum[0], self.constraints, self.operations, self.featureSet,datum[1],w=self.w[:])
 		
@@ -553,7 +559,7 @@ class Grammar:
 		if e:
 			#update general weight: perceptron update
 			self.w = [wt+(p-o)*self.learningRate for wt,p,o in zip(self.w,pred.violations,obs.violations) ]
-			print(self.w)
+			#print(self.w)
 			self.w=[i if i>0 else 0 for i in self.w] # limit to positve constraint weights
 			# update existing PFCs
 			if len(constraintList)>len(self.w):
@@ -562,6 +568,7 @@ class Grammar:
 					pfc[1].w = 0 if pfc[1].w<0 else pfc[1].w
 			
 			# induce new PFCs
+			newPFCs = []
 			if self.PFC_startW>0:
 				newPFCs = inducePFCs(obs,pred,self.featureSet)
 			#pfcs_to_words = [[]]*len(datum[0])
@@ -603,11 +610,13 @@ class Grammar:
 		errors = 0
 		for i in range(0,niter):
 			errors+=self.update(playlist[start+i])
-			print(start+i)
+			#print(start+i)
 			
 		error_rate = errors/niter
-		# print out list of weights
+		# print out list of weights (to file)
 		# print out SSE
+		# print out likelihood
+		# 
 		return error_rate
 		
 		
@@ -615,6 +624,7 @@ class Grammar:
 	def learn(self,nIterations,nEpochs):
 		
 		playlist = self.createLearningPlaylist(nIterations*nEpochs)
+		print(playlist)
 		for i in range(0,nEpochs):
 			rate = self.epoch(playlist,nIterations,start=nIterations*i)
 			print(rate)
@@ -1116,7 +1126,7 @@ def createTableau(lexemes,constraints,operations,featureSet,obsOutput,w = None,s
 						else:
 							possibleCand.harmony = -sum(viol*weight for viol,weight in zip(possibleCand.violations,w))
 							Hdiff = possibleCand.harmony - c.harmony
-							p_keep = (1/2)*Hdiff/math.sqrt(s+Hdiff**2)+0.5
+							p_keep = (1/2)*Hdiff/math.sqrt(s+Hdiff**2)+0.5 # Here is the equation for keeping a candidate based on harmony
 							if random.random()<p_keep:
 								possibleCand.observedProb = 1 if possibleCand.surfaceForm==obsOutput else 0
 								allCands.append(possibleCand)
