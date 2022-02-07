@@ -35,3 +35,8 @@ import constraints as c
 g = l.Grammar("frequency_lexeme_input",c.constraints, c.operations, l.Features("features.txt"))
 
 t = l.trainingData("input.txt")
+
+g = l.Grammar("input_simple_voicing.txt",l.Features("features.txt"))
+
+
+g = l.Grammar("input.txt",l.Features("features.txt"))

@@ -460,7 +460,10 @@ class Tableau:
 
 
 	def compareObsPred(self,w,theory='MaxEnt'):
+		print(w)
+		
 		predCandidate=self.getPredWinner(w=w,theory=theory)
+		print(predCandidate.violations)
 		obsCandidate=self.getObsCandidate(w=w,theory=theory) 
 #		for c in self.candidates:
 #			 if c.c==obs:
@@ -473,7 +476,7 @@ class Tableau:
 		
 
 class Grammar:
-	def __init__(self,filename,featureSet,constraints=None,operations=None,generateCandidates=False,addViolations=False):
+	def __init__(self,filename,featureSet,constraints=None,operations=None,generateCandidates=False,addViolations=False,PFC_type="none"):
 		self.trainingData = trainingData(filename)  # An array or something containing the learning data
 		self.featureSet = featureSet
 		self.constraints = constraints
@@ -484,11 +487,12 @@ class Grammar:
 		self.learningRate = 0.01
 		self.activityUpdateRate = 0.05
 		self.PFC_lrate = 0.1
-		self.PFC_startW = 0
+		self.PFC_startW = 10
 		self.PFC_decay = 0.0001
 		
 		self.generateCandidates = generateCandidates # defaults to False, meaning you'll use the given candidates IF they exist
 		self.addViolations = addViolations # whether or not to use the constraint file to add extra violations to each candidate
+		self.PFC_type = PFC_type # options are "none", "pseudo", "full"
 	
 	def createLearningPlaylist(self,n):
 		# n is total number of learning simulations
@@ -522,7 +526,7 @@ class Grammar:
 			
 
 	def update(self,datum): # datum is an entry from playlist
-		# Start with a learning datum
+		# Start with a learning datum 
 		# Decay the existing PFCs affiliated with each lexeme:
 		for lex in datum[0]:
 			lex.decayPFC(self.t,self.PFC_decay,decayType="static")
@@ -532,7 +536,7 @@ class Grammar:
 				print("WARNING: too many PFCs")
 				break
 			
-		# check for tableau
+		# grab, create, or fill out the tableau
 		if self.trainingData.tableaux and not self.generateCandidates:  # if tableaux is empty it should evaluate to false
 			constraintList = self.trainingData.constraintNames
 			tab = self.trainingData.tableaux[self.trainingData.tableauxTags.index(datum[2])]
@@ -542,17 +546,29 @@ class Grammar:
 				for cand in tab.candidates:
 					for con in self.constraints:
 						cand.violations.append(con.assignViolations(cand,self.featureSet))
-		# TODO check for PFCs, and assign violations
+			if self.PFC_type=="pseudo":
+				# assign violations of pseudo-PFCs
+				for cand in tab.candidates:
+					parsed = cand.c.split("_")
+					for lexeme in datum[0]:
+						for pfc in lexeme.PFCs:
+							#TODO check if its type is really "pseudo", if not ignore it
+							cand.violations.append(pfc.evaluate(parsed[datum[0].index(lexeme)]))
+					
+			elif self.PFC_type=='full':
+				print("ERROR: fully induced PFCs currently not implemented for pre-defined candidates")
+				exit
 			# make sure to add PFC names to constraintList			
 		
 		# Create a tableau if no candidates exist
 		elif self.constrints and self.operations:
 			tab,constraintList,w = createTableau(datum[0], self.constraints, self.operations, self.featureSet,datum[1],w=self.w[:])
 		
-		#print(tab)
+		print(tab)
 		#print(w)
+		PFCws=[]
 
-		e, obs, pred = tab.compareObsPred(self.w)
+		e, obs, pred = tab.compareObsPred(self.w) # self.w is not correct here, right?
 
 		#print(e,obs.c,pred.c,obs.violations,pred.violations,obs.harmony,obs.predictedProb,pred.harmony,pred.predictedProb)
 		#print(constraintList)
@@ -569,30 +585,44 @@ class Grammar:
 			
 			# induce new PFCs
 			newPFCs = []
-			if self.PFC_startW>0:
+			if self.PFC_type=="pseudo":
+				# parse each candidate into morphemes
+				parsed = obs.c.split("_")
+				if len(parsed)!=len(datum[0]):
+					print("ERROR: pseudo-PFC cannot be induced because morphemes in the candidate cannote be aligned with morphemes in the input")
+					exit
+				for i in range(0,len(datum[0])):
+					newPFC = PFC(self.PFC_startW,surfaceString=parsed[i])
+					if newPFC not in datum[0][i].PFCs:
+						datum[0][i].PFCs.append(newPFC)
+						print("Added ", datum[0][i].tag, newPFC.name)
+					
+				# align each morpheme with lexemes, in datum[0]
+				pass
+			elif self.PFC_type=="full":
 				newPFCs = inducePFCs(obs,pred,self.featureSet)
-			#pfcs_to_words = [[]]*len(datum[0])
-			for pfc in newPFCs: #loop through and determine which goes with which lexeme
-				if len(pfc)>2:
-					wd = re.search('(_)(w)([1234567890])',pfc[2])
-					if wd:
-						newPFC = PFC(self.PFC_startW,pfc[1],re.sub('_w.*','',pfc[2]))
-						if newPFC not in datum[0][int(wd.groups()[2])-1].PFCs:
-							#print("yes")
-							datum[0][int(wd.groups()[2])-1].PFCs.append(newPFC)
+				#pfcs_to_words = [[]]*len(datum[0])
+				for pfc in newPFCs: #loop through and determine which goes with which lexeme
+					if len(pfc)>2:
+						wd = re.search('(_)(w)([1234567890])',pfc[2])
+						if wd:
+							newPFC = PFC(self.PFC_startW,pfc[1],re.sub('_w.*','',pfc[2]))
+							if newPFC not in datum[0][int(wd.groups()[2])-1].PFCs:
+								#print("yes")
+								datum[0][int(wd.groups()[2])-1].PFCs.append(newPFC)
+						else:
+							newPFC = PFC(self.PFC_startW,pfc[1],pfc[2])
+							if newPFC not in datum[0][0].PFCs:
+								#print("yes")
+								datum[0][0].PFCs.append(newPFC)
 					else:
-						newPFC = PFC(self.PFC_startW,pfc[1],pfc[2])
-						if newPFC not in datum[0][0].PFCs:
-							#print("yes")
-							datum[0][0].PFCs.append(newPFC)
-				else:
-					for lex in datum[0]:
-						newPFC = PFC(self.PFC_startW,pfc[1])
-						if newPFC not in lex.PFCs:
-							lex.PFCs.append(newPFC)
-						#somewhat odd strat: affiliate exists_feature constraints with all lexemes
+						for lex in datum[0]:
+							newPFC = PFC(self.PFC_startW,pfc[1])
+							if newPFC not in lex.PFCs:
+								lex.PFCs.append(newPFC)
+							#somewhat odd strat: affiliate exists_feature constraints with all lexemes
 	
-			
+
 				
 			# induce PFCs
 			# compare against existing PFCs
@@ -803,12 +833,13 @@ def exlex_hero():
 
 
 class PFC: #Contains function(s) for calculating a PFC's violations
-	def __init__(self,w,feature=None,seg=None,seg2=None,typ='feature_on_segment'):
+	def __init__(self,w,feature=None,seg=None,seg2=None,surfaceString=None,typ='feature_on_segment'):
 		self.w = w
 		self.feature = feature # must be a tuple (0, 'high'), (1, 'coronal') etc.
 		self.seg = seg  # name of a seg in the lexeme that this PFC belongs to
 		self.seg2 = seg2 # note that seg names must be immutable in the lexeme!
-		self.typ = typ
+		self.surfaceString = surfaceString # the surface string to match if it's a pseudoPFC
+		self.typ = typ # typ can be 'feature_on_segment', 'exists_feature', 'prec', 'suprasegmental', or 'pseudo'
 		
 		# auto-calculate PFC type
 		# note that type 'suprasegmental' must be defined by the function call, and cannot be specified within (it can't be distinguished in form from exists_feature)
@@ -816,11 +847,22 @@ class PFC: #Contains function(s) for calculating a PFC's violations
 			self.typ = 'prec'
 			self.name = seg+'<<'+seg2
 			
-		if feature is not None and seg is None and seg2 is None and typ!='suprasegmental':
+		elif feature is not None and seg is None and seg2 is None and typ!='suprasegmental':
 			self.typ = 'exists_feature'
 			self.name = str(feature)
 		
-		self.name = '_'.join([str(param) for param in [feature,seg,seg2] if param])
+		elif surfaceString is not None and feature is None and seg is None and seg2 is None:
+			self.typ = 'pseudo'
+		
+		elif feature is not None and typ=='suprasegmental':
+			pass
+		elif feature is not None and seg is not None and typ=='feature_on_segment':
+			pass
+		else:
+			print("ERROR: you tried to create an impossible type of PFC.")
+			exit()
+		
+		self.name = '_'.join([str(param) for param in [feature,seg,seg2,surfaceString] if param])
 		
 	def __eq__(self,other):
 		same = 0
@@ -828,7 +870,7 @@ class PFC: #Contains function(s) for calculating a PFC's violations
 			same = 1
 		return same
 	
-	def evaluate(self,cand): #evaluates a richCand object
+	def evaluate(self,cand): #evaluates a richCand object, or a simple string for a pseudoPFC
 		if self.typ=='feature_on_segment':
 			viol = 0 if self.feature in cand.segsDict.get(self.seg,[]) else 1
 		elif self.typ=='exists_feature':
@@ -841,6 +883,9 @@ class PFC: #Contains function(s) for calculating a PFC's violations
 				viol = 1
 		elif self.typ == 'suprasegmental':
 			viol = 0 if self.feature in cand.suprasegmentals else 1
+		elif self.typ == 'pseudo':
+			# this one evaluates a string, pre-parsed out of a cand object
+			viol = 0 if self.surfaceString == cand else 1
 		else:
 			print("Error!  You've passed the PFC something that's not a valid type.  Types are 'feature_on_segment', 'prec', 'exists_feature', 'suprasegmental'")
 		return viol
