@@ -539,6 +539,7 @@ class Grammar:
 		# grab, create, or fill out the tableau
 		if self.trainingData.tableaux and not self.generateCandidates:  # if tableaux is empty it should evaluate to false
 			constraintList = self.trainingData.constraintNames
+			w = self.w[:]
 			tab = self.trainingData.tableaux[self.trainingData.tableauxTags.index(datum[2])]
 			if self.addViolations and self.constraints: # if constraints actually exist, and if we've decided to add violations on the fly
 				constraintList+=[c.name for c in self.constraints]
@@ -554,6 +555,8 @@ class Grammar:
 						for pfc in lexeme.PFCs:
 							#TODO check if its type is really "pseudo", if not ignore it
 							cand.violations.append(pfc.evaluate(parsed[datum[0].index(lexeme)]))
+							constraintList.append((pfc.name,pfc))
+							w.append(pfc.w)
 					
 			elif self.PFC_type=='full':
 				print("ERROR: fully induced PFCs currently not implemented for pre-defined candidates")
@@ -564,11 +567,10 @@ class Grammar:
 		elif self.constrints and self.operations:
 			tab,constraintList,w = createTableau(datum[0], self.constraints, self.operations, self.featureSet,datum[1],w=self.w[:])
 		
-		print(tab)
+		#print(tab) 
 		#print(w)
-		PFCws=[]
 
-		e, obs, pred = tab.compareObsPred(self.w) # self.w is not correct here, right?
+		e, obs, pred = tab.compareObsPred(w) # self.w is not correct here, right?
 
 		#print(e,obs.c,pred.c,obs.violations,pred.violations,obs.harmony,obs.predictedProb,pred.harmony,pred.predictedProb)
 		#print(constraintList)
