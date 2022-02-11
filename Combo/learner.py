@@ -123,6 +123,12 @@ class candidate:
 			print("It looks like candidate " + self.c + " has a probability that can't be converted to float.  Check if there's some text in that column of your spreadsheet")
 		self.harmony = 0 # Not specified at initialization.	 This will be filled out in learning
 		self.predictedProb = 0 # Again, to be filled out during learning.
+		
+	def copy(self):
+		newC = candidate(self.c,self.violations[:],self.observedProb,self.surfaceForm)
+		newC.harmony = self.harmony
+		newC.predictedProb = self.predictedProb
+		return newC
 
 
 class richCand(candidate):
@@ -208,6 +214,7 @@ class Tableaux:
 		self.tabProb = False
 		self.constraintNames = []
 		self.read(filename,noisy)
+		
 		
 	def read(self,filename,noisy=True):
 		print('reading in tableaux from file...')
@@ -321,6 +328,16 @@ class Tableau:
 			row = [w] + [self.candidates[i-1].c,self.candidates[i-1].observedProb,self.predProbsList[i-1],self.HList[i-1]] + v
 			out += '\n' + form.format(*[str(j) for j in row])
 		return out
+	
+	def copy(self):
+		newT = Tableau(self.tag,self.prob,self.hiddenStructure)
+		newT.winner = self.winner
+		newT.constraintNames = self.constraintNames
+		for c in self.candidates:
+			newT.addCandidate(c.copy())
+		
+		return newT
+		
 
 
 	def addCandidate(self,cand):
@@ -460,10 +477,7 @@ class Tableau:
 
 
 	def compareObsPred(self,w,theory='MaxEnt'):
-		print(w)
-		
 		predCandidate=self.getPredWinner(w=w,theory=theory)
-		print(predCandidate.violations)
 		obsCandidate=self.getObsCandidate(w=w,theory=theory) 
 #		for c in self.candidates:
 #			 if c.c==obs:
@@ -537,40 +551,12 @@ class Grammar:
 				break
 			
 		# grab, create, or fill out the tableau
-		if self.trainingData.tableaux and not self.generateCandidates:  # if tableaux is empty it should evaluate to false
-			constraintList = self.trainingData.constraintNames
-			w = self.w[:]
-			tab = self.trainingData.tableaux[self.trainingData.tableauxTags.index(datum[2])]
-			if self.addViolations and self.constraints: # if constraints actually exist, and if we've decided to add violations on the fly
-				constraintList+=[c.name for c in self.constraints]
-				# Then, apply those constraints to fill out the tableau
-				for cand in tab.candidates:
-					for con in self.constraints:
-						cand.violations.append(con.assignViolations(cand,self.featureSet))
-			if self.PFC_type=="pseudo":
-				# assign violations of pseudo-PFCs
-				for cand in tab.candidates:
-					parsed = cand.c.split("_")
-					for lexeme in datum[0]:
-						for pfc in lexeme.PFCs:
-							#TODO check if its type is really "pseudo", if not ignore it
-							cand.violations.append(pfc.evaluate(parsed[datum[0].index(lexeme)]))
-							constraintList.append((pfc.name,pfc))
-							w.append(pfc.w)
-					
-			elif self.PFC_type=='full':
-				print("ERROR: fully induced PFCs currently not implemented for pre-defined candidates")
-				exit
-			# make sure to add PFC names to constraintList			
-		
-		# Create a tableau if no candidates exist
-		elif self.constrints and self.operations:
-			tab,constraintList,w = createTableau(datum[0], self.constraints, self.operations, self.featureSet,datum[1],w=self.w[:])
-		
-		#print(tab) 
+		tab, constraintList, w = self.makeTableau(datum)
+		#print(constraintList)
+		print(tab) 
 		#print(w)
 
-		e, obs, pred = tab.compareObsPred(w) # self.w is not correct here, right?
+		e, obs, pred = tab.compareObsPred(w) 
 
 		#print(e,obs.c,pred.c,obs.violations,pred.violations,obs.harmony,obs.predictedProb,pred.harmony,pred.predictedProb)
 		#print(constraintList)
@@ -653,14 +639,68 @@ class Grammar:
 		
 		
 		
-	def learn(self,nIterations,nEpochs):
+	def learn(self,nIterations,nEpochs,outFile = "output.txt"):
 		
 		playlist = self.createLearningPlaylist(nIterations*nEpochs)
-		print(playlist)
+		#print(playlist)
 		for i in range(0,nEpochs):
 			rate = self.epoch(playlist,nIterations,start=nIterations*i)
 			print(rate)
-
+		
+		results = []
+		for datum in self.trainingData.learnData:
+			tab, constraints, w = self.makeTableau(datum)
+			results.append(str(tab))
+			
+		with open("output.txt",'w') as f:
+			f.write('\n'.join(results))
+		
+		
+	def makeTableau(self,datum):
+		# determine how to really make the tableau, given the grammar context
+		method = "deNovo"
+		# "deNovo": create a brand new tableau, with generated candidates.  For this we need operations, and constraints defined as functions
+		# "partial": use user-defined candidates, but add violations of a few markedness constraints
+		# "full": completely user-defined, except for perhaps the PFCs
+		
+		if not self.generateCandidates:
+			if not self.addViolations:
+				method = "full"
+			elif self.constraints:    # constraint functions must exist for them to be used to assign new violations
+				method = "partial"
+			else:
+				print ("ERROR: you must define a set of constraint functions")
+				exit
+		else:
+			return createTableau(datum[0],self.constraints,self.operations,self.featureSet,datum[1],w=self.w[:])
+		
+		constraintList = self.trainingData.constraintNames[:]
+		w = self.w[:]
+		tab = self.trainingData.tableaux[self.trainingData.tableauxTags.index(datum[2])].copy()
+		if method == "partial":
+			# Assign violations of dynamic constraints
+			constraintList +=[c.name for c in self.constraints]
+			for cand in tab.candidates:
+				for con in self.constraints:
+					cand.violations.append(con.assignViolations(cand,self.featureSet))
+		
+		if self.PFC_type == "pseudo":
+			# assign violations of pseudo-PFCs
+			for lexeme in datum[0]:
+				for pfc in lexeme.PFCs:
+					#TODO check if its type is really 'pseudo', if not ignore it
+					for cand in tab.candidates:
+						parsed = cand.c.split("_")
+						cand.violations.append(pfc.evaluate(parsed[datum[0].index(lexeme)]))
+					constraintList.append(pfc.name)
+					w.append(pfc.w)
+		elif self.PFC_type=="full":
+			print("ERROR: fully induced PFCs currently not implemented for pre-defined candidates")
+			exit
+		
+		tab.constraintNames = constraintList
+		return tab, constraintList, w
+						
 	
 
 	
@@ -868,9 +908,12 @@ class PFC: #Contains function(s) for calculating a PFC's violations
 		
 	def __eq__(self,other):
 		same = 0
-		if self.feature == other.feature and self.seg == other.seg and self.seg2 ==other.seg2:
+		if self.feature == other.feature and self.seg == other.seg and self.seg2 ==other.seg2 and self.surfaceString==other.surfaceString:
 			same = 1
 		return same
+	
+	def __str__(self):
+		return self.name
 	
 	def evaluate(self,cand): #evaluates a richCand object, or a simple string for a pseudoPFC
 		if self.typ=='feature_on_segment':

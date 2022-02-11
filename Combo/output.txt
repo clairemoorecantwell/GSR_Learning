@@ -1,0 +1,352 @@
+Tableau pab
+                          *b *d *z *g *voice pap 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0    1  
+Tableau pab
+                          *b *d *z *g *voice pap 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0    1  
+Tableau pab1
+                          *b *d *z *g *voice 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0   
+Tableau pab1
+                          *b *d *z *g *voice 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0   
+Tableau pab2
+                          *b *d *z *g *voice 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0   
+Tableau pab2
+                          *b *d *z *g *voice 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0   
+Tableau pab3
+                          *b *d *z *g *voice 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0   
+Tableau pab3
+                          *b *d *z *g *voice 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0   
+Tableau pab4
+                          *b *d *z *g *voice 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0   
+Tableau pab4
+                          *b *d *z *g *voice 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0   
+Tableau pab5
+                          *b *d *z *g *voice pap 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0    1  
+Tableau pab5
+                          *b *d *z *g *voice pap 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0    1  
+Tableau pad6
+                          *b *d *z *g *voice 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0   
+Tableau pad6
+                          *b *d *z *g *voice 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0   
+Tableau pab7
+                          *b *d *z *g *voice 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0   
+Tableau pab7
+                          *b *d *z *g *voice 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0   
+Tableau pab8
+                          *b *d *z *g *voice pap 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0    1  
+Tableau pab8
+                          *b *d *z *g *voice pap 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0    1  
+Tableau pab9
+                          *b *d *z *g *voice pap 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0    1  
+Tableau pab9
+                          *b *d *z *g *voice pap 
+    pap 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    pab 0.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0    1  
+Tableau pab10
+                          *b *d *z *g *voice pab 
+    pap 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    1  
+    pab 1.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0    0  
+Tableau pab10
+                          *b *d *z *g *voice pab 
+    pap 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    1  
+    pab 1.0   EMPTY EMPTY 1.0 0.0 0.0 0.0  1.0    0  
+Tableau tad
+                          *b *d *z *g *voice 
+    tat 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tad 0.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0   
+Tableau tad
+                          *b *d *z *g *voice 
+    tat 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tad 0.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0   
+Tableau tad1
+                          *b *d *z *g *voice 
+    tat 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tad 0.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0   
+Tableau tad1
+                          *b *d *z *g *voice 
+    tat 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tad 0.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0   
+Tableau tad2
+                          *b *d *z *g *voice tat 
+    tat 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    tad 0.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0    1  
+Tableau tad2
+                          *b *d *z *g *voice tat 
+    tat 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    tad 0.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0    1  
+Tableau tad3
+                          *b *d *z *g *voice 
+    tat 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tad 0.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0   
+Tableau tad3
+                          *b *d *z *g *voice 
+    tat 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tad 0.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0   
+Tableau tad4
+                          *b *d *z *g *voice 
+    tat 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tad 0.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0   
+Tableau tad4
+                          *b *d *z *g *voice 
+    tat 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tad 0.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0   
+Tableau tad5
+                          *b *d *z *g *voice tat 
+    tat 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    tad 0.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0    1  
+Tableau tad5
+                          *b *d *z *g *voice tat 
+    tat 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    tad 0.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0    1  
+Tableau tad6
+                          *b *d *z *g *voice tat 
+    tat 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    tad 0.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0    1  
+Tableau tad6
+                          *b *d *z *g *voice tat 
+    tat 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    tad 0.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0    1  
+Tableau tad7
+                          *b *d *z *g *voice tat 
+    tat 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    tad 0.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0    1  
+Tableau tad7
+                          *b *d *z *g *voice tat 
+    tat 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    tad 0.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0    1  
+Tableau tad8
+                          *b *d *z *g *voice tat 
+    tat 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    tad 0.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0    1  
+Tableau tad8
+                          *b *d *z *g *voice tat 
+    tat 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    tad 0.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0    1  
+Tableau tad9
+                          *b *d *z *g *voice 
+    tat 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tad 1.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0   
+Tableau tad9
+                          *b *d *z *g *voice 
+    tat 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tad 1.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0   
+Tableau tad10
+                          *b *d *z *g *voice tad 
+    tat 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    1  
+    tad 1.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0    0  
+Tableau tad10
+                          *b *d *z *g *voice tad 
+    tat 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    1  
+    tad 1.0   EMPTY EMPTY 0.0 1.0 0.0 0.0  1.0    0  
+Tableau taz
+                          *b *d *z *g *voice 
+    tas 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    taz 0.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0   
+Tableau taz
+                          *b *d *z *g *voice 
+    tas 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    taz 0.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0   
+Tableau taz1
+                          *b *d *z *g *voice tas 
+    tas 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    taz 0.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0    1  
+Tableau taz1
+                          *b *d *z *g *voice tas 
+    tas 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    taz 0.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0    1  
+Tableau taz2
+                          *b *d *z *g *voice tas 
+    tas 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    taz 0.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0    1  
+Tableau taz2
+                          *b *d *z *g *voice tas 
+    tas 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    taz 0.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0    1  
+Tableau taz3
+                          *b *d *z *g *voice tas 
+    tas 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    taz 0.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0    1  
+Tableau taz3
+                          *b *d *z *g *voice tas 
+    tas 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    taz 0.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0    1  
+Tableau taz4
+                          *b *d *z *g *voice 
+    tas 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    taz 0.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0   
+Tableau taz4
+                          *b *d *z *g *voice 
+    tas 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    taz 0.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0   
+Tableau taz5
+                          *b *d *z *g *voice tas 
+    tas 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    taz 0.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0    1  
+Tableau taz5
+                          *b *d *z *g *voice tas 
+    tas 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    taz 0.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0    1  
+Tableau taz6
+                          *b *d *z *g *voice 
+    tas 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    taz 0.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0   
+Tableau taz6
+                          *b *d *z *g *voice 
+    tas 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    taz 0.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0   
+Tableau taz7
+                          *b *d *z *g *voice 
+    tas 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    taz 0.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0   
+Tableau taz7
+                          *b *d *z *g *voice 
+    tas 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    taz 0.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0   
+Tableau taz8
+                          *b *d *z *g *voice 
+    tas 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    taz 1.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0   
+Tableau taz8
+                          *b *d *z *g *voice 
+    tas 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    taz 1.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0   
+Tableau taz9
+                          *b *d *z *g *voice taz 
+    tas 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    1  
+    taz 1.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0    0  
+Tableau taz9
+                          *b *d *z *g *voice taz 
+    tas 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    1  
+    taz 1.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0    0  
+Tableau taz10
+                          *b *d *z *g *voice 
+    tas 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    taz 1.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0   
+Tableau taz10
+                          *b *d *z *g *voice 
+    tas 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    taz 1.0   EMPTY EMPTY 0.0 0.0 1.0 0.0  1.0   
+Tableau tag
+                          *b *d *z *g *voice tak 
+    tak 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    tag 0.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0    1  
+Tableau tag
+                          *b *d *z *g *voice tak 
+    tak 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    tag 0.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0    1  
+Tableau tag1
+                          *b *d *z *g *voice 
+    tak 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tag 0.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0   
+Tableau tag1
+                          *b *d *z *g *voice 
+    tak 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tag 0.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0   
+Tableau tag2
+                          *b *d *z *g *voice 
+    tak 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tag 0.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0   
+Tableau tag2
+                          *b *d *z *g *voice 
+    tak 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tag 0.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0   
+Tableau tag3
+                          *b *d *z *g *voice tak 
+    tak 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    tag 0.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0    1  
+Tableau tag3
+                          *b *d *z *g *voice tak 
+    tak 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    0  
+    tag 0.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0    1  
+Tableau tag4
+                          *b *d *z *g *voice 
+    tak 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tag 0.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0   
+Tableau tag4
+                          *b *d *z *g *voice 
+    tak 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tag 0.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0   
+Tableau tag5
+                          *b *d *z *g *voice 
+    tak 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tag 0.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0   
+Tableau tag5
+                          *b *d *z *g *voice 
+    tak 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tag 0.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0   
+Tableau tag6
+                          *b *d *z *g *voice 
+    tak 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tag 0.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0   
+Tableau tag6
+                          *b *d *z *g *voice 
+    tak 1.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tag 0.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0   
+Tableau tag7
+                          *b *d *z *g *voice 
+    tak 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tag 1.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0   
+Tableau tag7
+                          *b *d *z *g *voice 
+    tak 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tag 1.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0   
+Tableau tag8
+                          *b *d *z *g *voice 
+    tak 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tag 1.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0   
+Tableau tag8
+                          *b *d *z *g *voice 
+    tak 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tag 1.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0   
+Tableau tag9
+                          *b *d *z *g *voice tag 
+    tak 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    1  
+    tag 1.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0    0  
+Tableau tag9
+                          *b *d *z *g *voice tag 
+    tak 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0    1  
+    tag 1.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0    0  
+Tableau tag10
+                          *b *d *z *g *voice 
+    tak 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tag 1.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0   
+Tableau tag10
+                          *b *d *z *g *voice 
+    tak 0.0   EMPTY EMPTY 0.0 0.0 0.0 0.0  0.0   
+    tag 1.0   EMPTY EMPTY 0.0 0.0 0.0 1.0  1.0   
