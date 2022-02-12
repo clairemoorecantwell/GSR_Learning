@@ -105,10 +105,6 @@ class Features:
 			S.append(self.exists(segs[s],add=True))
 		return "".join([str(s) for s in S])
 
-
-
-
-
 class candidate:
 	def __init__(self,c,violations,observedProb,surfaceForm=None): # removed: activitylevel
 		self.c = c # the actual candidate
@@ -127,7 +123,6 @@ class candidate:
 		newC.harmony = self.harmony
 		newC.predictedProb = self.predictedProb
 		return newC
-
 
 class richCand(candidate):
 	def __init__(self,c,violations,observedProb,segsDict,segsList,segsOrder=None,activitys=None,suprasegmentals = None,surfaceForm=None,operations=None):
@@ -174,8 +169,6 @@ class richCand(candidate):
 			return 0
 
 		return 1
-
-
 
 
 def exampleCand():
@@ -679,10 +672,12 @@ class Grammar:
 				out +="\n" + "\t".join([str(w) for w in ep])
 			f.write(out)
 
+		print("learning complete")
 		with open("PFCs.txt","w") as f:
 			out = "\t".join(PFC_list)
 			for ep in PFCs_w:
-				out +="\n" + "\t".join([str(pfc) for pfc in ep])
+				print("Hello")
+				out +="\n" + "\t".join([str(pfc) for pfc in ep]+["0" for i in PFC_list[len(ep):]])
 			f.write(out)
 
 
