@@ -282,7 +282,7 @@ class Tableaux:
 class Tableau:
 	def __init__(self,tag,prob=1,hiddenStructure=False,lexemes = [],w = []):
 		self.tag = tag # Human-readable tag to let the user know which tableau this is
-		self.prob = prob
+		self.prob = prob # How often do we see this input (observed)
 		self.candidates = [] # To be filled during tableau creation
 		self.probDenom = 1 # denominator for calculating MaxEnt prob of each candidate
 						   # this is the sum of each exponentiated harmony score
@@ -291,7 +291,7 @@ class Tableau:
 		self.obsProbsList = [] 	# list of each candidate's observed probability; used in sampling
 		self.HList = [] # list of each candidate's harmony; for straight or Noisy HG
 		self.winner = None
-		self.constraintNames = None
+		self.constraintList = None # this will generally wind up being a bunch of strings, followed by a bunch of tuples, for the PFCs
 		self.hiddenStructure = hiddenStructure
 		self.surfaceCands = [] # a place to hold the unique surface candidates
 		# Note: if hidden structure is active, then obsProbsList corresponds to surfaceCands.
@@ -299,6 +299,7 @@ class Tableau:
 		self.lexemes = lexemes  # only required for applyPFCs()
 		self.w = w
 		self.pfcIndex = len(self.w)
+		self.negCrossEntropy = 0 #Just for this tableau.  Can multiply by self.prob to get neg log likelihood
 	def __repr__(self):
 		return "Tableau object '" + self.tag + "' with " + str(len(self.candidates)) + " candidates.  Winner: " + str(self.winner) + "\n" + "Attributes: tag, prob, candidates, probDenom, predProbsList, HList, obsProbsList, surfaceCands, hiddenStructure, constraintNames, winner"
 	def __str__(self):
@@ -308,10 +309,12 @@ class Tableau:
 		form = '{:3s} ' + cform + '{:5s} '*3 + vform*len(self.candidates[0].violations)
 		out = "Tableau " + self.tag + "\n"
 		# expect constraintNames to be a list of strings
-		if self.constraintNames:
-			vform = ''.join([('{:^' + str(len(i)) + 's} ') for i in self.constraintNames])
+		if self.constraintList:
+			names = [i[0] if type(i)==tuple else i for i in self.constraintList ]
+			print(names)
+			vform = ''.join([('{:^' + str(len(i)) + 's} ') for i in names])
 			form = '{:3s} ' + cform + '{:5s} '*3 + vform
-			out += form.format(*[" "]*5 + [str(j) for j in self.constraintNames])
+			out += form.format(*[" "]*5 + [str(j) for j in names])
 		for i in range(0, len(self.candidates)):
 			w = " "
 			if self.candidates[i-1].c == self.winner:
@@ -326,16 +329,16 @@ class Tableau:
 		# add in lexeme labels somewhere
 		# create an 'input' column
 		self.predictProbsMaxEnt(w)
-		out = '\t'.join(["input","candidate","obs.prob","pred.prob","H"]+self.constraintNames)
+		out = '\t'.join(["input","candidate","obs.prob","pred.prob","H"]+[i[0] if type(i)==tuple else i for i in self.constraintList])
 		out += '\n' + '\t'.join(["","","","",""]+[str(j) for j in w])
 		for c in self.candidates:
 			out += '\n' + '\t'.join([str(j) for j in [self.tag,c.c,c.observedProb,c.predictedProb,c.harmony]+c.violations])
 
 		return out
 	def copy(self):
-		newT = Tableau(self.tag,self.prob,self.hiddenStructure)
+		newT = Tableau(self.tag,self.prob,self.hiddenStructure,self.lexemes,self.w)
 		newT.winner = self.winner
-		newT.constraintNames = self.constraintNames
+		newT.constraintList = self.constraintList
 		for c in self.candidates:
 			newT.addCandidate(c.copy())
 
@@ -400,15 +403,22 @@ class Tableau:
 
 	def applyPFCs(self):
 		self.pfcIndex = len(self.w)
+		# fill out constraintList with placeholders if it's not long enough
+		if len(self.constraintList)<len(self.w):
+			self.constraintsList+=["C"]*(len(self.w)-len(self.constraintList))
+		if len(self.constraintList)>len(self.w):
+			print("WARNING: you have more constraint names than constraint weights in tableau " + self.tag)
+
 		for lexeme in self.lexemes:
 			for pfc in lexeme.PFCs:
+				#print(pfc.name)
 				for cand in self.candidates:
 					parsed = cand.c.split("_")
 					try:
-						cand.violations.append(pfc.evaluate(parsed[lexemes.index(lexeme)]))
+						cand.violations.append(pfc.evaluate(parsed[self.lexemes.index(lexeme)]))
 					except:
 						print("Failed to apply PFC: "+pfc.name)
-				self.constraintNames.append(pfc.name)
+				self.constraintList.append((pfc.name,pfc))
 				self.w.append(pfc.w)
 
 	def calculateHarmony(self, w):
@@ -540,7 +550,7 @@ class Grammar:
 
 	def update(self,datum): # datum is an entry from playlist
 		# Start with a learning datum
-		# Decay the existing PFCs affiliated with each lexeme:
+		# Decay the existing PFCs affiliated with each lexeme, and remove zero weighted ones
 		for lex in datum[0]:
 			lex.decayPFC(self.t,self.PFC_decay,decayType="static")
 			lex.lastSeen = self.t
@@ -550,12 +560,12 @@ class Grammar:
 				break
 
 		# grab, create, or fill out the tableau
-		tab, constraintList, w= self.makeTableau(datum)
+		tab= self.makeTableau(datum)
 		#print(constraintList)
 		#print(tab)
 		#print(w)
 
-		e, obs, pred = tab.compareObsPred(w)
+		e, obs, pred = tab.compareObsPred(tab.w)
 
 		#print(e,obs.c,pred.c,obs.violations,pred.violations,obs.harmony,obs.predictedProb,pred.harmony,pred.predictedProb)
 		#print(constraintList)
@@ -565,10 +575,9 @@ class Grammar:
 			self.w=[i if i>0 else 0 for i in self.w] # limit to positve constraint weights
 
 			# update existing PFCs
-			if len(constraintList)>len(self.w):
-				for pfc,p,o in zip(constraintList[len(self.w):],pred.violations[len(self.w):],obs.violations[len(self.w):]):
-					pfc[1].w+=(p-o)*self.PFC_lrate
-					pfc[1].w = 0 if pfc[1].w<0 else pfc[1].w
+			for pfc,p,o in zip(tab.constraintList[tab.pfcIndex:],pred.violations[tab.pfcIndex:],obs.violations[tab.pfcIndex:]):
+				pfc[1].w+=(p-o)*self.PFC_lrate
+				pfc[1].w = 0 if pfc[1].w<0 else pfc[1].w
 
 			# induce new PFCs
 			newPFCs = []
@@ -659,8 +668,8 @@ class Grammar:
 
 		results = []
 		for datum in self.trainingData.learnData:
-			tab, constraints, w = self.makeTableau(datum)
-			results.append(tab.toFile(w))
+			tab = self.makeTableau(datum)
+			results.append(tab.toFile(tab.w))
 
 		with open("output.txt",'w') as f:
 			f.write('\n'.join(results))
@@ -672,11 +681,10 @@ class Grammar:
 				out +="\n" + "\t".join([str(w) for w in ep])
 			f.write(out)
 
-		print("learning complete")
+		#print("learning complete")
 		with open("PFCs.txt","w") as f:
 			out = "\t".join(PFC_list)
 			for ep in PFCs_w:
-				print("Hello")
 				out +="\n" + "\t".join([str(pfc) for pfc in ep]+["0" for i in PFC_list[len(ep):]])
 			f.write(out)
 
@@ -707,22 +715,21 @@ class Grammar:
 
 		# Given a tableau, that we just need to fill out
 		# begin initializing the new tableau with copies of things
-		constraintList = self.trainingData.constraintNames[:]
-		w = self.w[:]
 		# here, grabbing the tableau from the training data that corresponds to the input string in our datum
 		tab = self.trainingData.tableaux[self.trainingData.tableauxTags.index(datum[2])].copy()
+		tab.w = self.w[:]
+		tab.constraintList = self.trainingData.constraintNames[:]
 		if method == "partial":
 			# Assign violations of dynamic constraints
-			constraintList +=[c.name for c in self.constraints]
+			tab.constraintList +=[c.name for c in self.constraints]
 			for cand in tab.candidates:
 				for con in self.constraints:
 					cand.violations.append(con.assignViolations(cand,self.featureSet))
 
-		tab.constraintNames = constraintList
 		tab.applyPFCs()
 
 
-		return tab, constraintList, w
+		return tab#, tabconstraintList, w
 
 
 
@@ -756,15 +763,7 @@ class lexeme:
 		return out
 
 	def decayPFC(self,t,decayRate,decayType='static'):
-		for pfc in self.PFCs:
-			if decayType=='static':
-				pfc.w-=(float(t)-self.lastSeen)*decayRate
-			elif decayType=='L1':
-				for i in range(self.lastSeen,t):
-					pfc.w -=decayRate*pfc.w
-			elif decayType=='L2':
-				for i in range(self.lastSeen,t):
-					pfc.w -=(decayRate/2)*(pfc.w**2)
+		self.PFCs = [pfc for pfc in self.PFCs if pfc.w>0]
 
 	def toRichCand(self,featureSet):
 		''' produces the faithful candidate for just this one lexeme, given a Feature object, featureSet '''
