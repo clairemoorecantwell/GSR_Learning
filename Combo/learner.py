@@ -585,6 +585,8 @@ class Grammar:
 				# parse each candidate into morphemes
 				parsed = obs.c.split("_")
 				if len(parsed)!=len(datum[0]):
+					print(parsed)
+					print(datum[0])
 					print("ERROR: pseudo-PFC cannot be induced because morphemes in the candidate cannote be aligned with morphemes in the input")
 					exit
 				for i in range(0,len(datum[0])):
