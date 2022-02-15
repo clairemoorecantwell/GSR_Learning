@@ -1,51 +1,121 @@
-input	candidate	surface	obs.prob	tab.prob	NoCoda	*hiatus	Max	Dep	Uniformity
-petit_ami	petit(lr)ami	petitami	1	1	0	0	1	0	1
-petit_ami	petit(l)ami	petitami	1	1	0	0	0.5	0.5	0
-petit_ami	petit(r)ami	petitami	1	1	0	0	0.5	0.5	0
-petit_ami	petiami	petiami	0	1	0	1	0	0	0
-petit_ami	petizami	petizami	0	1	0	0	0.5	0.5	0
-petit_ami	petinami	petinami	0	1	0	0	0.5	0.5	0
-petit_ami	petiqami	petiqami	0	1	0	0	0	1	0
-petit_ami	petittami	petittami	0	1	1	0	1	1	0
-petit_ami	petitzami	petitzami	0	1	1	0	1	1	0
-petit_ami	petitnami	petitnami	0	1	1	0	1	1	0
-le_ami	lez(lr)ami	lezami	1	1	0	0	1	0	1
-le_ami	lez(l)ami	lezami	1	1	0	0	0.5	0.5	0
-le_ami	lez(r)ami	lezami	1	1	0	0	0.5	0.5	0
-le_ami	leami	leami	0	1	0	1	0	0	0
-le_ami	letami	letami	0	1	0	0	0.5	0.5	0
-le_ami	lenami	lenami	0	1	0	0	0.5	0.5	0
-le_ami	leqami	leqami	0	1	0	0	0	1	0
-le_ami	leztami	leztami	0	1	1	0	1	1	0
-le_ami	lezzami	lezzami	0	1	1	0	1	1	0
-le_ami	leznami	leznami	0	1	1	0	1	1	0
-un_ami	un(lr)ami	unami	1	1	0	0	1	0	1
-un_ami	un(l)ami	unami	1	1	0	0	0.5	0.5	0
-un_ami	un(r)ami	unami	1	1	0	0	0.5	0.5	0
-un_ami	uami	uami	0	1	0	1	0	0	0
-un_ami	utami	utami	0	1	0	0	0.5	0.5	0
-un_ami	uzami	uzami	0	1	0	0	0.5	0.5	0
-un_ami	uqami	uqami	0	1	0	0	0	1	0
-un_ami	untami	untami	0	1	1	0	1	1	0
-un_ami	unzami	unzami	0	1	1	0	1	1	0
-un_ami	unnami	unnami	0	1	1	0	1	1	0
-joli_ami	joliami	joliami	1	1	0	1	0	0	0
-joli_ami	jolitami	jolitami	0	1	0	0	0.5	0.5	0
-joli_ami	jolizami	jolizami	0	1	0	0	0.5	0.5	0
-joli_ami	jolinami	jolinami	0	1	0	0	0.5	0.5	0
-joli_ami	joliqami	joliqami	0	1	0	0	0	1	0
-joli_ami	jolittami	jolittami	0	1	1	0	0.5	1.5	0
-petit_hero	petiero	petiero	1	1	0	1	0	0	0
-petit_hero	petitero	petitero	0	1	0	0	0.5	0.5	0
-petit_hero	petizero	petizero	0	1	0	0	0	1	0
-petit_hero	petinero	petinero	0	1	0	0	0	1	0
-petit_hero	petiqero	petiqero	0	1	0	0	0	1	0
-petit_hero	petittero	petittero	0	1	1	0	0.5	1.5	0
-petite_kope	petitkope	petitkope	1	1	1	0	2	0	0
-petite_kope	petikope	petikope	0	1	0	0	1	0	0
-petite_kope	petiope	petiope	0	1	0	1	0	0	0
-petite_kope	petizkope	petizkope	0	1	1	0	1	1	0
-petite_traktur	petittraktur	petittraktur	1	1	1	0	2	0	0
-petite_traktur	petitraktur	petitraktur	0	1	0	0	1	0	1
-petite_traktur	petiaktur	petiaktur	0	1	0	1	0	0	0
-petite_traktur	petiztraktur	petiztraktur	0	1	1	0	1	1	0
+input	lexeme	candidate	obs.prob	tab.prob	*voice	*VTV
+pab1	pap	pab	0	1	1	0
+pab1	pap	pap	1	1	0	1
+pab2	pap	pab	0	1	1	0
+pab2	pap	pap	1	1	0	1
+pab3	pap	pab	0	1	1	0
+pab3	pap	pap	1	1	0	1
+pab4	pap	pab	0	1	1	0
+pab4	pap	pap	1	1	0	1
+pab5	pap	pab	0	1	1	0
+pab5	pap	pap	1	1	0	1
+pab6	pap	pab	0	1	1	0
+pab6	pap	pap	1	1	0	1
+pab7	pap	pab	0	1	1	0
+pab7	pap	pap	1	1	0	1
+pab8	pap	pab	0	1	1	0
+pab8	pap	pap	1	1	0	1
+pab9	pap	pab	0	1	1	0
+pab9	pap	pap	1	1	0	1
+pab10	pap	pab	0	1	1	0
+pab10	pap	pap	1	1	0	1
+pab11	pap	pab	0	1	1	0
+pab11	pap	pap	1	1	0	1
+pab12	pap	pab	0	1	1	0
+pab12	pap	pap	1	1	0	1
+pab13	pap	pab	0	1	1	0
+pab13	pap	pap	1	1	0	1
+pab14	pap	pab	0	1	1	0
+pab14	pap	pap	1	1	0	1
+pab15	pap	pab	0	1	1	0
+pab15	pap	pap	1	1	0	1
+pab16	pap	pab	0	1	1	0
+pab16	pap	pap	1	1	0	1
+pab17	pap	pab	0	1	1	0
+pab17	pap	pap	1	1	0	1
+pab18	pap	pab	0	1	1	0
+pab18	pap	pap	1	1	0	1
+pab19	pap	pab	0	1	1	0
+pab19	pap	pap	1	1	0	1
+pab20	pap	pab	0	1	1	0
+pab20	pap	pap	1	1	0	1
+pab21	pab	pab	1	1	1	0
+pab21	pab	pap	0	1	0	1
+pab22	pab	pab	1	1	1	0
+pab22	pab	pap	0	1	0	1
+pab23	pab	pab	1	1	1	0
+pab23	pab	pap	0	1	0	1
+pab24	pab	pab	1	1	1	0
+pab24	pab	pap	0	1	0	1
+pab25	pab	pab	1	1	1	0
+pab25	pab	pap	0	1	0	1
+pab26	pab	pab	1	1	1	0
+pab26	pab	pap	0	1	0	1
+pab27	pab	pab	1	1	1	0
+pab27	pab	pap	0	1	0	1
+pab28	pab	pab	1	1	1	0
+pab28	pab	pap	0	1	0	1
+pab29	pab	pab	1	1	1	0
+pab29	pab	pap	0	1	0	1
+pab30	pab	pab	1	1	1	0
+pab30	pab	pap	0	1	0	1
+pab1_a	pap_a	pab_a	0	1	1	0
+pab1_a	pap_a	pap_a	1	1	0	1
+pab2_a	pap_a	pab_a	0	1	1	0
+pab2_a	pap_a	pap_a	1	1	0	1
+pab3_a	pap_a	pab_a	0	1	1	0
+pab3_a	pap_a	pap_a	1	1	0	1
+pab4_a	pap_a	pab_a	0	1	1	0
+pab4_a	pap_a	pap_a	1	1	0	1
+pab5_a	pap_a	pab_a	0	1	1	0
+pab5_a	pap_a	pap_a	1	1	0	1
+pab6_a	pap_a	pab_a	0	1	1	0
+pab6_a	pap_a	pap_a	1	1	0	1
+pab7_a	pap_a	pab_a	0	1	1	0
+pab7_a	pap_a	pap_a	1	1	0	1
+pab8_a	pap_a	pab_a	0	1	1	0
+pab8_a	pap_a	pap_a	1	1	0	1
+pab9_a	pap_a	pab_a	0	1	1	0
+pab9_a	pap_a	pap_a	1	1	0	1
+pab10_a	pap_a	pab_a	0	1	1	0
+pab10_a	pap_a	pap_a	1	1	0	1
+pab11_a	pap_a	pab_a	1	1	1	0
+pab11_a	pap_a	pap_a	0	1	0	1
+pab12_a	pap_a	pab_a	1	1	1	0
+pab12_a	pap_a	pap_a	0	1	0	1
+pab13_a	pap_a	pab_a	1	1	1	0
+pab13_a	pap_a	pap_a	0	1	0	1
+pab14_a	pap_a	pab_a	1	1	1	0
+pab14_a	pap_a	pap_a	0	1	0	1
+pab15_a	pap_a	pab_a	1	1	1	0
+pab15_a	pap_a	pap_a	0	1	0	1
+pab16_a	pap_a	pab_a	1	1	1	0
+pab16_a	pap_a	pap_a	0	1	0	1
+pab17_a	pap_a	pab_a	1	1	1	0
+pab17_a	pap_a	pap_a	0	1	0	1
+pab18_a	pap_a	pab_a	1	1	1	0
+pab18_a	pap_a	pap_a	0	1	0	1
+pab19_a	pap_a	pab_a	1	1	1	0
+pab19_a	pap_a	pap_a	0	1	0	1
+pab20_a	pap_a	pab_a	1	1	1	0
+pab20_a	pap_a	pap_a	0	1	0	1
+pab21_a	pap_a	pab_a	1	1	1	0
+pab21_a	pap_a	pap_a	0	1	0	1
+pab22_a	pap_a	pab_a	1	1	1	0
+pab22_a	pap_a	pap_a	0	1	0	1
+pab23_a	pap_a	pab_a	1	1	1	0
+pab23_a	pap_a	pap_a	0	1	0	1
+pab24_a	pap_a	pab_a	1	1	1	0
+pab24_a	pap_a	pap_a	0	1	0	1
+pab25_a	pap_a	pab_a	1	1	1	0
+pab25_a	pap_a	pap_a	0	1	0	1
+pab26_a	pap_a	pab_a	1	1	1	0
+pab26_a	pap_a	pap_a	0	1	0	1
+pab27_a	pap_a	pab_a	1	1	1	0
+pab27_a	pap_a	pap_a	0	1	0	1
+pab28_a	pap_a	pab_a	1	1	1	0
+pab28_a	pap_a	pap_a	0	1	0	1
+pab29_a	pap_a	pab_a	1	1	1	0
+pab29_a	pap_a	pap_a	0	1	0	1
+pab30_a	pap_a	pab_a	1	1	1	0
+pab30_a	pap_a	pap_a	0	1	0	1
