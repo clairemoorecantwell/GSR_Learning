@@ -335,6 +335,7 @@ class Tableau:
 			out += '\n' + '\t'.join([str(j) for j in [self.tag,c.c,c.observedProb,c.predictedProb,c.harmony]+c.violations])
 
 		return out
+		
 	def copy(self):
 		newT = Tableau(self.tag,self.prob,self.hiddenStructure,self.lexemes,self.w)
 		newT.winner = self.winner
@@ -567,11 +568,12 @@ class Grammar:
 
 		e, obs, pred = tab.compareObsPred(tab.w)
 
-		#print(e,obs.c,pred.c,obs.violations,pred.violations,obs.harmony,obs.predictedProb,pred.harmony,pred.predictedProb)
+
 		#print(constraintList)
 		if e:
+			#print(e,tab.tag, obs.c,pred.c,obs.violations,pred.violations,obs.harmony,obs.predictedProb,pred.harmony,pred.predictedProb)
 			#update general weight: perceptron update
-			self.w = [wt+(p-o)*self.learningRate for wt,p,o in zip(self.w,pred.violations,obs.violations) ]
+			self.w = [float(wt)+(float(p)-float(o))*self.learningRate for wt,p,o in zip(self.w,pred.violations,obs.violations) ]
 			self.w=[i if i>0 else 0 for i in self.w] # limit to positve constraint weights
 
 			# update existing PFCs
@@ -584,16 +586,18 @@ class Grammar:
 			if self.PFC_type=="pseudo":
 				# parse each candidate into morphemes
 				parsed = obs.c.split("_")
-				if len(parsed)!=len(datum[0]):
+				parsedPred = pred.c.split("_")
+				if len(parsed)!=len(datum[0]) or len(parsedPred)!=len(datum[0]):
 					print(parsed)
 					print(datum[0])
 					print("ERROR: pseudo-PFC cannot be induced because morphemes in the candidate cannote be aligned with morphemes in the input")
 					exit
 				for i in range(0,len(datum[0])):
-					newPFC = PFC(self.PFC_startW,surfaceString=parsed[i])
-					if newPFC not in datum[0][i].PFCs:
-						datum[0][i].PFCs.append(newPFC)
-						print("Added ", datum[0][i].tag, newPFC.name)
+					if parsed[i] != parsedPred[i]: #localize the error to the morpheme we are considering
+						newPFC = PFC(self.PFC_startW,surfaceString=parsed[i])
+						if newPFC not in datum[0][i].PFCs:
+							datum[0][i].PFCs.append(newPFC)
+							print("Added ", datum[0][i].tag, newPFC.name)
 
 
 			elif self.PFC_type=="full":
@@ -765,6 +769,15 @@ class lexeme:
 		return out
 
 	def decayPFC(self,t,decayRate,decayType='static'):
+		for pfc in self.PFCs:
+			if decayType=='static':
+				pfc.w-=(float(t)-self.lastSeen)*decayRate
+			elif decayType=='L1':
+				for i in range(self.lastSeen,t):
+					pfc.w -=decayRate*pfc.w
+			elif decayType=='L2':
+				for i in range(self.lastSeen,t):
+					pfc.w -=(decayRate/2)*(pfc.w**2)
 		self.PFCs = [pfc for pfc in self.PFCs if pfc.w>0]
 
 	def toRichCand(self,featureSet):
