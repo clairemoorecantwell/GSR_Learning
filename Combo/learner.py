@@ -335,7 +335,7 @@ class Tableau:
 			out += '\n' + '\t'.join([str(j) for j in [self.tag,c.c,c.observedProb,c.predictedProb,c.harmony]+c.violations])
 
 		return out
-		
+
 	def copy(self):
 		newT = Tableau(self.tag,self.prob,self.hiddenStructure,self.lexemes,self.w)
 		newT.winner = self.winner
@@ -520,6 +520,7 @@ class Grammar:
 		self.generateCandidates = generateCandidates # defaults to False, meaning you'll use the given candidates IF they exist
 		self.addViolations = addViolations # whether or not to use the constraint file to add extra violations to each candidate
 		self.PFC_type = PFC_type # options are "none", "pseudo", "full"
+		self.p_useListed = 0.5
 
 	def createLearningPlaylist(self,n):
 		# n is total number of learning simulations
@@ -551,8 +552,12 @@ class Grammar:
 
 	def update(self,datum): # datum is an entry from playlist
 		# Start with a learning datum
+		lexemes = datum[0]
+		# First, determine if a complex listed for exists in the lexicon (self.trainingData.lexicon)
+
+
 		# Decay the existing PFCs affiliated with each lexeme, and remove zero weighted ones
-		for lex in datum[0]:
+		for lex in lexemes:
 			lex.decayPFC(self.t,self.PFC_decay,decayType="static")
 			lex.lastSeen = self.t
 			lex.freq += 1
@@ -663,7 +668,7 @@ class Grammar:
 
 			grammar_constraints_w.append(self.w)
 			currentPFC_w = [0 for i in PFCs_w[-1]] if len(PFC_list)>0 else []
-			for lexeme in self.trainingData.lexicon:
+			for lexeme in self.trainingData.lexicon.values():
 				for pfc in lexeme.PFCs:
 					name = lexeme.tag + "_" + pfc.name
 					if name not in PFC_list:
@@ -704,6 +709,10 @@ class Grammar:
 		# "partial": use user-defined candidates, but add violations of a few markedness constraints
 		# "full": completely user-defined, except for perhaps the PFCs
 
+		listedTag = "_".join(datum[0])
+		if listedTag in self.trainingData.lexicon:
+			if random.random()< self.p_useListed:
+				lexemes = self.trainingData.lexicon[listedTag]
 		# Determine the creation method, and make sure we have everything for it
 		if not self.generateCandidates:
 			if not self.addViolations:
@@ -715,7 +724,7 @@ class Grammar:
 				exit
 		else:
 			if self.constraints and self.operations:
-				return createTableau(datum[0],self.constraints,self.operations,self.featureSet,datum[1],w=self.w[:])
+				return createTableau(lexemes,self.constraints,self.operations,self.featureSet,datum[1],w=self.w[:])
 			else:
 				print("ERROR: you cannot generate candidates without predefined operations and constraints")
 
@@ -974,8 +983,7 @@ class PFC: #Contains function(s) for calculating a PFC's violations
 class trainingData:
 	'''essentially, a list of lexeme sets paired with correct surface forms, and frequencies '''
 	def __init__(self,filename):
-		self.lexicon = [] # a list of lexemes
-		self.lexTags = [] # tags belonging to the lexemes in lexicon
+		self.lexicon = {} # dictionary of {tag: lexeme}
 		self.learnData = [] # each entry is a list: [lexemes,surface].  lexemes is itself a list, of all lexemes involved in the entry
 		self.sampler = [] # summed to 1, sampler for each learnData entry
 		                  # derived from either obs.prob, or tab.prob*obs.prob, if tab.prob is present
@@ -1075,14 +1083,14 @@ class trainingData:
 
 			lexList = [] #to be filled with lexeme objects
 			for item,sp in zip(lex,splex):
-				if item not in self.lexTags:
+				if item not in self.lexicon:  # changed lexicon to a dictionary
 					if specialLex:
-						self.lexicon.append(lexeme(item,[character for character in sp[0]]))
-						self.lexicon[-1].activitys = sp[1]
+						self.lexicon[item] = lexeme(item,[character for character in sp[0]])
+						self.lexicon[item].activitys = sp[1]
 					else:
-						self.lexicon.append(lexeme(item,[character for character in sp]))
-					self.lexTags.append(item)
-				lexList.append(self.lexicon[self.lexTags.index(item)])
+						self.lexicon[item] = lexeme(item,[character for character in sp])
+
+				lexList.append(self.lexicon[item])
 
 
 			if inpt not in inpt_s: #If we haven't seen this input before

@@ -1,0 +1,620 @@
+persp(x,y,z,theta=40)
+persp(x,y,z,theta=50)
+persp(x,y,z,theta=60)
+persp(x,y,z,theta=70)
+persp(x,y,z,theta=70,phi=10)
+persp(x,y,z,theta=70,phi=-20)
+persp(x,y,z,theta=70,phi=20)
+persp(x,y,z,theta=70,phi=30)
+persp(x,y,z,theta=70,phi=15)
+persp(x,y,z,theta=70,phi=20)
+persp(x,y,z,theta=40,phi=20)
+persp(x,y,z,theta=40,phi=20,ticktype='detailed')
+persp(x,y,z,theta=40,phi=20,ticktype='detailed',xlab=mu)
+persp(x,y,z,theta=40,phi=20,ticktype='detailed',xlab="sd",ylab="mean")
+persp(x,y,z,theta=40,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=(-2e+05,0))
+persp(x,y,z,theta=40,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=(-200000,0))
+persp(x,y,z,theta=40,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-200000,0))
+persp(x,y,z,theta=40,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-20000,0))
+persp(x,y,z,theta=40,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-200000,0))
+persp(x,y,z,theta=40,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-100000,0))
+persp(x,y,z,theta=40,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-100000,-50000))
+persp(x,y,z,theta=170,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-100000,-50000))
+persp(x,y,z,theta=50,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-100000,-50000))
+persp(x,y,z,theta=50,phi=40,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-100000,-50000))
+persp(x,y,z,theta=50,phi=30,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-100000,-50000))
+persp(x,y,z,theta=50,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-100000,-50000))
+x<- 1:60#
+y<- 4:160
+z = c()#
+for (i in 1:length(x)){#
+	for (j in 1:length(y)){#
+		z = c(z,l(x[i],y[j]))#
+	}#
+}#
+z = matrix(z,nrow=length(x),ncol=length(y),byrow=TRUE)#
+persp(x,y,z,theta=50,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-100000,-50000))
+?persp
+persp(x,y,z,theta=50,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-80000,-50000))
+persp(x,y,z,theta=50,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-65000,-50000))
+persp(x,y,z,theta=50,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-65000,-55000))
+persp(x,y,z,theta=50,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-65000,-57000))
+persp(x,y,z,theta=50,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-65000,-52000))
+persp(x,y,z,theta=50,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-65000,-52000),xpd=TRUE)
+max(z)
+?index
+which(a=max(z), arr.ind=TRUE)
+matrix.index
+?matrixindex
+?matrix.index
+which(a==max(z), arr.ind=TRUE)
+?which
+which(max(z), arr.ind=TRUE)
+which(z=max(z), arr.ind=TRUE)
+which(z==max(z), arr.ind=TRUE)
+z
+max(z)
+which(z==max(z), arr.ind=TRUE)
+hline(x=48)
+vline(x=48)
+abline(x=48)
+?abline
+abline(48)
+abline(48,0)
+abline(48,0,0)
+persp(x,y,z,theta=60,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-65000,-52000),xpd=TRUE)
+abline(48,0,0)
+plot3d(x,y,z,theta=60,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-65000,-52000),xpd=TRUE)
+library(rgl)
+library(rgl)#
+plot3d(x,y,z,theta=60,phi=20,ticktype='detailed',xlab="sd",ylab="mean",zlim=c(-65000,-52000),xpd=TRUE)
+?optim
+x = seq(-50,50)
+plot(x,1/(1+e^(-x)))
+plot(x,1/(1+exp(-x)))
+plot(x,2/(1+exp(-x)))
+plot(x,1/(1+exp(-x)))
+plot(x,1/(2+exp(-x)))
+x = seq(-10,10)
+plot(x,1/(2+exp(-x)))
+x = seq(-10,10,by=0.1)
+plot(x,1/(2+exp(-x)))
+plot(x,1/(10+exp(-x)))
+plot(x,10/(10+exp(-x)))
+plot(x,10/(10+exp(-2x)))
+plot(x,10/(10+exp(-2*x)))
+plot(x,x/sqrt(1+x^2)
+)
+plot(x,x/sqrt(1+x^2),type='l')
+plot(x,2x/sqrt(1+x^2),type='l')
+plot(x,2*x/sqrt(1+x^2),type='l')
+plot(x,10*x/sqrt(1+x^2),type='l')
+plot(x,x/sqrt(5+x^2),type='l')
+plot(x,x/2*sqrt(5+x^2),type='l')
+plot(x,x/sqrt(5+x^2),type='l')
+plot(x,10*x/sqrt(5+x^2),type='l')
+plot(x,(1/2)*x/sqrt(5+x^2),type='l')
+plot(x,(1/2)*x/sqrt(5+x^2)+0.5,type='l')
+plot(x,(1/2)*x/sqrt(10+x^2)+0.5,type='l')
+plot(x,(1/2)*x/sqrt(20+x^2)+0.5,type='l')
+plot(x,(1/2)*x/sqrt(30+x^2)+0.5,type='l')
+plot(x,(1/2)*x/sqrt(10+x^2)+0.5,type='l')
+plot(x,(1/2)*x/sqrt(5+x^2)+0.5,type='l')
+x = -5
+(1/2)*x/sqrt(5+x^2)+0.5
+(1/2)*x/sqrt(1+x^2)+0.5
+plot(x,(1/2)*x/sqrt(20+x^2)+0.5,type='l')
+plot(x,(1/2)*x/sqrt(10+x^2)+0.5,type='l')
+plot(x,(1/2)*x/sqrt(1+x^2)+0.5,type='l')
+x = seq(-10,10,by=0.1)
+plot(x,(1/2)*x/sqrt(1+x^2)+0.5,type='l')
+plot(x,(1/2)*x/sqrt(.2+x^2)+0.5,type='l')
+plot(x,(1/2)*x/sqrt(.1+x^2)+0.5,type='l')
+x = seq(-10,10,by=0.1)#
+plot(x,(1/2)*x/sqrt(.1+x^2)+0.5,type='l')#
+points(x,(1/2)*x/sqrt(1+x^2)+0.5,type='l',col='blue')#
+points(x,(1/2)*x/sqrt(3+x^2)+0.5,type='l',col='green')#
+points(x,(1/2)*x/sqrt(5+x^2)+0.5,type='l',col='orange')#
+points(x,(1/2)*x/sqrt(10+x^2)+0.5,type='l',col='red')
+points(x,(1/2)*x/sqrt(20+x^2)+0.5,type='l',col='red')
+points(x,(1/2)*x/sqrt(40+x^2)+0.5,type='l',col='red')
+x = seq(-10,10,by=0.1)#
+plot(x,(1/2)*x/sqrt(.1+x^2)+0.5,type='l')#
+points(x,(1/2)*x/sqrt(1+x^2)+0.5,type='l',col='blue')#
+points(x,(1/2)*x/sqrt(10+x^2)+0.5,type='l',col='green')#
+points(x,(1/2)*x/sqrt(20+x^2)+0.5,type='l',col='orange')#
+points(x,(1/2)*x/sqrt(40+x^2)+0.5,type='l',col='red')
+points(x,(1/2)*x/sqrt(3+x^2)+0.5,type='l',col='blue')
+x = seq(-10,10,by=0.1)#
+plot(x,(1/2)*x/sqrt(.1+x^2)+0.5,type='l')#
+points(x,(1/2)*x/sqrt(3+x^2)+0.5,type='l',col='blue')#
+points(x,(1/2)*x/sqrt(10+x^2)+0.5,type='l',col='green')#
+points(x,(1/2)*x/sqrt(20+x^2)+0.5,type='l',col='orange')#
+points(x,(1/2)*x/sqrt(40+x^2)+0.5,type='l',col='red')
+#inside the quotes enter the path to the file on your machine#
+data=read.table("/Users/moore-cantwell/Desktop/Gondolin/Projects_finished/CanadaBanana/CorpusSearch/newCMU.txt",header=TRUE,colClasses=c('factor'),sep='\t')#
+##################################################
+########### Adding useful columns ################
+##################################################
+data$freq=as.numeric(levels(data$freq))[data$freq]#
+data$nsylls=sapply(as.character(data$stressTrans),nchar)#
+data$weightPattern=paste(data$penultWeight,data$finalWeight)#
+data$weightPattern=as.factor(data$weightPattern)#
+data$mainStress=factor(data$mainStress,levels=c("other","preante","antepenult","penult","final"),ordered=TRUE)#
+data$leftEdgeStress=sapply(data$stressTrans,function(v){#
+	regexpr("1",as.character(v))[1]#
+	})#
+data$initStress=substring(data$stressTrans,1,1)#
+data$singleStress=ifelse(grepl("2",data$stressTrans),0,1)#
+data$penultVowel[data$penultWeight!='other']=ifelse((data$penultWeight[data$penultWeight!='other'] %in% c("-LC","-LCC","-V")),"M","D")#
+data$penultCoda[data$penultWeight!='other']=ifelse((data$penultWeight[data$penultWeight!='other'] %in% c("-V","-VV")),"open",ifelse((data$penultWeight[data$penultWeight!='other'] %in% c("-LC","-TC")),"closed","cluster"))#
+data$penultCoda=as.factor(data$penultCoda)#
+data$penultVowel=as.factor(data$penultVowel)#
+data$penultPossibleCoda[data$penultWeight!='other']=ifelse((data$penultWeight[data$penultWeight!='other'] %in% c("-LC","-LCC","-TC","-TCC"))|(data$finalOnset[data$penultWeight!='other'] %in% c("CC","CCC")),"mayHaveCoda","noCoda")#
+data$penultPossibleCoda=as.factor(data$penultPossibleCoda)#
+data$finalComplexOnset=ifelse((data$finalOnset %in% c("CC","CCC")),"complex","simple")#
+data$finalComplexOnset=as.factor(data$finalComplexOnset)#
+#including tapestry words#
+#data$penultHeaviness=ifelse(data$penultPossibleCoda=='mayHaveCoda'|data$penultVowel=="D","H","L")#
+#data$penultHeaviness=as.factor(data$penultHeaviness)#
+#excluding tapestry words, including digestive words#
+#data$penultHeaviness=ifelse((data$penultPossibleCoda=='mayHaveCoda'&data$mainStress=='penult')|data$penultVowel=="D"|data$penultCoda=='closed'|data$penultCoda=='cluster',"H","L")#
+#data$penultHeaviness=as.factor(data$penultHeaviness)#
+#excluding tapestry words and digestive words#
+data$penultHeaviness=ifelse(data$penultVowel=="D"|data$penultCoda=='closed'|data$penultCoda=='cluster',"H","L")#
+data$penultHeaviness=as.factor(data$penultHeaviness)#
+data$finalTwoV=ifelse(data$finalV=='iy','iy',ifelse(data$finalV=='ah'|data$finalV=='ih','ah','other'))#
+data$finalVowel[data$finalWeight!='other']=ifelse((data$finalWeight[data$finalWeight!='other'] %in% c("-LC","-LCC","-V")),"M","D")#
+data$finalCoda[data$finalWeight!='other']=ifelse((data$finalWeight[data$finalWeight!='other'] %in% c("-V","-VV")),"open",ifelse((data$finalWeight[data$finalWeight!='other'] %in% c("-LC","-TC")),"closed","cluster"))#
+data$penultCoda=as.factor(data$penultCoda)#
+data$penultVowel=as.factor(data$penultVowel)#
+data$finalHeaviness=ifelse(data$finalVowel=="D"|data$finalCoda=='cluster',"H","L")#
+data$finalHeaviness=as.factor(data$finalHeaviness)#
+data$antepenultVowel[data$antepenultWeight!='other']=ifelse((data$antepenultWeight[data$antepenultWeight!='other'] %in% c("-LC","-LCC","-V")),"M","D")#
+data$antepenultCoda[data$antepenultWeight!='other']=ifelse((data$antepenultWeight[data$antepenultWeight!='other'] %in% c("-V","-VV")),"open",ifelse((data$antepenultWeight[data$antepenultWeight!='other'] %in% c("-LC","-TC")),"closed","cluster"))#
+data$penultCoda=as.factor(data$penultCoda)#
+data$penultVowel=as.factor(data$penultVowel)#
+data$antepenultHeaviness=ifelse(data$antepenultVowel=="D"|data$antepenultCoda=='closed'|data$antepenultCoda=='cluster',"H","L")#
+data$antepenultHeaviness=as.factor(data$antepenultHeaviness)#
+data$weightPattern=paste(data$antepenultHeaviness,data$penultHeaviness,data$finalHeaviness)#
+sapply(as.character(data$stressTrans),nchar)#
+final3<- function(string){#
+	last3=substr(string,nchar(string)-2,nchar(string))#
+	last3#
+}#
+data$final3stressTrans=as.factor(sapply(as.character(data$stressTrans),final3))#
+#######################################################
+########## Finished making new columns ################
+#######################################################
+summary(data)#
+# spelling#
+# transcription: CMU transcription#
+# stressTrans: CMU stress transcription#
+#				Here and elsewhere: 1=primary, 2=secondary, 0=no stress#
+# syllStruct: CV transcription of each syllable, separated by .'s.  L means lax vowel, T means tense#
+# syllabification: syllabification according to Maximal Onset.  Capitals are nucleii#
+# antepenultOnset: CV transcription of the onset of the antepenult syllable#
+# apStress: stress of the antepenult syllable#
+# penultHLweight: obsolete#
+# preantepenultHLweight: weight of the preantepenult#
+# finalHLweight: obsolete#
+# morphology: simple=morphologically simple; complex=morphologically complex#
+# vowelLength: mystery#
+# preantepenultWeight: weight of preantepenult broken down by rhyme type L is the same as V, and T is the same as V#
+# antepenultWeight: weight of antepenult broken down by rhyme type L is the same as V, and T is the same as V#
+# mainStress: location of the main stress of the word#
+# finalStress: stress of final syllable#
+# papStress: stress of preantepenult#
+# penultOnset: CV transcription of the penult onset#
+# suffixType: stress-shift type of the suffix#
+# penultWeight: weight of penult broken down by rhyme type L is the same as V, and T is the same as V#
+# antepenultHLweight: obsolete#
+# S: does the word's final cluster have an s in it?#
+# finalWeight: weight of final syllable broken down by rhyme type L is the same as V, and T is the same as V#
+# Suffix: is there a suffix?#
+# finalC: what's the final coda like?#
+# Prefix: prefix or not?#
+# prefixType: prefix stressed or not?#
+# finalOnset: CV transcription of the onset of the final syllable#
+# finalV: final vowel of the word#
+# penultStress: stress of the penult#
+# codaLength: how many phonemes in the final syllable's coda?#
+# coda: coda of the final syllable#
+# freq: log frequency from SubtLex#
+# POS: part of speech from CELEX#
+# nsylls: number of syllables#
+# weightPattern: Weight pattern of the last three syllables (NA in first position indicates a two syllable word)#
+# leftEdgeStress: 1 means initial stress, 2=peninitial, 3=postpeninitial, etc.#
+# initStress: stress of initial syllable#
+# singleStress: 1=word has only one stressed syllable, 0=word has at least two stressed syllables#
+# penultVowel: D=diphthong, M=monophthong#
+# penultCoda: closed, cluster, or open#
+# penultPossibleCoda: mayHaveCoda=penult ends in a singleton or cluster, or is followed by an onset cluster in the next syllable (which could be attracted to the penult as a coda should the penult be stressed)#
+# finalComplexOnset: is the onset of the final syllable complex?#
+# penultHeaviness: weight of penult syllable#
+# finalTwoV: final vowel divided into -i, -ah, and other#
+# finalVowel: D=diphthong, M=monophthong#
+# finalCoda: closed, cluster, or open#
+# finalHeaviness: weight of final syllable#
+# antepenultVowel: D=diphthong, M=monophthong#
+# antepenultCoda: closed, cluster, or open#
+# antepenultHeaviness: weight of antepenult#
+# final3stressTrans: stress of the final three syllables#
+#######################################################
+# Example of possible use:#
+##
+# Question: how does syllable weight affect main stress placement?#
+table(data$weightPattern,data$mainStress)#
+table(data$weightPattern,data$final3stressTrans)#
+# In words at least three syllables long?#
+x=table(data$weightPattern[data$nsylls>2&grepl("NA",data$weightPattern)==FALSE],data$mainStress[data$nsylls>2&grepl("NA",data$weightPattern)==FALSE],exclude="other")#
+# List all HHL words with antepenult stress#
+data$spelling[data$weightPattern=="H H L"&data$mainStress=="antepenult"]
+#inside the quotes enter the path to the file on your machine#
+data=read.table("/Users/clairemoore-cantwell/Desktop/Gondolin/Projects_finished/CanadaBanana/CorpusSearch/newCMU.txt",header=TRUE,colClasses=c('factor'),sep='\t')#
+##################################################
+########### Adding useful columns ################
+##################################################
+data$freq=as.numeric(levels(data$freq))[data$freq]#
+data$nsylls=sapply(as.character(data$stressTrans),nchar)#
+data$weightPattern=paste(data$penultWeight,data$finalWeight)#
+data$weightPattern=as.factor(data$weightPattern)#
+data$mainStress=factor(data$mainStress,levels=c("other","preante","antepenult","penult","final"),ordered=TRUE)#
+data$leftEdgeStress=sapply(data$stressTrans,function(v){#
+	regexpr("1",as.character(v))[1]#
+	})#
+data$initStress=substring(data$stressTrans,1,1)#
+data$singleStress=ifelse(grepl("2",data$stressTrans),0,1)#
+data$penultVowel[data$penultWeight!='other']=ifelse((data$penultWeight[data$penultWeight!='other'] %in% c("-LC","-LCC","-V")),"M","D")#
+data$penultCoda[data$penultWeight!='other']=ifelse((data$penultWeight[data$penultWeight!='other'] %in% c("-V","-VV")),"open",ifelse((data$penultWeight[data$penultWeight!='other'] %in% c("-LC","-TC")),"closed","cluster"))#
+data$penultCoda=as.factor(data$penultCoda)#
+data$penultVowel=as.factor(data$penultVowel)#
+data$penultPossibleCoda[data$penultWeight!='other']=ifelse((data$penultWeight[data$penultWeight!='other'] %in% c("-LC","-LCC","-TC","-TCC"))|(data$finalOnset[data$penultWeight!='other'] %in% c("CC","CCC")),"mayHaveCoda","noCoda")#
+data$penultPossibleCoda=as.factor(data$penultPossibleCoda)#
+data$finalComplexOnset=ifelse((data$finalOnset %in% c("CC","CCC")),"complex","simple")#
+data$finalComplexOnset=as.factor(data$finalComplexOnset)#
+#including tapestry words#
+#data$penultHeaviness=ifelse(data$penultPossibleCoda=='mayHaveCoda'|data$penultVowel=="D","H","L")#
+#data$penultHeaviness=as.factor(data$penultHeaviness)#
+#excluding tapestry words, including digestive words#
+#data$penultHeaviness=ifelse((data$penultPossibleCoda=='mayHaveCoda'&data$mainStress=='penult')|data$penultVowel=="D"|data$penultCoda=='closed'|data$penultCoda=='cluster',"H","L")#
+#data$penultHeaviness=as.factor(data$penultHeaviness)#
+#excluding tapestry words and digestive words#
+data$penultHeaviness=ifelse(data$penultVowel=="D"|data$penultCoda=='closed'|data$penultCoda=='cluster',"H","L")#
+data$penultHeaviness=as.factor(data$penultHeaviness)#
+data$finalTwoV=ifelse(data$finalV=='iy','iy',ifelse(data$finalV=='ah'|data$finalV=='ih','ah','other'))#
+data$finalVowel[data$finalWeight!='other']=ifelse((data$finalWeight[data$finalWeight!='other'] %in% c("-LC","-LCC","-V")),"M","D")#
+data$finalCoda[data$finalWeight!='other']=ifelse((data$finalWeight[data$finalWeight!='other'] %in% c("-V","-VV")),"open",ifelse((data$finalWeight[data$finalWeight!='other'] %in% c("-LC","-TC")),"closed","cluster"))#
+data$penultCoda=as.factor(data$penultCoda)#
+data$penultVowel=as.factor(data$penultVowel)#
+data$finalHeaviness=ifelse(data$finalVowel=="D"|data$finalCoda=='cluster',"H","L")#
+data$finalHeaviness=as.factor(data$finalHeaviness)#
+data$antepenultVowel[data$antepenultWeight!='other']=ifelse((data$antepenultWeight[data$antepenultWeight!='other'] %in% c("-LC","-LCC","-V")),"M","D")#
+data$antepenultCoda[data$antepenultWeight!='other']=ifelse((data$antepenultWeight[data$antepenultWeight!='other'] %in% c("-V","-VV")),"open",ifelse((data$antepenultWeight[data$antepenultWeight!='other'] %in% c("-LC","-TC")),"closed","cluster"))#
+data$penultCoda=as.factor(data$penultCoda)#
+data$penultVowel=as.factor(data$penultVowel)#
+data$antepenultHeaviness=ifelse(data$antepenultVowel=="D"|data$antepenultCoda=='closed'|data$antepenultCoda=='cluster',"H","L")#
+data$antepenultHeaviness=as.factor(data$antepenultHeaviness)#
+data$weightPattern=paste(data$antepenultHeaviness,data$penultHeaviness,data$finalHeaviness)#
+sapply(as.character(data$stressTrans),nchar)#
+final3<- function(string){#
+	last3=substr(string,nchar(string)-2,nchar(string))#
+	last3#
+}#
+data$final3stressTrans=as.factor(sapply(as.character(data$stressTrans),final3))#
+#######################################################
+########## Finished making new columns ################
+#######################################################
+summary(data)#
+# spelling#
+# transcription: CMU transcription#
+# stressTrans: CMU stress transcription#
+#				Here and elsewhere: 1=primary, 2=secondary, 0=no stress#
+# syllStruct: CV transcription of each syllable, separated by .'s.  L means lax vowel, T means tense#
+# syllabification: syllabification according to Maximal Onset.  Capitals are nucleii#
+# antepenultOnset: CV transcription of the onset of the antepenult syllable#
+# apStress: stress of the antepenult syllable#
+# penultHLweight: obsolete#
+# preantepenultHLweight: weight of the preantepenult#
+# finalHLweight: obsolete#
+# morphology: simple=morphologically simple; complex=morphologically complex#
+# vowelLength: mystery#
+# preantepenultWeight: weight of preantepenult broken down by rhyme type L is the same as V, and T is the same as V#
+# antepenultWeight: weight of antepenult broken down by rhyme type L is the same as V, and T is the same as V#
+# mainStress: location of the main stress of the word#
+# finalStress: stress of final syllable#
+# papStress: stress of preantepenult#
+# penultOnset: CV transcription of the penult onset#
+# suffixType: stress-shift type of the suffix#
+# penultWeight: weight of penult broken down by rhyme type L is the same as V, and T is the same as V#
+# antepenultHLweight: obsolete#
+# S: does the word's final cluster have an s in it?#
+# finalWeight: weight of final syllable broken down by rhyme type L is the same as V, and T is the same as V#
+# Suffix: is there a suffix?#
+# finalC: what's the final coda like?#
+# Prefix: prefix or not?#
+# prefixType: prefix stressed or not?#
+# finalOnset: CV transcription of the onset of the final syllable#
+# finalV: final vowel of the word#
+# penultStress: stress of the penult#
+# codaLength: how many phonemes in the final syllable's coda?#
+# coda: coda of the final syllable#
+# freq: log frequency from SubtLex#
+# POS: part of speech from CELEX#
+# nsylls: number of syllables#
+# weightPattern: Weight pattern of the last three syllables (NA in first position indicates a two syllable word)#
+# leftEdgeStress: 1 means initial stress, 2=peninitial, 3=postpeninitial, etc.#
+# initStress: stress of initial syllable#
+# singleStress: 1=word has only one stressed syllable, 0=word has at least two stressed syllables#
+# penultVowel: D=diphthong, M=monophthong#
+# penultCoda: closed, cluster, or open#
+# penultPossibleCoda: mayHaveCoda=penult ends in a singleton or cluster, or is followed by an onset cluster in the next syllable (which could be attracted to the penult as a coda should the penult be stressed)#
+# finalComplexOnset: is the onset of the final syllable complex?#
+# penultHeaviness: weight of penult syllable#
+# finalTwoV: final vowel divided into -i, -ah, and other#
+# finalVowel: D=diphthong, M=monophthong#
+# finalCoda: closed, cluster, or open#
+# finalHeaviness: weight of final syllable#
+# antepenultVowel: D=diphthong, M=monophthong#
+# antepenultCoda: closed, cluster, or open#
+# antepenultHeaviness: weight of antepenult#
+# final3stressTrans: stress of the final three syllables#
+#######################################################
+# Example of possible use:#
+##
+# Question: how does syllable weight affect main stress placement?#
+table(data$weightPattern,data$mainStress)#
+table(data$weightPattern,data$final3stressTrans)#
+# In words at least three syllables long?#
+x=table(data$weightPattern[data$nsylls>2&grepl("NA",data$weightPattern)==FALSE],data$mainStress[data$nsylls>2&grepl("NA",data$weightPattern)==FALSE],exclude="other")#
+# List all HHL words with antepenult stress#
+data$spelling[data$weightPattern=="H H L"&data$mainStress=="antepenult"]
+summary(data)
+data$spelling[data$syllStruct=='CCV.V.CVC']
+data$spelling[data$syllStruct=='CCV.VV.CVC']
+data$spelling[data$syllStruct=='CCV.T.CVC']
+data[data$spelling=='creative']
+data[data$spelling=='creative',]
+data$spelling[data$syllStruct=='CCL.T.CLC']
+data$spelling[data$syllStruct=='CCT.T.CLC']
+data$spelling[data$syllStruct=='CCV.T.CLC']
+data$spelling[data$syllStruct=='CCL.L.CLC']
+data$spelling[data$syllStruct=='CCL.CL.CLC']
+data$spelling[data$syllStruct=='CLC.CL.CLC']
+data$spelling[data$syllStruct=='CLC.CT.CLC']
+data$spelling[data$syllStruct=='CL.CLCC']
+data$spelling[data$syllStruct=='CL.CCCTCC']
+data$spelling[data$syllStruct=='CLC.CCCTCC']
+data$spelling[data$syllStruct=='L.CCCTCC']
+data$spelling[data$syllStruct=='T.CCCTCC']
+data$spelling[data$syllStruct=='T.CCCTCCC']
+data$spelling[data$syllStruct=='L.CCCTCCC']
+data$spelling[data$syllStruct=='CL.CCCTCCC']
+data$spelling[data$syllStruct=='CLC.CCCTCCC']
+data$spelling[data$syllStruct=='CLC.CCCCCC']
+data$spelling[data$syllStruct=='CLC.CCCLCCC']
+data$spelling[data$finalOnset=="CCC"]
+data$spelling[data$finalWeight=="CC"]
+data$spelling[data$finalWeight=="LCC"]
+data$spelling[data$finalWeight=="-LCC"]
+means = 0:100
+means
+means = 0:500
+sd = means * cv
+cv = 1/5
+sd = means * cv
+plot(means,sd)
+?optim
+library(zipfR)#
+ZM=lnre("zm",alpha=2/3,B=0.01)
+filename = "toy_HE.txt"#
+dataset = data.frame("input" =c("oi1_nak","oi1_nak"),"lexicon" = c("oi_nak","oi_nak"), "candidate" = c("oi_nak","oi_nek"),"obs.prob" = c("0.7","0.3"),"tab.prob" = c("1","1"),"ABN"=c("0","1"),"AFL"=c("1","0"),"AFNL"=c("0","0"),"AFLL"=c("0","0"))
+z1 = as.numeric(rlnre(ZM,n=n))#
+z2 = as.numeric(rlnre(ZM,n=n))#
+z3 = as.numeric(rlnre(ZM,n=n))
+n = 1000#
+library(zipfR)#
+ZM=lnre("zm",alpha=2/3,B=0.01)#
+z1 = as.numeric(rlnre(ZM,n=n))#
+z2 = as.numeric(rlnre(ZM,n=n))#
+z3 = as.numeric(rlnre(ZM,n=n))
+z1
+hist(z1)
+ZM=lnre("zm",alpha=1/3,B=0.01)
+z1 = as.numeric(rlnre(ZM,n=n))
+hist(z1)
+ZM=lnre("zm",alpha=1/5,B=0.01)
+z1 = as.numeric(rlnre(ZM,n=n))
+ZM=lnre("zm",alpha=1/5,B=0.01)
+hist(z1)
+z1 = as.numeric(rlnre(ZM,n=n))
+hist(z1)
+ZM=lnre("zm",alpha=.001,B=0.01)
+hist(z1)
+z1 = as.numeric(rlnre(ZM,n=n))
+hist(z1)
+ZM=lnre("zm",alpha=5,B=0.01)
+ZM=lnre("zm",alpha=1,B=0.01)
+ZM=lnre("zm",alpha=0.99,B=0.01)
+z1 = as.numeric(rlnre(ZM,n=n))
+ZM=lnre("zm",alpha=1,B=0.01)
+hist(z1)
+ZM=lnre("zm",alpha=0.001,B=0.01)
+z1 = as.numeric(rlnre(ZM,n=n))
+hist(z1)
+ZM=lnre("zm",alpha=2/3,B=0.01)
+z1 = as.numeric(rlnre(ZM,n=n))
+hist(z1)
+ZM=lnre("zm",alpha=2/3,B=0.001)
+z1 = as.numeric(rlnre(ZM,n=n))
+hist(z1)
+ZM=lnre("zm",alpha=2/3,B=0.1)
+z1 = as.numeric(rlnre(ZM,n=n))
+hist(z1)
+ZM=lnre("zm",alpha=2/3,B=0.05)
+z1 = as.numeric(rlnre(ZM,n=n))
+hist(z1)
+z1 = as.numeric(rlnre(ZM,n=n))
+z2 = as.numeric(rlnre(ZM,n=n))
+z3 = as.numeric(rlnre(ZM,n=n))
+hist(z2)
+hist(z3)
+filename = "toy_HE.txt"
+dataset = data.frame("input","lexicon","candidate","obs.prob","tab.prob","ABN","AFL","AFNL","AFLL")
+dataset = data.frame("input","lexicon","candidate","obs.prob","tab.prob","ABN","AFL","AFNL","AFLL")#
+#
+for(i in 1:n){#
+	dataset = rbind(dataset,c(paste("oi",str(i),"_nak"),"oi_nak","oi_nak",".7",str(z1[i]),"0","1","0","0"))#
+	dataset = rbind(dataset,c(paste("oi",str(i),"_nak"),"oi_nak","oi_nek",".3",str(z1[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oE",str(i),"_nak"),"oE_nak","oE_nak",".5",str(z2[i]),"0","1","1","0"))#
+	dataset = rbind(dataset,c(paste("oE",str(i),"_nak"),"oE_nak","oE_nek",".5",str(z2[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oe",str(i),"_nak"),"oe_nak","oe_nak",".3",str(z3[i]),"0","1","1","1"))#
+	dataset = rbind(dataset,c(paste("oe",str(i),"_nak"),"oe_nak","oe_nek",".7",str(z4[i]),"1","0","0","0"))#
+#
+}
+dataset = data.frame("input","lexicon","candidate","obs.prob","tab.prob","ABN","AFL","AFNL","AFLL")#
+#
+for(i in 1:n){#
+	dataset = rbind(dataset,c(paste("oi",str(i),"_nak"),"oi_nak","oi_nak",".7",str(z1[i]),"0","1","0","0"))#
+	dataset = rbind(dataset,c(paste("oi",str(i),"_nak"),"oi_nak","oi_nek",".3",str(z1[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oE",str(i),"_nak"),"oE_nak","oE_nak",".5",str(z2[i]),"0","1","1","0"))#
+	dataset = rbind(dataset,c(paste("oE",str(i),"_nak"),"oE_nak","oE_nek",".5",str(z2[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oe",str(i),"_nak"),"oe_nak","oe_nak",".3",str(z3[i]),"0","1","1","1"))#
+	dataset = rbind(dataset,c(paste("oe",str(i),"_nak"),"oe_nak","oe_nek",".7",str(z3[i]),"1","0","0","0"))#
+#
+}
+warnings()
+dataset
+dataset = data.frame(input=str(),lexicon=str(),candidate=str(),obs.prob=str(),tab.prob=str(),ABN=str(),AFL=str(),AFNL=str(),AFLL=str(),stringsAsFactors=FALSE)
+dataset = data.frame(input=str(),lexicon=str(),candidate=str(),obs.prob=str(),tab.prob=str(),ABN=str(),AFL=str(),AFNL=str(),AFLL=str())
+dataset = data.frame(input=character(),lexicon=character(),candidate=character(),obs.prob=character(),tab.prob=character(),ABN=character(),AFL=character(),AFNL=character(),AFLL=character(),stringsAsFactors=FALSE)
+for(i in 1:n){#
+	dataset = rbind(dataset,c(paste("oi",str(i),"_nak"),"oi_nak","oi_nak",".7",str(z1[i]),"0","1","0","0"))#
+	dataset = rbind(dataset,c(paste("oi",str(i),"_nak"),"oi_nak","oi_nek",".3",str(z1[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oE",str(i),"_nak"),"oE_nak","oE_nak",".5",str(z2[i]),"0","1","1","0"))#
+	dataset = rbind(dataset,c(paste("oE",str(i),"_nak"),"oE_nak","oE_nek",".5",str(z2[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oe",str(i),"_nak"),"oe_nak","oe_nak",".3",str(z3[i]),"0","1","1","1"))#
+	dataset = rbind(dataset,c(paste("oe",str(i),"_nak"),"oe_nak","oe_nek",".7",str(z3[i]),"1","0","0","0"))#
+#
+}
+dataset
+for(i in 1:3){#
+	dataset = rbind(dataset,c(paste("oi",as.character(i),"_nak"),"oi_nak","oi_nak",".7",str(z1[i]),"0","1","0","0"))#
+	dataset = rbind(dataset,c(paste("oi",as.character(i),"_nak"),"oi_nak","oi_nek",".3",str(z1[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oE",as.character(i),"_nak"),"oE_nak","oE_nak",".5",str(z2[i]),"0","1","1","0"))#
+	dataset = rbind(dataset,c(paste("oE",as.character(i),"_nak"),"oE_nak","oE_nek",".5",str(z2[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oe",as.character(i),"_nak"),"oe_nak","oe_nak",".3",str(z3[i]),"0","1","1","1"))#
+	dataset = rbind(dataset,c(paste("oe",as.character(i),"_nak"),"oe_nak","oe_nek",".7",str(z3[i]),"1","0","0","0"))#
+#
+}
+dataset
+dataset = data.frame(input=character(),lexicon=character(),candidate=character(),obs.prob=character(),tab.prob=character(),ABN=character(),AFL=character(),AFNL=character(),AFLL=character(),stringsAsFactors=FALSE)
+struct(dataset)
+str(dataset)
+dataset = data.frame(input=character(),lexicon=character(),candidate=character(),obs.prob=character(),tab.prob=character(),ABN=character(),AFL=character(),AFNL=character(),AFLL=character(),stringsAsFactors=FALSE)#
+#
+for(i in 1:3){#
+	dataset = rbind(dataset,c(paste("oi",as.character(i),"_nak"),"oi_nak","oi_nak",".7",as.character(z1[i]),"0","1","0","0"))#
+	dataset = rbind(dataset,c(paste("oi",as.character(i),"_nak"),"oi_nak","oi_nek",".3",as.character(z1[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oE",as.character(i),"_nak"),"oE_nak","oE_nak",".5",as.character(z2[i]),"0","1","1","0"))#
+	dataset = rbind(dataset,c(paste("oE",as.character(i),"_nak"),"oE_nak","oE_nek",".5",as.character(z2[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oe",as.character(i),"_nak"),"oe_nak","oe_nak",".3",as.character(z3[i]),"0","1","1","1"))#
+	dataset = rbind(dataset,c(paste("oe",as.character(i),"_nak"),"oe_nak","oe_nek",".7",as.character(z3[i]),"1","0","0","0"))#
+#
+}
+dataset
+dataset = data.frame(input=character(),lexicon=character(),candidate=character(),obs.prob=character(),tab.prob=character(),ABN=character(),AFL=character(),AFNL=character(),AFLL=character(),stringsAsFactors=FALSE)
+dataset
+?rbind
+dataset = matrix(8,1)
+for(i in 1:3){#
+	dataset = rbind(dataset,c(paste("oi",as.character(i),"_nak",sep=""),"oi_nak","oi_nak",".7",as.character(z1[i]),"0","1","0","0"))#
+	dataset = rbind(dataset,c(paste("oi",as.character(i),"_nak",sep=""),"oi_nak","oi_nek",".3",as.character(z1[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oE",as.character(i),"_nak",sep=""),"oE_nak","oE_nak",".5",as.character(z2[i]),"0","1","1","0"))#
+	dataset = rbind(dataset,c(paste("oE",as.character(i),"_nak",sep=""),"oE_nak","oE_nek",".5",as.character(z2[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oe",as.character(i),"_nak",sep=""),"oe_nak","oe_nak",".3",as.character(z3[i]),"0","1","1","1"))#
+	dataset = rbind(dataset,c(paste("oe",as.character(i),"_nak",sep=""),"oe_nak","oe_nek",".7",as.character(z3[i]),"1","0","0","0"))#
+#
+}
+dataset
+dataset = matrix(8,1)
+dataset
+dataset = matrix("input","2","3","4","5","6","7","8")
+for(i in 1:3){#
+	dataset = rbind(dataset,c(paste("oi",as.character(i),"_nak",sep=""),"oi_nak","oi_nak",".7",as.character(z1[i]),"0","1","0","0"))#
+	dataset = rbind(dataset,c(paste("oi",as.character(i),"_nak",sep=""),"oi_nak","oi_nek",".3",as.character(z1[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oE",as.character(i),"_nak",sep=""),"oE_nak","oE_nak",".5",as.character(z2[i]),"0","1","1","0"))#
+	dataset = rbind(dataset,c(paste("oE",as.character(i),"_nak",sep=""),"oE_nak","oE_nek",".5",as.character(z2[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oe",as.character(i),"_nak",sep=""),"oe_nak","oe_nak",".3",as.character(z3[i]),"0","1","1","1"))#
+	dataset = rbind(dataset,c(paste("oe",as.character(i),"_nak",sep=""),"oe_nak","oe_nek",".7",as.character(z3[i]),"1","0","0","0"))#
+#
+}
+dataset
+dataset = matrix("input","2","3","4","5","6","7","8")
+dataset
+dataset = matrix(c("input","2","3","4","5","6","7","8"))
+dataset
+?matrix
+dataset = matrix(c("input","2","3","4","5","6","7","8"),1,8)
+dataset
+for(i in 1:3){#
+	dataset = rbind(dataset,c(paste("oi",as.character(i),"_nak",sep=""),"oi_nak","oi_nak",".7",as.character(z1[i]),"0","1","0","0"))#
+	dataset = rbind(dataset,c(paste("oi",as.character(i),"_nak",sep=""),"oi_nak","oi_nek",".3",as.character(z1[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oE",as.character(i),"_nak",sep=""),"oE_nak","oE_nak",".5",as.character(z2[i]),"0","1","1","0"))#
+	dataset = rbind(dataset,c(paste("oE",as.character(i),"_nak",sep=""),"oE_nak","oE_nek",".5",as.character(z2[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oe",as.character(i),"_nak",sep=""),"oe_nak","oe_nak",".3",as.character(z3[i]),"0","1","1","1"))#
+	dataset = rbind(dataset,c(paste("oe",as.character(i),"_nak",sep=""),"oe_nak","oe_nek",".7",as.character(z3[i]),"1","0","0","0"))#
+#
+}
+dataset
+warnings()
+dataset = matrix(c("input","2","3","4","5","6","7","8","9"),1,9)
+for(i in 1:3){#
+	dataset = rbind(dataset,c(paste("oi",as.character(i),"_nak",sep=""),"oi_nak","oi_nak",".7",as.character(z1[i]),"0","1","0","0"))#
+	dataset = rbind(dataset,c(paste("oi",as.character(i),"_nak",sep=""),"oi_nak","oi_nek",".3",as.character(z1[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oE",as.character(i),"_nak",sep=""),"oE_nak","oE_nak",".5",as.character(z2[i]),"0","1","1","0"))#
+	dataset = rbind(dataset,c(paste("oE",as.character(i),"_nak",sep=""),"oE_nak","oE_nek",".5",as.character(z2[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oe",as.character(i),"_nak",sep=""),"oe_nak","oe_nak",".3",as.character(z3[i]),"0","1","1","1"))#
+	dataset = rbind(dataset,c(paste("oe",as.character(i),"_nak",sep=""),"oe_nak","oe_nek",".7",as.character(z3[i]),"1","0","0","0"))#
+#
+}
+dataset
+dataset = matrix(c("input","lexicon","candidate","obs.prob","tab.prob","ABN","AFL","AFNL","AFLL"),1,9)#
+#
+for(i in 1:n){#
+	dataset = rbind(dataset,c(paste("oi",as.character(i),"_nak",sep=""),"oi_nak","oi_nak",".7",as.character(z1[i]),"0","1","0","0"))#
+	dataset = rbind(dataset,c(paste("oi",as.character(i),"_nak",sep=""),"oi_nak","oi_nek",".3",as.character(z1[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oE",as.character(i),"_nak",sep=""),"oE_nak","oE_nak",".5",as.character(z2[i]),"0","1","1","0"))#
+	dataset = rbind(dataset,c(paste("oE",as.character(i),"_nak",sep=""),"oE_nak","oE_nek",".5",as.character(z2[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oe",as.character(i),"_nak",sep=""),"oe_nak","oe_nak",".3",as.character(z3[i]),"0","1","1","1"))#
+	dataset = rbind(dataset,c(paste("oe",as.character(i),"_nak",sep=""),"oe_nak","oe_nek",".7",as.character(z3[i]),"1","0","0","0"))#
+}
+dataset
+write.table(dataset,filename,quite=FALSE,sep="\t",row.names=FALSE)
+write.table(dataset,filename,quote=FALSE,sep="\t",row.names=FALSE)
+write.table(dataset,filename,quote=FALSE,sep="\t",row.names=FALSE)
+summary(dataset)
+head(summary)
+head(dataset)
+colnames(dataset = dataset[1,])
+colnames(dataset) = dataset[1,]
+head(dataset)
+dataset = dataset[2:,]
+dataset = dataset[2:length(dataset[,1]),]
+head(dataset)
+write.table(dataset,filename,quote=FALSE,sep="\t",row.names=FALSE)
+filename = "toy_HE.txt"#
+#
+dataset = matrix(c("input","lexicon","candidate","obs.prob","tab.prob","ABN","AFL","AFNL","AFLL"),1,9)#
+#
+for(i in 1:n){#
+	dataset = rbind(dataset,c(paste("oi",as.character(i),"_nak",sep=""),"oi_nak","oi_nak",".7",as.character(z1[i]),"0","1","0","0"))#
+	dataset = rbind(dataset,c(paste("oi",as.character(i),"_nak",sep=""),"oi_nak","oi_nek",".3",as.character(z1[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oE",as.character(i),"_nak",sep=""),"oE_nak","oE_nak",".5",as.character(z2[i]),"0","1","1","0"))#
+	dataset = rbind(dataset,c(paste("oE",as.character(i),"_nak",sep=""),"oE_nak","oE_nek",".5",as.character(z2[i]),"1","0","0","0"))#
+	dataset = rbind(dataset,c(paste("oe",as.character(i),"_nak",sep=""),"oe_nak","oe_nak",".3",as.character(z3[i]),"0","1","1","1"))#
+	dataset = rbind(dataset,c(paste("oe",as.character(i),"_nak",sep=""),"oe_nak","oe_nek",".7",as.character(z3[i]),"1","0","0","0"))#
+}#
+colnames(dataset) = dataset[1,]#
+dataset = dataset[2:length(dataset[,1]),]#
+write.table(dataset,filename,quote=FALSE,sep="\t",row.names=FALSE)
