@@ -124,6 +124,10 @@ class candidate:
 		newC.predictedProb = self.predictedProb
 		return newC
 
+	def toRichCand(self,features):
+		segsDict, segsList = features.stringToF(self.c)
+		return richCand(self.c,self.violations[:],self.observedProb,segsDict,segsList,surfaceForm =self.surfaceForm)
+
 class richCand(candidate):
 	def __init__(self,c,violations,observedProb,segsDict,segsList,segsOrder=None,activitys=None,suprasegmentals = None,surfaceForm=None,operations=None):
 		candidate.__init__(self,c,violations,observedProb,surfaceForm)
