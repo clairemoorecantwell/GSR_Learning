@@ -1,10 +1,3 @@
-#Max
-
-#Dep
-
-#Uniformity
-
-#Onset
 import learner as l
 import re
 
@@ -18,6 +11,21 @@ class constraint:
 # Ident-back
 # ABN, AFL, AFNL, AFLL
 
+def Ident_back_IO(input,output,features):
+	'''compares an input and output string, no need to define an operation'''
+	violations = 0
+	blih, blah, blug, backtrace = l.diffCands(input.toRichCand(features),output.toRichCand(features))
+	for change in backtrace: # each entry of backtrace is a tuple ("CHANGE",[]), ("DEL",[]) etc, where the list is features different (either changed or added)
+		for feature in change[1]:
+			if feature[1]=='back':
+				violations += 1
+	return violations
+
+
+
+
+
+
 
 def Ident_back(rC,features):
 	candidates = morphFeature(rC, features, featureName="back")
@@ -26,6 +34,32 @@ def Ident_back(rC,features):
 	return candidates
 
 
+def morphFeature(rC,features,featureName='stress',values = ['1','0']):
+	candidates = []
+	for s in rC.segsList:
+		# go through each segment
+		# check if changing featureName results in another entry in features
+		# If so, add it to candidates
+		if s != "_":
+			fs = [[str(i) for i,j in rC.segsDict[s]],[str(j) for i,j in rC.segsDict[s]]]
+			featureValue = fs[0][fs[1].index(featureName)]
+			for v in values:
+				if v !=featureValue:
+					fs[0][fs[1].index(featureName)] = v
+					newSegs = ([i for i in zip(fs[0],fs[1])])
+					print(newSegs)
+					seg = features.exists(newSegs)
+					if seg: # if morphing the feature leads to something that exists, add the new candidate
+						newSegsDict = rC.segsDict.copy()
+						newSegsDict[s] = newSegs
+						surfaceC = features.featureToS(newSegsDict,rC.segsList[:])
+						#assuming that segsList is in the correct order
+						newC = [q for q in surfaceC]
+						newC.insert(rC.segsList.index(s)+1,'(f)')
+						newC = ''.join(newC)
+						candidates.append(l.richCand(newC,[],0.0,newSegsDict,rC.segsList[:],rC.segsOrder[:],rC.activitys[:],rC.suprasegmentals,surfaceForm=surfaceC,operations = rC.operations[:]+["morph_feature"]))
+
+	return candidates
 
 
 
@@ -98,30 +132,6 @@ constraints = [alignR,alignL,nonFin,haveStress]
 
 
 
-def morphFeature(rC,features,featureName='stress',values = ['1','0']):
-	candidates = []
-	for s in rC.segsList:
-		# go through each segment
-		# check if changing featureName results in another entry in features
-		# If so, add it to candidates
-		fs = [[str(i) for i,j in rC.segsDict[s]],[str(j) for i,j in rC.segsDict[s]]]
-		featureValue = fs[0][fs[1].index(featureName)]
-		for v in values:
-			if v !=featureValue:
-				fs[0][fs[1].index(featureName)] = v
-				newSegs = ([i for i in zip(fs[0],fs[1])])
-				seg = features.exists(newSegs)
-				if seg: # if morphing the feature leads to something that exists, add the new candidate
-					newSegsDict = rC.segsDict.copy()
-					newSegsDict[s] = newSegs
-					surfaceC = features.featureToS(newSegsDict,rC.segsList[:])
-					#assuming that segsList is in the correct order
-					newC = [q for q in surfaceC]
-					newC.insert(rC.segsList.index(s)+1,'(f)')
-					newC = ''.join(newC)
-					candidates.append(l.richCand(newC,[],0.0,newSegsDict,rC.segsList[:],rC.segsOrder[:],rC.activitys[:],rC.suprasegmentals,surfaceForm=surfaceC,operations = rC.operations[:]+["morph_feature"]))
-
-	return candidates
 
 
 # Operations list

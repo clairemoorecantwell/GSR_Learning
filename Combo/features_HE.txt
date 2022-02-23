@@ -1,39 +1,39 @@
-	consonantal	long	front	back	rounded	labial	dental	palatal	velar	continuant	delayedRelease	nasal	sonorant	liquid	voice	lateral
-a	0	0	0	1	1											
-A	0	1	0	1	0											
-e	0	0	1	0	0											
-E	0	1	1	0	0											
-i	0	0	1	0	0											
-I	0	1	1	0	0											
-o	0	0	0	1	1											
-O	0	1	0	1	1											
-c	0	0	1	0	1											
-C	0	1	1	0	1											
-u	0	0	0	1	1											
-U	0	1	0	1	1											
-y	0	0	1	0	1											
-Y	0	1	1	0	1											
-p	1					1	0	0	0	0	0	0	0	0	0	0
-b	1					1	0	0	0	0	0	0	0	0	1	0
-t	1					0	1	0	0	0	0	0	0	0	0	0
-d	1					0	1	0	0	0	0	0	0	0	1	0
-K	1					0	0	1	0	0	0	0	0	0	0	0
-G	1					0	0	1	0	0	0	0	0	0	1	0
-k	1					0	0	0	1	0	0	0	0	0	0	0
-g	1					0	0	0	1	0	0	0	0	0	1	0
-f	1					1	0	0	0	1	0	0	0	0	0	0
-v	1					1	0	0	0	1	0	0	0	0	1	0
-s	1					0	1	0	0	1	0	0	0	0	0	0
-z	1					0	1	0	0	1	0	0	0	0	1	0
-S	1					0	0	1	0	1	0	0	0	0	0	0
-Z	1					0	0	1	0	1	0	0	0	0	1	0
-H	1					0	0	1	0	0	1	0	0	0	0	0
-J	1					0	0	1	0	0	1	0	0	0	1	0
-m	1					1	0	0	0	0	0	1	1	0	1	0
-n	1					0	1	0	0	0	0	1	1	0	1	0
-N	1					0	0	1	0	0	0	1	1	0	1	0
-l	1					0	1	0	0	1	0	0	1	1	1	1
-r	1					0	1	0	0	1	0	0	1	1	1	0
-j	1					0	0	1	0	1	0	0	1	1	1	0
-T	1					0	1	0	0	0	1	0	0	0	0	0
-h	1					0	0	0	1	1	0	0	0	0	0	0
+Ascii	consonantal	long	back	rounded	high	low	labial	dental	palatal	velar	continuant	delayedRelease	nasal	sonorant	liquid	voice	lateral
+a	0	0	1	1	0	1	x	x	x	x	x	x	x	x	x	x	x
+A	0	1	1	0	0	1	x	x	x	x	x	x	x	x	x	x	x
+e	0	0	0	0	0	1	x	x	x	x	x	x	x	x	x	x	x
+E	0	1	0	0	0	0	x	x	x	x	x	x	x	x	x	x	x
+i	0	0	0	0	1	0	x	x	x	x	x	x	x	x	x	x	x
+I	0	1	0	0	1	0	x	x	x	x	x	x	x	x	x	x	x
+o	0	0	1	1	0	0	x	x	x	x	x	x	x	x	x	x	x
+O	0	1	1	1	0	0	x	x	x	x	x	x	x	x	x	x	x
+c	0	0	0	1	0	0	x	x	x	x	x	x	x	x	x	x	x
+C	0	1	0	1	0	0	x	x	x	x	x	x	x	x	x	x	x
+u	0	0	1	1	1	0	x	x	x	x	x	x	x	x	x	x	x
+U	0	1	1	1	1	0	x	x	x	x	x	x	x	x	x	x	x
+y	0	0	0	1	1	0	x	x	x	x	x	x	x	x	x	x	x
+Y	0	1	0	1	1	0	x	x	x	x	x	x	x	x	x	x	x
+p	1	x	x	x	x	x	1	0	0	0	0	0	0	0	0	0	0
+b	1	x	x	x	x	x	1	0	0	0	0	0	0	0	0	1	0
+t	1	x	x	x	x	x	0	1	0	0	0	0	0	0	0	0	0
+d	1	x	x	x	x	x	0	1	0	0	0	0	0	0	0	1	0
+K	1	x	x	x	x	x	0	0	1	0	0	0	0	0	0	0	0
+G	1	x	x	x	x	x	0	0	1	0	0	0	0	0	0	1	0
+k	1	x	x	x	x	x	0	0	0	1	0	0	0	0	0	0	0
+g	1	x	x	x	x	x	0	0	0	1	0	0	0	0	0	1	0
+f	1	x	x	x	x	x	1	0	0	0	1	0	0	0	0	0	0
+v	1	x	x	x	x	x	1	0	0	0	1	0	0	0	0	1	0
+s	1	x	x	x	x	x	0	1	0	0	1	0	0	0	0	0	0
+z	1	x	x	x	x	x	0	1	0	0	1	0	0	0	0	1	0
+S	1	x	x	x	x	x	0	0	1	0	1	0	0	0	0	0	0
+Z	1	x	x	x	x	x	0	0	1	0	1	0	0	0	0	1	0
+H	1	x	x	x	x	x	0	0	1	0	0	1	0	0	0	0	0
+J	1	x	x	x	x	x	0	0	1	0	0	1	0	0	0	1	0
+m	1	x	x	x	x	x	1	0	0	0	0	0	1	1	0	1	0
+n	1	x	x	x	x	x	0	1	0	0	0	0	1	1	0	1	0
+N	1	x	x	x	x	x	0	0	1	0	0	0	1	1	0	1	0
+l	1	x	x	x	x	x	0	1	0	0	1	0	0	1	1	1	1
+r	1	x	x	x	x	x	0	1	0	0	1	0	0	1	1	1	0
+j	1	x	x	x	x	x	0	0	1	0	1	0	0	1	1	1	0
+T	1	x	x	x	x	x	0	1	0	0	0	1	0	0	0	0	0
+h	1	x	x	x	x	x	0	0	0	1	1	0	0	0	0	0	0

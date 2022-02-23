@@ -22,8 +22,17 @@ class Features:
 			self.featureValues[l[0]]=[val for val in l[1:]]
 			# so this is now just numbers AND x's, all as str
 			''' feature value skipChar is treated in this class as 'unspecified' and therefore matches with anything'''
+		# Always add morphBoundary as a possible segment.  it is 0 for everything, except the 'morphBoundary' feature
+		# TODO revisit whether it is better to store the morpheme boundary differently in some way?
+		self.featureNames.append("morphBoundary")
+		for seg in self.featureValues:
+			self.featureValues[seg].append("0")
+		self.featureValues["_"]=['0' for i in self.featureNames]
+		self.featureValues["_"][-1]='1'
 
 	#TODO make a str() function
+
+	#TODO check for underspecified segments, or for redundant features
 
 	def exists(self,featureList,add = False): # a list of tuples of (value,feature)
 		'''Checks whether the list of feature values corresponds to a real segment in the feature set.  Returns the label of that feature set, or None if not found'''
@@ -82,6 +91,7 @@ class Features:
 		'''Convert a string to features '''
 		'''returns a dictionary with each seg: [list of tuples of (value, feature)] '''
 		'''also returns a list, with dictionary keys in order '''
+		'''skips _ in segs dictionary, but retains it in segment order'''
 		if seglabels: # Check that seglabels contains only unique values
 			if len(seglabels) != len(set(seglabels)):
 				seglabels = None
@@ -93,6 +103,10 @@ class Features:
 				k = seglabels[i]
 			else:
 				k = "seg"+str(i+1)
+			#if string[i]=="_":
+			#	segs["_"] = [('1','morphBoundary')] # give this guy a feature
+			#	order.append("_")
+			#else:
 			segs[k]=[j for j in zip(self.featureValues[string[i]],self.featureNames)]
 			order.append(k)
 
@@ -102,7 +116,10 @@ class Features:
 		'''converts a segment dictionary and an ordering to a string '''
 		S = [] # in which to store the segments as we find them
 		for s in order: # go through the segment labels in order
+			#if s != "_":
 			S.append(self.exists(segs[s],add=True))
+			#else:
+			#	S.append("_")
 		return "".join([str(s) for s in S])
 
 class candidate:
