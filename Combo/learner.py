@@ -730,10 +730,6 @@ class Grammar:
 		# "partial": use user-defined candidates, but add violations of a few markedness constraints
 		# "full": completely user-defined, except for perhaps the PFCs
 
-		listedTag = "_".join([datum[0]])
-		if listedTag in self.trainingData.lexicon:
-			if random.random()< self.p_useListed:
-				lexemes = self.trainingData.lexicon[listedTag]
 		# Determine the creation method, and make sure we have everything for it
 		if not self.generateCandidates:
 			if not self.addViolations:
@@ -745,16 +741,43 @@ class Grammar:
 				exit
 		else:
 			if self.constraints and self.operations:
+				# TODO fill this out for UseListed; it might not work as expected at the moment.
 				return createTableau(lexemes,self.constraints,self.operations,self.featureSet,datum[1],w=self.w[:])
 			else:
 				print("ERROR: you cannot generate candidates without predefined operations and constraints")
 
-		# Given a tableau, that we just need to fill out
-		# begin initializing the new tableau with copies of things
-		# here, grabbing the tableau from the training data that corresponds to the input string in our datum
+		# Initial tableau creation, from the input file
 		tab = self.trainingData.tableaux[self.trainingData.tableauxTags.index(datum[2])].copy()
 		tab.w = self.w[:]
 		tab.constraintList = self.trainingData.constraintNames[:]
+
+		# 1 if constraint is a listed constraint, else 0
+		listeds = [1 if re.search("_listed",constraint) else 0 for constraint in tab.constraintList]
+
+		listed = False # Are we using a specially listed lexical item?  If False, we compose from extant lexical items
+
+		# Check if we should use a listed form - is there a listed form in the lexicon?
+		listedTag = "_".join([i.tag for i in datum[0]]) if len(datum[0])>1 else False
+		if listedTag and listedTag in self.trainingData.lexicon:
+			# Check if we are using hidden structure to do this, or choosing between listing and composing
+			if self.p_useListed>2: # for now, set p_uselisted to 2 or higher to indicate "use hidden structure"
+				# How to build a hidden structure tableau?
+				# Build two and put them together
+				# Ok, check if we have what we need in
+
+			elif: random.random()< self.p_useListed:
+				lexemes = self.trainingData.lexicon[listedTag]
+				listed = True
+
+		else: # no listed form
+			# exclude listeds
+			
+
+
+		# Given a tableau, that we just need to fill out
+		# begin initializing the new tableau with copies of things
+		# here, grabbing the tableau from the training data that corresponds to the input string in our datum
+
 		if method == "partial":
 			# Assign violations of dynamic constraints
 			tab.constraintList +=[c.name for c in self.constraints]
