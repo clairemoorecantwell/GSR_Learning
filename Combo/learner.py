@@ -27,7 +27,7 @@ class Features:
 		self.featureNames.append("morphBoundary")
 		for seg in self.featureValues:
 			self.featureValues[seg].append("0")
-		self.featureValues["_"]=['0' for i in self.featureNames]
+		self.featureValues["_"]=[skipChar for i in self.featureNames]
 		self.featureValues["_"][-1]='1'
 
 	#TODO make a str() function
@@ -730,7 +730,7 @@ class Grammar:
 		# "partial": use user-defined candidates, but add violations of a few markedness constraints
 		# "full": completely user-defined, except for perhaps the PFCs
 
-		listedTag = "_".join(datum[0])
+		listedTag = "_".join([datum[0]])
 		if listedTag in self.trainingData.lexicon:
 			if random.random()< self.p_useListed:
 				lexemes = self.trainingData.lexicon[listedTag]
