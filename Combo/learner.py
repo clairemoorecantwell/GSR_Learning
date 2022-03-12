@@ -303,8 +303,9 @@ class Tableaux:
 class Tableau:
 	def __init__(self,tag,prob=1,hiddenStructure=False,lexemes = [],w = []):
 		self.tag = tag # Human-readable tag to let the user know which tableau this is
-		self.prob = prob # How often do we see this input (observed)
+		self.prob = prob # Corresponds to tab.prob in input file
 		self.candidates = [] # To be filled during tableau creation
+		self.faithCands = [] # 1 if the candidate is 'faithful', 0 otherwise
 		self.probDenom = 1 # denominator for calculating MaxEnt prob of each candidate
 						   # this is the sum of each exponentiated harmony score
 		self.predProbsList = [] # list of each candidate's predicted probability; used in sampling
@@ -370,6 +371,8 @@ class Tableau:
 
 	def addCandidate(self,cand):
 		self.candidates.append(cand)
+		# Is this a faithful candidate?
+		# 
 		if cand.surfaceForm != cand.c:
 			self.hiddenStructure = True
 		if cand.surfaceForm not in self.surfaceCands:
@@ -761,8 +764,26 @@ class Grammar:
 		if listedTag and listedTag in self.trainingData.lexicon:
 			# Check if we are using hidden structure to do this, or choosing between listing and composing
 			if self.p_useListed>2: # for now, set p_uselisted to 2 or higher to indicate "use hidden structure"
-				# How to build a hidden structure tableau?
-				# Build two and put them together
+				# Build hidden structure tableau
+				# note candidates as coming from one lexeme or another
+				# and copy candidates over
+				for cand in tab.candidates:
+					newC = cand.copy()
+					newC.c = "listed_"+c
+					cand.c = "composed_"+c
+					# for listed forms, find the listed constraint's non-listed counterpart
+					# transfer the violations over
+
+
+					# then, delete the listed constraints everywhere
+
+
+
+
+
+					tab.addCandidate(newC)
+
+
 				# Ok, check if we have what we need in
 
 			elif: random.random()< self.p_useListed:
@@ -770,8 +791,15 @@ class Grammar:
 				listed = True
 
 		else: # no listed form
-			# exclude listeds
-			
+			# exclude listeds - simply delete the column from the tableau
+			# remove them from constraintNames
+			tab.constraintList = [con for con, l in zip(tab.constraintList,listeds) if not l]
+			# remove their violations from every candidate
+			for cand in tab.candidates:
+				cand.violations = [v for v,l in zip(cand.violations, listeds) if not l]
+
+
+
 
 
 		# Given a tableau, that we just need to fill out
