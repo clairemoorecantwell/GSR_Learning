@@ -372,7 +372,7 @@ class Tableau:
 	def addCandidate(self,cand):
 		self.candidates.append(cand)
 		# Is this a faithful candidate?
-		# 
+		#
 		if cand.surfaceForm != cand.c:
 			self.hiddenStructure = True
 		if cand.surfaceForm not in self.surfaceCands:
@@ -544,7 +544,7 @@ class Grammar:
 		self.generateCandidates = generateCandidates # defaults to False, meaning you'll use the given candidates IF they exist
 		self.addViolations = addViolations # whether or not to use the constraint file to add extra violations to each candidate
 		self.PFC_type = PFC_type # options are "none", "pseudo", "full"
-		self.p_useListed = 0.5
+		self.p_useListed = 3  # If greater than 2, create a hidden structure tableau
 
 	def createLearningPlaylist(self,n):
 		# n is total number of learning simulations
@@ -756,6 +756,15 @@ class Grammar:
 
 		# 1 if constraint is a listed constraint, else 0
 		listeds = [1 if re.search("_listed",constraint) else 0 for constraint in tab.constraintList]
+		# create a multiplier: 1 for each constraint that listed_ forms should keep, 0 for composed-only violations
+		listed_multiplier = [1]* len(tab.constraintList)
+		composed_multiplier = [1]* len(tab.constraintList)
+		# for each entry in listeds that =1
+		for i in range(0, len(listeds)):
+			if listeds[i]:
+				cname = re.sub('_listed','',tab.constraintList[i]) # strip off the '_listed' string
+				listed_multiplier[tab.constraintList.index(cname)]=0  # then, find the index of that constraint, setting it to zero
+				composed_multiplier[i]=0 # and we can just set the index of the _listed version to zero for composed forms
 
 		listed = False # Are we using a specially listed lexical item?  If False, we compose from extant lexical items
 
@@ -769,24 +778,19 @@ class Grammar:
 				# and copy candidates over
 				for cand in tab.candidates:
 					newC = cand.copy()
-					newC.c = "listed_"+c
-					cand.c = "composed_"+c
-					# for listed forms, find the listed constraint's non-listed counterpart
-					# transfer the violations over
+					newC.c = "listed_"+cand.c
+					cand.c = "composed_"+cand.c
 
-
-					# then, delete the listed constraints everywhere
-
-
-
-
+					# multiply all the _listed violations by zero for the composed form, and vice versa for listed
+					cand.violations = [i*j for i,j in zip(cand.violations,composed_multiplier)]
+					newC.violations = [i*j for i,j in zip(cand.violations,listed_multiplier)]
 
 					tab.addCandidate(newC)
 
 
 				# Ok, check if we have what we need in
 
-			elif: random.random()< self.p_useListed:
+			elif random.random()< self.p_useListed:
 				lexemes = self.trainingData.lexicon[listedTag]
 				listed = True
 
@@ -819,6 +823,7 @@ class Grammar:
 		return tab#, tabconstraintList, w
 
 
+		#def listForm(lexemes_list,lexicon):
 
 
 class lexeme:
