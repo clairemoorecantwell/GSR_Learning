@@ -731,6 +731,7 @@ class Grammar:
 		# "full": completely user-defined, except for perhaps the PFCs
 
 		# Determine the creation method, and make sure we have everything for it
+		# Right now only "full" is implemented
 		if not self.generateCandidates:
 			if not self.addViolations:
 				method = "full"
@@ -753,6 +754,8 @@ class Grammar:
 
 		# 1 if constraint is a listed constraint, else 0
 		listeds = [1 if re.search("_listed",constraint) else 0 for constraint in tab.constraintList]
+		# for non-listed forms
+		composed = 
 
 		listed = False # Are we using a specially listed lexical item?  If False, we compose from extant lexical items
 
@@ -765,13 +768,13 @@ class Grammar:
 				# Build two and put them together
 				# Ok, check if we have what we need in
 
-			elif: random.random()< self.p_useListed:
+			elif random.random()< self.p_useListed:
 				lexemes = self.trainingData.lexicon[listedTag]
 				listed = True
 
 		else: # no listed form
 			# exclude listeds
-			
+
 
 
 		# Given a tableau, that we just need to fill out
