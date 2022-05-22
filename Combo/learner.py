@@ -303,8 +303,9 @@ class Tableaux:
 class Tableau:
 	def __init__(self,tag,prob=1,hiddenStructure=False,lexemes = [],w = []):
 		self.tag = tag # Human-readable tag to let the user know which tableau this is
-		self.prob = prob # How often do we see this input (observed)
+		self.prob = prob # Corresponds to tab.prob in input file
 		self.candidates = [] # To be filled during tableau creation
+		self.faithCands = [] # 1 if the candidate is 'faithful', 0 otherwise
 		self.probDenom = 1 # denominator for calculating MaxEnt prob of each candidate
 						   # this is the sum of each exponentiated harmony score
 		self.predProbsList = [] # list of each candidate's predicted probability; used in sampling
@@ -370,6 +371,8 @@ class Tableau:
 
 	def addCandidate(self,cand):
 		self.candidates.append(cand)
+		# Is this a faithful candidate?
+		#
 		if cand.surfaceForm != cand.c:
 			self.hiddenStructure = True
 		if cand.surfaceForm not in self.surfaceCands:
@@ -525,12 +528,11 @@ class Tableau:
 
 class Grammar:
 	def __init__(self,filename,featureSet,constraints=None,operations=None,generateCandidates=False,addViolations=False,PFC_type="none"):
-		self.trainingData = trainingData(filename)  # An array or something containing the learning data
+		self.trainingData = trainingData(filename)  # A list of lists. Each entry is [[lexeme1,lexeme2,...],'correctSurface','UR']
 		self.featureSet = featureSet
 		self.constraints = constraints
 		self.operations = operations # Read these off the top of the input data file.
 		self.w = [] # Weights, starts empty
-		self.initializeWeights() # Initialize weights when Tableaux object is created (to zero, or some other vector depending on how you call this function.)
 		self.t = 0	# For learning, t starts at 0
 		self.learningRate = 0.01
 		self.activityUpdateRate = 0.05
@@ -541,7 +543,33 @@ class Grammar:
 		self.generateCandidates = generateCandidates # defaults to False, meaning you'll use the given candidates IF they exist
 		self.addViolations = addViolations # whether or not to use the constraint file to add extra violations to each candidate
 		self.PFC_type = PFC_type # options are "none", "pseudo", "full"
-		self.p_useListed = 0.5
+		self.p_useListed = 3  # If greater than 2, create a hidden structure tableau; if 0 don't allow lexical listing of whole forms at all
+		if self.p_useListed>2:
+			self.trainingData.constraintNames += ["UseListed"]
+			self.cPairs = self.prepForUselisted() # this is a tuple, the second member is the reverse sorted _listed indices, for removing
+			#Now, the _listed versions have been removed from the constraint names vector
+			self.constraints
+		self.initializeWeights() # Initialize weights when Tableaux object is created (to zero, or some other vector depending on how you call this function.)
+
+
+	def prepForUselisted(self):
+		# create a list of tuples pairing up plain and listed versions of each relevant constraint
+		indexPairs = []
+		toRemove = []
+		for name in self.trainingData.constraintNames:
+			if re.search("_listed",name):
+				cname = re.sub('_listed','',name)
+				indexPlain = self.trainingData.constraintNames.index(cname)
+				indexListed = self.trainingData.constraintNames.index(name)
+				indexPairs.append((indexPlain,indexListed))
+				toRemove.append(indexListed)
+
+		# remove the 'listed' version from self.w
+		toRemove = sorted(toRemove,reverse=True)
+		for i in toRemove:
+			#self.w.pop(i)
+			self.trainingData.constraintNames.pop(i)
+		return indexPairs,toRemove
 
 	def createLearningPlaylist(self,n):
 		# n is total number of learning simulations
@@ -598,64 +626,79 @@ class Grammar:
 		#print(constraintList)
 		if e:
 			#print(e,tab.tag, obs.c,pred.c,obs.violations,pred.violations,obs.harmony,obs.predictedProb,pred.harmony,pred.predictedProb)
-			#update general weight: perceptron update
+			print(self.w)
+			#################################################################
+			# update general weight: perceptron update
 			self.w = [float(wt)+(float(p)-float(o))*self.learningRate for wt,p,o in zip(self.w,pred.violations,obs.violations) ]
 			self.w=[i if i>0 else 0 for i in self.w] # limit to positve constraint weights
+			#################################################################
+			print(self.w)
 
+			#################################################################
+			# useListed
+			if self.p_useListed>0:
+				# TODO figure out what to do with within-item variation
+				self.trainingData.lexicon["_".join([i.tag for i in datum[0]])] = obs.surfaceForm
+
+			##################################################################
+
+			##################################################################
+			# PFC stuff
 			# update existing PFCs
-			for pfc,p,o in zip(tab.constraintList[tab.pfcIndex:],pred.violations[tab.pfcIndex:],obs.violations[tab.pfcIndex:]):
-				pfc[1].w+=(p-o)*self.PFC_lrate
-				pfc[1].w = 0 if pfc[1].w<0 else pfc[1].w
+			if self.PFC_type !='none':
+				for pfc,p,o in zip(tab.constraintList[tab.pfcIndex:],pred.violations[tab.pfcIndex:],obs.violations[tab.pfcIndex:]):
+					pfc[1].w+=(p-o)*self.PFC_lrate
+					pfc[1].w = 0 if pfc[1].w<0 else pfc[1].w
 
-			# induce new PFCs
-			newPFCs = []
-			if self.PFC_type=="pseudo":
-				# parse each candidate into morphemes
-				parsed = obs.c.split("_")
-				parsedPred = pred.c.split("_")
-				if len(parsed)!=len(datum[0]) or len(parsedPred)!=len(datum[0]):
-					print(parsed)
-					print(datum[0])
-					print("ERROR: pseudo-PFC cannot be induced because morphemes in the candidate cannote be aligned with morphemes in the input")
-					exit
-				for i in range(0,len(datum[0])):
-					if parsed[i] != parsedPred[i]: #localize the error to the morpheme we are considering
-						newPFC = PFC(self.PFC_startW,surfaceString=parsed[i])
-						if newPFC not in datum[0][i].PFCs:
-							datum[0][i].PFCs.append(newPFC)
-							print("Added ", datum[0][i].tag, newPFC.name)
+				# induce new PFCs
+				newPFCs = []
+				if self.PFC_type=="pseudo":
+					# parse each candidate into morphemes
+					parsed = obs.c.split("_")
+					parsedPred = pred.c.split("_")
+					if len(parsed)!=len(datum[0]) or len(parsedPred)!=len(datum[0]):
+						print(parsed)
+						print(datum[0])
+						print("ERROR: pseudo-PFC cannot be induced because morphemes in the candidate cannote be aligned with morphemes in the input")
+						exit
+					for i in range(0,len(datum[0])):
+						if parsed[i] != parsedPred[i]: #localize the error to the morpheme we are considering
+							newPFC = PFC(self.PFC_startW,surfaceString=parsed[i])
+							if newPFC not in datum[0][i].PFCs:
+								datum[0][i].PFCs.append(newPFC)
+								print("Added ", datum[0][i].tag, newPFC.name)
 
 
-			elif self.PFC_type=="full":
-				newPFCs = inducePFCs(obs,pred,self.featureSet)
-				#pfcs_to_words = [[]]*len(datum[0])
-				for pfc in newPFCs: #loop through and determine which goes with which lexeme
-					if len(pfc)>2:
-						wd = re.search('(_)(w)([1234567890])',pfc[2])
-						if wd:
-							newPFC = PFC(self.PFC_startW,pfc[1],re.sub('_w.*','',pfc[2]))
-							if newPFC not in datum[0][int(wd.groups()[2])-1].PFCs:
-								#print("yes")
-								datum[0][int(wd.groups()[2])-1].PFCs.append(newPFC)
+				elif self.PFC_type=="full":
+					newPFCs = inducePFCs(obs,pred,self.featureSet)
+					#pfcs_to_words = [[]]*len(datum[0])
+					for pfc in newPFCs: #loop through and determine which goes with which lexeme
+						if len(pfc)>2:
+							wd = re.search('(_)(w)([1234567890])',pfc[2])
+							if wd:
+								newPFC = PFC(self.PFC_startW,pfc[1],re.sub('_w.*','',pfc[2]))
+								if newPFC not in datum[0][int(wd.groups()[2])-1].PFCs:
+									#print("yes")
+									datum[0][int(wd.groups()[2])-1].PFCs.append(newPFC)
+							else:
+								newPFC = PFC(self.PFC_startW,pfc[1],pfc[2])
+								if newPFC not in datum[0][0].PFCs:
+									#print("yes")
+									datum[0][0].PFCs.append(newPFC)
 						else:
-							newPFC = PFC(self.PFC_startW,pfc[1],pfc[2])
-							if newPFC not in datum[0][0].PFCs:
-								#print("yes")
-								datum[0][0].PFCs.append(newPFC)
-					else:
-						for lex in datum[0]:
-							newPFC = PFC(self.PFC_startW,pfc[1])
-							if newPFC not in lex.PFCs:
-								lex.PFCs.append(newPFC)
-							#somewhat odd strat: affiliate exists_feature constraints with all lexemes
+							for lex in datum[0]:
+								newPFC = PFC(self.PFC_startW,pfc[1])
+								if newPFC not in lex.PFCs:
+									lex.PFCs.append(newPFC)
+								#somewhat odd strat: affiliate exists_feature constraints with all lexemes
 
 
 
-			# induce PFCs
-			# compare against existing PFCs
-			# update if they already exist, otherwise induce
-			# Don't update every PFC???
-
+				# induce PFCs
+				# compare against existing PFCs
+				# update if they already exist, otherwise induce
+				# Don't update every PFC???
+			##################################################################
 
 
 		self.t+=1
@@ -689,13 +732,14 @@ class Grammar:
 
 			grammar_constraints_w.append(self.w)
 			currentPFC_w = [0 for i in PFCs_w[-1]] if len(PFC_list)>0 else []
-			for lexeme in self.trainingData.lexicon.values():
-				for pfc in lexeme.PFCs:
-					name = lexeme.tag + "_" + pfc.name
-					if name not in PFC_list:
-						PFC_list.append(name)
-						currentPFC_w.append(0) # make it the right length to accommodate the new PFCs
-					currentPFC_w[PFC_list.index(name)] = pfc.w
+			for lexeme in self.trainingData.lexicon.values() :
+				if type(lexeme)=='lexeme':
+					for pfc in lexeme.PFCs:
+						name = lexeme.tag + "_" + pfc.name
+						if name not in PFC_list:
+							PFC_list.append(name)
+							currentPFC_w.append(0) # make it the right length to accommodate the new PFCs
+						currentPFC_w[PFC_list.index(name)] = pfc.w
 			PFCs_w.append(currentPFC_w)
 
 		results = []
@@ -751,12 +795,9 @@ class Grammar:
 		tab = self.trainingData.tableaux[self.trainingData.tableauxTags.index(datum[2])].copy()
 		tab.w = self.w[:]
 		tab.constraintList = self.trainingData.constraintNames[:]
+		#print(tab)
 
-		# 1 if constraint is a listed constraint, else 0
-		listeds = [1 if re.search("_listed",constraint) else 0 for constraint in tab.constraintList]
-		# for non-listed forms
-		composed = 
-
+		############################### UseListed tableau creation
 		listed = False # Are we using a specially listed lexical item?  If False, we compose from extant lexical items
 
 		# Check if we should use a listed form - is there a listed form in the lexicon?
@@ -764,19 +805,49 @@ class Grammar:
 		if listedTag and listedTag in self.trainingData.lexicon:
 			# Check if we are using hidden structure to do this, or choosing between listing and composing
 			if self.p_useListed>2: # for now, set p_uselisted to 2 or higher to indicate "use hidden structure"
-				# How to build a hidden structure tableau?
-				# Build two and put them together
-				# Ok, check if we have what we need in
+				# Build hidden structure tableau
+				# note candidates as coming from one lexeme or another
+				# and copy candidates over
+				origCandidates = tab.candidates[:]
+				for cand in origCandidates:
+					newC = cand.copy()
+					cstring = cand.c
+					newC.c = "listed_"+cstring
+					cand.c = "composed_"+cstring
 
+					# add useListed violations to the end
+					# TODO make sure this is right
+					newC.violations += [0]
+					cand.violations += [1]
+
+					# self.cPairs is a tuple (list_of_pairs, reverse_sorted_indices_of_listed)
+					for pair in self.cPairs[0]:
+						# the tuple is (composedIndex,listedIndex)
+						newC.violations[pair[0]] = newC.violations[pair[1]]  # set both columns to the _listed version
+						cand.violations[pair[1]] = cand.violations[pair[0]]  # set both columns to the regular (composed) version
+
+					for i in self.cPairs[1]:
+						newC.violations.pop(i)
+						cand.violations.pop(i)
+
+					tab.addCandidate(newC)
+
+
+			# TODO
 			elif random.random()< self.p_useListed:
 				lexemes = self.trainingData.lexicon[listedTag]
 				listed = True
 
-		else: # no listed form
-			# exclude listeds
+		else: # no listed form - can get here if listing is just turned off, or if the listed version doesn't exist in the dictionary yet
+			# exclude listeds if there are any - simply delete the column from the tableau
+			# remove their violations from every candidate
+			if self.cPairs:
+				for cand in tab.candidates:
+					for i in self.cPairs[1]:
+						cand.violations.pop(i)
 
 
-
+		#################################################################################
 		# Given a tableau, that we just need to fill out
 		# begin initializing the new tableau with copies of things
 		# here, grabbing the tableau from the training data that corresponds to the input string in our datum
@@ -788,12 +859,12 @@ class Grammar:
 				for con in self.constraints:
 					cand.violations.append(con.assignViolations(cand,self.featureSet))
 
-		tab.applyPFCs()
-
+		#tab.applyPFCs()
 
 		return tab#, tabconstraintList, w
 
 
+		#def listForm(lexemes_list,lexicon):
 
 
 class lexeme:
@@ -823,6 +894,12 @@ class lexeme:
 		out += '\n'
 		out += ''.join([i.name+": "+str(i.w)+'\n' for i in self.PFCs]) if self.PFCs else 'No PFCs'
 		return out
+
+	def __repr__(self):
+		r = ""
+		if self.kind!=None:
+			r = ' - '+str(self.kind)
+		return self.tag+r
 
 	def decayPFC(self,t,decayRate,decayType='static'):
 		for pfc in self.PFCs:
