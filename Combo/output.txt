@@ -1,98 +1,44 @@
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	FaithPlace	Max	UseListed
-					0.03	0.07	0.03	0.09999999999999999
-paN_po?ok	pampo?ok	1.0	0.3366498354222962	-0.1	0.0	1.0	1.0	0.0
-paN_po?ok	pamo?ok	0.0	0.3267003291554077	-0.13	0.0	0.0	1.0	1.0
-paN_po?ok	paNpo?ok	0.0	0.3366498354222962	-0.1	1.0	1.0	0.0	0.0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	FaithPlace	Max	UseListed
-					0.03	0.07	0.03	0.09999999999999999
-paN_po?ok	pampo?ok	1.0	0.3366498354222962	-0.1	0.0	1.0	1.0	0.0
-paN_po?ok	pamo?ok	0.0	0.3267003291554077	-0.13	0.0	0.0	1.0	1.0
-paN_po?ok	paNpo?ok	0.0	0.3366498354222962	-0.1	1.0	1.0	0.0	0.0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	FaithPlace	Max	UseListed
-					0.03	0.07	0.03	0.09999999999999999
-paN_po?ok	pampo?ok	1.0	0.3366498354222962	-0.1	0.0	1.0	1.0	0.0
-paN_po?ok	pamo?ok	0.0	0.3267003291554077	-0.13	0.0	0.0	1.0	1.0
-paN_po?ok	paNpo?ok	0.0	0.3366498354222962	-0.1	1.0	1.0	0.0	0.0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	FaithPlace	Max	UseListed
-					0.03	0.07	0.03	0.09999999999999999
-paN_pighati?	composed_pampighati?	0.0	0.14873836197354803	-0.2	0.0	1.0	1.0	1.0	1
-paN_pighati?	composed_pamighati?	1.0	0.17630030202469107	-0.03	0.0	0.0	1.0	0.0	1
-paN_pighati?	composed_paNpighati?	0.0	0.16438131205537407	-0.1	1.0	1.0	0.0	0.0	1
-paN_pighati?	listed_pampighati?	0.0	0.16938746830468812	-0.07	0.0	1.0	0.0	0.0	0
-paN_pighati?	listed_pamighati?	1.0	0.1816694455587173	-0.0	0.0	0.0	0.0	0.0	0
-paN_pighati?	listed_paNpighati?	0.0	0.1595231100829813	-0.13	1.0	1.0	1.0	0.0	0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	FaithPlace	Max	UseListed
-					0.03	0.07	0.03	0.09999999999999999
-paN_pighati?	composed_pampighati?	0.0	0.14873836197354803	-0.2	0.0	1.0	1.0	1.0	1
-paN_pighati?	composed_pamighati?	1.0	0.17630030202469107	-0.03	0.0	0.0	1.0	0.0	1
-paN_pighati?	composed_paNpighati?	0.0	0.16438131205537407	-0.1	1.0	1.0	0.0	0.0	1
-paN_pighati?	listed_pampighati?	0.0	0.16938746830468812	-0.07	0.0	1.0	0.0	0.0	0
-paN_pighati?	listed_pamighati?	1.0	0.1816694455587173	-0.0	0.0	0.0	0.0	0.0	0
-paN_pighati?	listed_paNpighati?	0.0	0.1595231100829813	-0.13	1.0	1.0	1.0	0.0	0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	FaithPlace	Max	UseListed
-					0.03	0.07	0.03	0.09999999999999999
-paN_pighati?	composed_pampighati?	0.0	0.14873836197354803	-0.2	0.0	1.0	1.0	1.0	1
-paN_pighati?	composed_pamighati?	1.0	0.17630030202469107	-0.03	0.0	0.0	1.0	0.0	1
-paN_pighati?	composed_paNpighati?	0.0	0.16438131205537407	-0.1	1.0	1.0	0.0	0.0	1
-paN_pighati?	listed_pampighati?	0.0	0.16938746830468812	-0.07	0.0	1.0	0.0	0.0	0
-paN_pighati?	listed_pamighati?	1.0	0.1816694455587173	-0.0	0.0	0.0	0.0	0.0	0
-paN_pighati?	listed_paNpighati?	0.0	0.1595231100829813	-0.13	1.0	1.0	1.0	0.0	0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	FaithPlace	Max	UseListed
-					0.03	0.07	0.03	0.09999999999999999
-paN_dinig	composed_pandinig	1.0	0.17128768567906674	-0.03	0.0	0.0	1.0	0.0	1
-paN_dinig	composed_paninig	0.0	0.15498750725120175	-0.13	0.0	0.0	1.0	1.0	1
-paN_dinig	composed_paNdinig	0.0	0.17128768567906674	-0.03	1.0	0.0	0.0	0.0	1
-paN_dinig	listed_pandinig	1.0	0.1765041723183992	-0.0	0.0	0.0	0.0	0.0	0
-paN_dinig	listed_paninig	0.0	0.15970757955315443	-0.09999999999999999	0.0	0.0	0.0	1.0	0
-paN_dinig	listed_paNdinig	0.0	0.1662253695191111	-0.06	1.0	0.0	1.0	0.0	0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	FaithPlace	Max	UseListed
-					0.03	0.07	0.03	0.09999999999999999
-paN_dinig	composed_pandinig	1.0	0.17128768567906674	-0.03	0.0	0.0	1.0	0.0	1
-paN_dinig	composed_paninig	0.0	0.15498750725120175	-0.13	0.0	0.0	1.0	1.0	1
-paN_dinig	composed_paNdinig	0.0	0.17128768567906674	-0.03	1.0	0.0	0.0	0.0	1
-paN_dinig	listed_pandinig	1.0	0.1765041723183992	-0.0	0.0	0.0	0.0	0.0	0
-paN_dinig	listed_paninig	0.0	0.15970757955315443	-0.09999999999999999	0.0	0.0	0.0	1.0	0
-paN_dinig	listed_paNdinig	0.0	0.1662253695191111	-0.06	1.0	0.0	1.0	0.0	0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	FaithPlace	Max	UseListed
-					0.03	0.07	0.03	0.09999999999999999
-paN_dinig	composed_pandinig	1.0	0.17128768567906674	-0.03	0.0	0.0	1.0	0.0	1
-paN_dinig	composed_paninig	0.0	0.15498750725120175	-0.13	0.0	0.0	1.0	1.0	1
-paN_dinig	composed_paNdinig	0.0	0.17128768567906674	-0.03	1.0	0.0	0.0	0.0	1
-paN_dinig	listed_pandinig	1.0	0.1765041723183992	-0.0	0.0	0.0	0.0	0.0	0
-paN_dinig	listed_paninig	0.0	0.15970757955315443	-0.09999999999999999	0.0	0.0	0.0	1.0	0
-paN_dinig	listed_paNdinig	0.0	0.1662253695191111	-0.06	1.0	0.0	1.0	0.0	0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	FaithPlace	Max	UseListed
-					0.03	0.07	0.03	0.09999999999999999
-paN_dalaNin	pandalaNin	0.0	0.34425334574357264	-0.03	0.0	0.0	1.0	0.0
-paN_dalaNin	panalaNin	1.0	0.3114933085128547	-0.13	0.0	0.0	1.0	1.0
-paN_dalaNin	paNdalaNin	0.0	0.34425334574357264	-0.03	1.0	0.0	0.0	0.0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	FaithPlace	Max	UseListed
-					0.03	0.07	0.03	0.09999999999999999
-paN_dalaNin	pandalaNin	0.0	0.34425334574357264	-0.03	0.0	0.0	1.0	0.0
-paN_dalaNin	panalaNin	1.0	0.3114933085128547	-0.13	0.0	0.0	1.0	1.0
-paN_dalaNin	paNdalaNin	0.0	0.34425334574357264	-0.03	1.0	0.0	0.0	0.0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	FaithPlace	Max	UseListed
-					0.03	0.07	0.03	0.09999999999999999
-paN_dalaNin	pandalaNin	0.0	0.34425334574357264	-0.03	0.0	0.0	1.0	0.0
-paN_dalaNin	panalaNin	1.0	0.3114933085128547	-0.13	0.0	0.0	1.0	1.0
-paN_dalaNin	paNdalaNin	0.0	0.34425334574357264	-0.03	1.0	0.0	0.0	0.0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	FaithPlace	Max	UseListed
-					0.03	0.07	0.03	0.09999999999999999
-paN_gawaj	composed_paNgawaj	1.0	0.26248959373946995	-0.0	0.0	0.0	0.0	0.0	1
-paN_gawaj	composed_paNawaj	0.0	0.23751040626053	-0.09999999999999999	0.0	0.0	0.0	1.0	1
-paN_gawaj	listed_paNgawaj	1.0	0.26248959373946995	-0.0	0.0	0.0	0.0	0.0	0
-paN_gawaj	listed_paNawaj	0.0	0.23751040626053	-0.09999999999999999	0.0	0.0	0.0	1.0	0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	FaithPlace	Max	UseListed
-					0.03	0.07	0.03	0.09999999999999999
-paN_gawaj	composed_paNgawaj	1.0	0.26248959373946995	-0.0	0.0	0.0	0.0	0.0	1
-paN_gawaj	composed_paNawaj	0.0	0.23751040626053	-0.09999999999999999	0.0	0.0	0.0	1.0	1
-paN_gawaj	listed_paNgawaj	1.0	0.26248959373946995	-0.0	0.0	0.0	0.0	0.0	0
-paN_gawaj	listed_paNawaj	0.0	0.23751040626053	-0.09999999999999999	0.0	0.0	0.0	1.0	0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	FaithPlace	Max	UseListed
-					0.03	0.07	0.03	0.09999999999999999
-paN_gindaj	paNgindaj	0.0	0.5249791874789399	-0.0	0.0	0.0	0.0	0.0
-paN_gindaj	paNindaj	1.0	0.47502081252106	-0.09999999999999999	0.0	0.0	0.0	1.0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	FaithPlace	Max	UseListed
-					0.03	0.07	0.03	0.09999999999999999
-paN_gindaj	paNgindaj	0.0	0.5249791874789399	-0.0	0.0	0.0	0.0	0.0
-paN_gindaj	paNindaj	1.0	0.47502081252106	-0.09999999999999999	0.0	0.0	0.0	1.0
+input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	*nCoda	FaithPlace	Max	UseListed
+					4.099999999999957	6.509999999999906	3.0699999999999785	2.0400000000000005	7.509999999999884	2.0000000000000013
+paN_po?ok	composed_pampo?ok	0.0	2.619234960418428e-05	-10.549999999999908	0.0	1.0	0.0	1.0	0.0	1
+paN_po?ok	composed_pamo?ok	1.0	9.635626935354568e-06	-11.549999999999887	0.0	0.0	0.0	1.0	1.0	1
+paN_po?ok	composed_paNpo?ok	0.0	3.3383189379264705e-06	-12.609999999999864	1.0	1.0	0.0	0.0	0.0	1
+paN_po?ok	listed_pampo?ok	0.0	8.150281457187244e-07	-14.01999999999979	0.0	1.0	0.0	0.0	1.0	0
+paN_po?ok	listed_pamo?ok	1.0	0.9999568112547967	-0.0	0.0	0.0	0.0	0.0	0.0	0
+paN_po?ok	listed_paNpo?ok	0.0	3.2074215800819554e-06	-12.649999999999864	1.0	1.0	0.0	1.0	0.0	0
+input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	*nCoda	FaithPlace	Max	UseListed
+					4.099999999999957	6.509999999999906	3.0699999999999785	2.0400000000000005	7.509999999999884	2.0000000000000013
+paN_pighati?	composed_pampighati?	0.0	2.6153443730584945e-05	-10.549999999999908	0.0	1.0	0.0	1.0	0.0	1
+paN_pighati?	composed_pamighati?	1.0	9.621314264316557e-06	-11.549999999999887	0.0	0.0	0.0	1.0	1.0	1
+paN_pighati?	composed_paNpighati?	0.0	3.333360229884009e-06	-12.609999999999864	1.0	1.0	0.0	0.0	0.0	1
+paN_pighati?	listed_pampighati?	0.0	0.0014862045589777685	-6.509999999999906	0.0	1.0	0.0	0.0	0.0	0
+paN_pighati?	listed_pamighati?	1.0	0.9984714846654915	-0.0	0.0	0.0	0.0	0.0	0.0	0
+paN_pighati?	listed_paNpighati?	0.0	3.202657305762919e-06	-12.649999999999864	1.0	1.0	0.0	1.0	0.0	0
+input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	*nCoda	FaithPlace	Max	UseListed
+					4.099999999999957	6.509999999999906	3.0699999999999785	2.0400000000000005	7.509999999999884	2.0000000000000013
+paN_dinig	composed_pandinig	1.0	0.017018852187635134	-7.10999999999998	0.0	0.0	1.0	1.0	0.0	1
+paN_dinig	composed_paninig	0.0	0.00020075333408210217	-11.549999999999887	0.0	0.0	0.0	1.0	1.0	1
+paN_dinig	composed_paNdinig	0.0	0.002169120274367344	-9.169999999999938	1.0	0.0	1.0	0.0	0.0	1
+paN_dinig	listed_pandinig	1.0	0.9671191285701617	-3.0699999999999785	0.0	0.0	1.0	0.0	0.0	0
+paN_dinig	listed_paninig	0.0	0.011408077781890414	-7.509999999999884	0.0	0.0	0.0	0.0	1.0	0
+paN_dinig	listed_paNdinig	0.0	0.0020840678518633357	-9.209999999999937	1.0	0.0	1.0	1.0	0.0	0
+input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	*nCoda	FaithPlace	Max	UseListed
+					4.099999999999957	6.509999999999906	3.0699999999999785	2.0400000000000005	7.509999999999884	2.0000000000000013
+paN_dalaNin	composed_pandalaNin	0.0	0.0007798878799785807	-7.10999999999998	0.0	0.0	1.0	1.0	0.0	1
+paN_dalaNin	composed_panalaNin	1.0	9.199509484527583e-06	-11.549999999999887	0.0	0.0	0.0	1.0	1.0	1
+paN_dalaNin	composed_paNdalaNin	0.0	9.93998063761298e-05	-9.169999999999938	1.0	0.0	1.0	0.0	0.0	1
+paN_dalaNin	listed_pandalaNin	0.0	0.04431817601749336	-3.0699999999999785	0.0	0.0	1.0	0.0	0.0	0
+paN_dalaNin	listed_panalaNin	1.0	0.9546978345024475	-0.0	0.0	0.0	0.0	0.0	0.0	0
+paN_dalaNin	listed_paNdalaNin	0.0	9.550228421997135e-05	-9.209999999999937	1.0	0.0	1.0	1.0	0.0	0
+input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	*nCoda	FaithPlace	Max	UseListed
+					4.099999999999957	6.509999999999906	3.0699999999999785	2.0400000000000005	7.509999999999884	2.0000000000000013
+paN_gawaj	composed_paNgawaj	1.0	0.11913768447914347	-2.0000000000000013	0.0	0.0	0.0	0.0	0.0	1
+paN_gawaj	composed_paNawaj	0.0	6.523754297397695e-05	-9.509999999999886	0.0	0.0	0.0	0.0	1.0	1
+paN_gawaj	listed_paNgawaj	1.0	0.8803150341130915	-0.0	0.0	0.0	0.0	0.0	0.0	0
+paN_gawaj	listed_paNawaj	0.0	0.00048204386479111554	-7.509999999999884	0.0	0.0	0.0	0.0	1.0	0
+input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	*nCoda	FaithPlace	Max	UseListed
+					4.099999999999957	6.509999999999906	3.0699999999999785	2.0400000000000005	7.509999999999884	2.0000000000000013
+paN_gindaj	composed_paNgindaj	1.0	0.11913768447914347	-2.0000000000000013	0.0	0.0	0.0	0.0	0.0	1
+paN_gindaj	composed_paNindaj	0.0	6.523754297397695e-05	-9.509999999999886	0.0	0.0	0.0	0.0	1.0	1
+paN_gindaj	listed_paNgindaj	1.0	0.8803150341130915	-0.0	0.0	0.0	0.0	0.0	0.0	0
+paN_gindaj	listed_paNindaj	0.0	0.00048204386479111554	-7.509999999999884	0.0	0.0	0.0	0.0	1.0	0

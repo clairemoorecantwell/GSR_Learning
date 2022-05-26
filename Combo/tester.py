@@ -18,10 +18,12 @@ t.tabProb
 # First create a grammar object with the same input file
 # we'll use None for the feature set, and see how that goes
 
-g = l.Grammar("useListed_input",None)
+g = l.Grammar("useListed_input",l.Features("features.txt"))
 t = g.trainingData
 g.w
 
 newTab = g.makeTableau(t.learnData[1])
 
 g.p_useListed
+
+g.learn(1000,100)

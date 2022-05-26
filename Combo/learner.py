@@ -359,7 +359,7 @@ class Tableau:
 		return out
 
 	def copy(self):
-		newT = Tableau(self.tag,self.prob,self.hiddenStructure,self.lexemes,self.w)
+		newT = Tableau(self.tag,self.prob,self.hiddenStructure,self.lexemes[:],self.w[:])
 		newT.winner = self.winner
 		newT.constraintList = self.constraintList
 		for c in self.candidates:
@@ -545,15 +545,23 @@ class Grammar:
 		self.PFC_type = PFC_type # options are "none", "pseudo", "full"
 		self.p_useListed = 3  # If greater than 2, create a hidden structure tableau; if 0 don't allow lexical listing of whole forms at all
 		if self.p_useListed>2:
-			self.trainingData.constraintNames += ["UseListed"]
+
 			self.cPairs = self.prepForUselisted() # this is a tuple, the second member is the reverse sorted _listed indices, for removing
 			#Now, the _listed versions have been removed from the constraint names vector
-			self.constraints
 		self.initializeWeights() # Initialize weights when Tableaux object is created (to zero, or some other vector depending on how you call this function.)
 
 
 	def prepForUselisted(self):
 		# create a list of tuples pairing up plain and listed versions of each relevant constraint
+		self.trainingData.constraintNames.append("UseListed")
+		UseListedIndex = self.trainingData.constraintNames.index("UseListed")
+		print("adding UseListed at index"+str(UseListedIndex))
+		# add a 1 for 'useListed' for every candidate in self.trainingData.tableaux
+		# we're assuming all candidates are unlisted at the start
+		for t in self.trainingData.tableaux:
+			for c in t.candidates:
+				c.violations.append(1)
+
 		indexPairs = []
 		toRemove = []
 		for name in self.trainingData.constraintNames:
@@ -569,7 +577,7 @@ class Grammar:
 		for i in toRemove:
 			#self.w.pop(i)
 			self.trainingData.constraintNames.pop(i)
-		return indexPairs,toRemove
+		return indexPairs,toRemove,UseListedIndex
 
 	def createLearningPlaylist(self,n):
 		# n is total number of learning simulations
@@ -602,31 +610,30 @@ class Grammar:
 	def update(self,datum): # datum is an entry from playlist
 		# Start with a learning datum
 		lexemes = datum[0]
-		# First, determine if a complex listed for exists in the lexicon (self.trainingData.lexicon)
 
+		# Note that we've encountered these two lexemes
+		for lex in lexemes:
+			lex.lastSeen = self.t
+			lex.freq += 1
 
 		# Decay the existing PFCs affiliated with each lexeme, and remove zero weighted ones
 		for lex in lexemes:
 			lex.decayPFC(self.t,self.PFC_decay,decayType="static")
-			lex.lastSeen = self.t
-			lex.freq += 1
 			if len(lex.PFCs)>len(self.featureSet.featureNames)*len(lex.segLabels)*4:
 				print("WARNING: too many PFCs")
 				break
 
 		# grab, create, or fill out the tableau
 		tab= self.makeTableau(datum)
-		#print(constraintList)
-		#print(tab)
-		#print(w)
 
+		# Predict an output and compare to observed
 		e, obs, pred = tab.compareObsPred(tab.w)
 
 
 		#print(constraintList)
 		if e:
 			#print(e,tab.tag, obs.c,pred.c,obs.violations,pred.violations,obs.harmony,obs.predictedProb,pred.harmony,pred.predictedProb)
-			print(self.w)
+			#print(self.w)
 			#################################################################
 			# update general weight: perceptron update
 			self.w = [float(wt)+(float(p)-float(o))*self.learningRate for wt,p,o in zip(self.w,pred.violations,obs.violations) ]
@@ -638,7 +645,7 @@ class Grammar:
 			# useListed
 			if self.p_useListed>0:
 				# TODO figure out what to do with within-item variation
-				self.trainingData.lexicon["_".join([i.tag for i in datum[0]])] = obs.surfaceForm
+				self.trainingData.lexicon["_".join([i.tag for i in datum[0]])] = lexeme("_".join([i.tag for i in datum[0]]),[character for character in obs.surfaceForm])
 
 			##################################################################
 
@@ -743,9 +750,12 @@ class Grammar:
 			PFCs_w.append(currentPFC_w)
 
 		results = []
+		resultsData = []
 		for datum in self.trainingData.learnData:
-			tab = self.makeTableau(datum)
-			results.append(tab.toFile(tab.w))
+			if datum[0] not in resultsData:
+				resultsData.append(datum[0])  #datum[0] is the list of lexemes as the input e.g. [paN, po?ok]
+				tab = self.makeTableau(datum)
+				results.append(tab.toFile(tab.w))
 
 		with open("output.txt",'w') as f:
 			f.write('\n'.join(results))
@@ -802,7 +812,13 @@ class Grammar:
 
 		# Check if we should use a listed form - is there a listed form in the lexicon?
 		listedTag = "_".join([i.tag for i in datum[0]]) if len(datum[0])>1 else False
-		if listedTag and listedTag in self.trainingData.lexicon:
+		r = random.random() # sample to determine whether we do listing or composition on this particular trial
+		if listedTag and listedTag in self.trainingData.lexicon and r< self.p_useListed:
+			# we're just updating BOTH the parts and the whole listed form's frequency
+			# (Parts updated above, in the main learning loop)
+			self.trainingData.lexicon[listedTag].lastSeen = self.t
+			self.trainingData.lexicon[listedTag].freq +=1
+
 			# Check if we are using hidden structure to do this, or choosing between listing and composing
 			if self.p_useListed>2: # for now, set p_uselisted to 2 or higher to indicate "use hidden structure"
 				# Build hidden structure tableau
@@ -815,18 +831,16 @@ class Grammar:
 					newC.c = "listed_"+cstring
 					cand.c = "composed_"+cstring
 
-					# add useListed violations to the end
-					# TODO make sure this is right
-					newC.violations += [0]
-					cand.violations += [1]
+					# self.cPairs is a tuple (list_of_pairs, reverse_sorted_indices_of_listed, UseListed violation index before _listed removal)
+					newC.violations[self.cPairs[2]] = 0
+					cand.violations[self.cPairs[2]] = 1
 
-					# self.cPairs is a tuple (list_of_pairs, reverse_sorted_indices_of_listed)
-					for pair in self.cPairs[0]:
+					for pair in self.cPairs[0]:  # assign violations of faith to _listed versus not
 						# the tuple is (composedIndex,listedIndex)
 						newC.violations[pair[0]] = newC.violations[pair[1]]  # set both columns to the _listed version
 						cand.violations[pair[1]] = cand.violations[pair[0]]  # set both columns to the regular (composed) version
 
-					for i in self.cPairs[1]:
+					for i in self.cPairs[1]: # Now remove the violation corresponding to the _listed form of the constraint
 						newC.violations.pop(i)
 						cand.violations.pop(i)
 
@@ -834,11 +848,21 @@ class Grammar:
 
 
 			# TODO
-			elif random.random()< self.p_useListed:
-				lexemes = self.trainingData.lexicon[listedTag]
-				listed = True
+			elif r< self.p_useListed:
+				# Not using hidden structure, just choosing on each trial whether to use listed or composed forms
+				for cand in tab.candidates:
+					cand.violations[self.cPairs[2]] = 0
+					for pair in self.cPairs[0]:
+						cand.violations[pair[0]] = cand.violations[pair[1]] #Only use the _listed version
+					for i in self.cPairs[1]:
+						cand.violations.pop(i)
 
-		else: # no listed form - can get here if listing is just turned off, or if the listed version doesn't exist in the dictionary yet
+				
+				#lexemes = self.trainingData.lexicon[listedTag]
+
+
+		else: # no listed form - can get here if listing is just turned off, if we didn't randomly select to grab the
+		 	# listed form on this trial, or if the listed version doesn't exist in the dictionary yet
 			# exclude listeds if there are any - simply delete the column from the tableau
 			# remove their violations from every candidate
 			if self.cPairs:
@@ -881,7 +905,7 @@ class lexeme:
 		self.kind = kind # string specifying what kind of morpheme it is.  'root' 'suffix' 'prefix' etc. Optional
 		self.freq = 0   #initialize at zero, increase during learning.  This number reflects the actual frequency of the lexeme during learning, rather than the frequency in the training data
 		self.PFCs = [] # list of PFC objects, optional.
-		self.lastSeen =0
+		self.lastSeen = 0
 
 	def __str__(self):
 		out = 'Lexeme ' + str(self.tag) +' (' + str(self.kind) + ', f:' + str(self.freq) + ' )\n'
@@ -1286,6 +1310,11 @@ class trainingData:
 			out += segform.format(*i)
 
 		return out
+
+	def decayLexemes(self):
+		for lex in self.lexicon:
+			self.lexicon[lex]
+
 
 
 

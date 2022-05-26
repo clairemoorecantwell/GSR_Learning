@@ -1,17 +1,17 @@
-input	lexeme	candidate	obs.prob	tab.prob	Assimilate	*NC	FaithPlace	Max	FaithPlace_listed	Max_listed
-paN_po?ok	paN_po?ok	pampo?ok	1	10	0	1	1	0	0	0
-paN_po?ok	paN_po?ok	pamo?ok	0	10	0	0	1	1	0	1
-paN_po?ok	paN_po?ok	paNpo?ok	0	10	1	1	0	0	1	0
-paN_pighati?	paN_pighati?	pampighati?	0	253	0	1	1	1	0	0
-paN_pighati?	paN_pighati?	pamighati?	1	253	0	0	1	0	0	0
-paN_pighati?	paN_pighati?	paNpighati?	0	253	1	1	0	0	1	0
-paN_dinig	paN_dinig	pandinig	1	70	0	0	1	0	0	0
-paN_dinig	paN_dinig	paninig	0	70	0	0	1	1	0	1
-paN_dinig	paN_dinig	paNdinig	0	70	1	0	0	0	1	0
-paN_dalaNin	paN_dalaNin	pandalaNin	0	25	0	0	1	0	0	0
-paN_dalaNin	paN_dalaNin	panalaNin	1	25	0	0	1	1	0	0
-paN_dalaNin	paN_dalaNin	paNdalaNin	0	25	1	0	0	0	1	0
-paN_gawaj	paN_gawaj	paNgawaj	1	97	0	0	0	0	0	0
-paN_gawaj	paN_gawaj	paNawaj	0	97	0	0	0	1	0	1
-paN_gindaj	paN_gindaj	paNgindaj	0	1	0	0	0	0	0	0
-paN_gindaj	paN_gindaj	paNindaj	1	1	0	0	0	1	0	0
+input	lexeme	candidate	obs.prob	tab.prob	Assimilate	*NC	*nCoda	FaithPlace	Max	FaithPlace_listed	Max_listed
+paN_po?ok	paN_po?ok	pampo?ok	0	10	0	1	0	1	0	0	1
+paN_po?ok	paN_po?ok	pamo?ok	1	10	0	0	0	1	1	0	0
+paN_po?ok	paN_po?ok	paNpo?ok	0	10	1	1	0	0	0	1	0
+paN_pighati?	paN_pighati?	pampighati?	0	253	0	1	0	1	0	0	0
+paN_pighati?	paN_pighati?	pamighati?	1	253	0	0	0	1	1	0	0
+paN_pighati?	paN_pighati?	paNpighati?	0	253	1	1	0	0	0	1	0
+paN_dinig	paN_dinig	pandinig	1	70	0	0	1	1	0	0	0
+paN_dinig	paN_dinig	paninig	0	70	0	0	0	1	1	0	1
+paN_dinig	paN_dinig	paNdinig	0	70	1	0	1	0	0	1	0
+paN_dalaNin	paN_dalaNin	pandalaNin	0	25	0	0	1	1	0	0	0
+paN_dalaNin	paN_dalaNin	panalaNin	1	25	0	0	0	1	1	0	0
+paN_dalaNin	paN_dalaNin	paNdalaNin	0	25	1	0	1	0	0	1	0
+paN_gawaj	paN_gawaj	paNgawaj	1	97	0	0	0	0	0	0	0
+paN_gawaj	paN_gawaj	paNawaj	0	97	0	0	0	0	1	0	1
+paN_gindaj	paN_gindaj	paNgindaj	1	1	0	0	0	0	0	0	0
+paN_gindaj	paN_gindaj	paNindaj	0	1	0	0	0	0	1	0	1
