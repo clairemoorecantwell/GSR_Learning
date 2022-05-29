@@ -544,13 +544,14 @@ class Grammar:
 		self.addViolations = addViolations # whether or not to use the constraint file to add extra violations to each candidate
 		self.PFC_type = PFC_type # options are "none", "pseudo", "full"
 		self.lexC_type = 4 #If it's a number, that's the max number of copies allowed for each constraint
-		self.pChangeIndexation = 0.2 # probability of changing a lexical item's indexation, rather than upating the weight
+		self.pChangeIndexation = 1 # probability of changing a lexical item's indexation, rather than upating the weight
 		#self.maxLexCs = 4
 		self.lexCStartW = 5
+		self.lexCs = []
+
 		self.p_useListed = 0  # If greater than 2, create a hidden structure tableau; if 0 don't allow lexical listing of whole forms at all
 		self.pToList = 0.75
 		if self.p_useListed>0:
-
 			self.cPairs = self.prepForUselisted() # this is a tuple, the second member is the reverse sorted _listed indices, for removing
 			#Now, the _listed versions have been removed from the constraint names vector
 		self.initializeWeights() # Initialize weights when Tableaux object is created (to zero, or some other vector depending on how you call this function.)
@@ -586,8 +587,12 @@ class Grammar:
 		return indexPairs,toRemove,UseListedIndex
 
 	def prepForLexC(self):
-		self.w = [[i] for i in self.w]
-		# turn every constraint into a vector
+		self.lexCs = [[0] for i in self.w]
+		# create a vector for every constraint
+		# go through the lexicon, add in index vectors
+		for lex in self.trainingData.lexicon.values():
+			lex.lexCindexes = [0 for i in self.w]
+
 		if self.lexC_type == "inf":
 			self.lexC_type = length(self.trainingData.lexicon)**2
 			# make the max length the length of the lexicon squared.  Hopefully this is long enough to accommate whatever weird stuff you're up to!
@@ -670,40 +675,87 @@ class Grammar:
 
 			##################################################################
 			# Lexically-indexed constraints
-			# choose a constraint that prefers the observed form
-			for u in range(0,len(updateVector)):
-				if updateVector[u]>0: # Constraint prefers observed forms
-					weights = self.w[u]  # vector of weights for that constraint
+			for u in [j for j in range(0,len(updateVector)) if updateVector[j]!=0]: # go through constraints that matter
+				# u is an index, into constraints and violations, and indexation values on lexemes
+				weights = self.lexCs[u][1:]  # vector of indexed C's for that constraint; empty if there are none
+				if weights and updateVector[u]>0:
+					mx = max(weights)
+					mn =False
+				elif weights and updateVector[u]<0:
+					mn = min(weights)
+					mx =False
+				else:
+					mn =False
+					mx =False
+
+				for lex in datum[0]:  # every lexeme is updated
+					currentIndex = lex.lexCindexes[u] -1 # they start from 1
+					if random.random()<self.pChangeIndexation: # yes, we change indexation
+						#print("change Indexation...")
+						# the indexed C exists AND it is not the min/max already
+						# if currentIndex is not -1, then weights should not be []
+						# TODO add error-checking for this^
+						w = weights[currentIndex] if weights else 0 # current weight of the lexC indexed to this lexeme
+						if currentIndex>=0 and w!=mx and w!=mn:
+							# note that whichever (max or min) is not applicable will equal False, not a number
+							# we know we need to switch indexation
+							s = sorted(weights[:])
+							currentSpotInSort = s.index(w)
+							if mx: # obs preferring; move to next greater weight
+								direction = 1
+							else: # pred preferring; move to next lower weight
+								direction = -1
+
+							move = 1
+							while move:
+								newWeight = s[currentSpotInSort+direction*move]
+								if newWeight!=w:
+									move = 0
+								else:
+									move += 1
+
+							# change the index on the lexeme to the location of that new weight
+							lex.lexCindexes[u]=weights.index(newWeight)+1 # plus 1 because we're indexing into the original lex weight vector
+							# re-indexed!
+
+						elif len(weights)<self.lexC_type and not mn: # either the weight doesn't exist, or it's already at the min/max
+							# only induce if at the max
+							# still check whether we've already capped out our allowed number of weights
+							# Induce
+							self.lexCs[u].append(self.lexCStartW) # add a new lexC
+							lex.lexCindexes[u]=len(self.lexCs[u])-1 # index to the new weight
+							print("New cloned copy of "+self.trainingData.constraintNames[u])
+
+						else: # Should only get here if we SHOULD induce but have already reached the max
+							# just update
+							# if weight needs to be lower than min, will just get updated down
+							self.lexCs[u][currentIndex+1] += updateVector[u]*self.learningRate
+
+					else: # we don't change indexation
+						if currentIndex>=0: # if lexC exists
+							# update
+							self.lexCs[u][currentIndex+1] += updateVector[u]*self.learningRate
+
+					##############################
+					# Decided not to do this part, because of Pater 2010
+					# Need lexemes to be able to dictate what happens outside their borders for Yine
 					# figure out which lexeme(s) differ
 					# only apply new clones to lexemes that differ
-					parsed = obs.c.split("_")
-					parsedPred = pred.c.split("_")
-					if len(parsed)!=len(datum[0]) or len(parsedPred)!=len(datum[0]):
-						print(parsed)
-						print(datum[0])
-						print("ERROR: lexical indexation cannot be induced because morphemes in the candidate cannote be aligned with morphemes in the input")
-						exit
-					for i in range(0,len(datum[0])):
-						if parsed[i]!=parsedPred[i]:
-							#Ok, now we will change the indexation of lexeme i
-							currentIndex = datum[0][i].lexCs[u]
-							if random.random()<self.pChangeIndexation:
-								if weights[currentIndex]<max(weights):
-									w = weights[currentIndex]
-									s = sort(weights[1:]) # can't choose the base weight
-									currentInd = s.index(w)
-									while s[currentInd]==w:
-										s.pop(currentInd)
-									newWeight = s[currentInd]
-									datum[0][i].lexCs[u]=weights.index(newWeight)
-								elif len(weights)<self.lexC_type:
-									self.w[u].append(self.lexCStartW) # add a new lexC
-									datum[0][i].lexCs[u]=len(self.w[u])-1
-								else:
-									self.w[u][currentIndex] +=updateVector[u]*self.learningRate
+					#parsed = obs.c.split("_")
+					#parsedPred = pred.c.split("_")
+					#if len(parsed)!=len(datum[0]) or len(parsedPred)!=len(datum[0]):
+					#	print(parsed)
+					#	print(datum[0])
+					#	print("ERROR: lexical indexation cannot be induced because morphemes in the candidate cannote be aligned with morphemes in the input")
+					#	exit
+					#for i in range(0,len(datum[0])):
+					#	if parsed[i]!=parsedPred[i]:
+					#		#Ok, now we will change the indexation of lexeme i
+					#		etcetera
+					# TODO possible way to split the difference on locality:
+					# find the lexeme(s) that differ from obs to pred, and only update those and adjacent lexemes
 
-							else:
-								self.w[u][currentIndex] +=updateVector[u]*self.learningRate
+
 
 			##################################################################
 
@@ -969,7 +1021,17 @@ class Grammar:
 
 		######################################################################
 		# Adjust for lexically indexed C's
-		if
+		if self.lexC_type:
+			for cIndex in range(0,len(tab.w)): # run through all constraints
+				wToUse = 0
+				for lex in datum[0]: # run through all lexemes
+					lexIndexForC = lex.lexCindexes[cIndex] # which idex does lex use?
+					thisW = self.lexCs[cIndex][lexIndexForC] # what's the weight associated with that index?
+					if thisW > wToUse: # if it's larger than we've seen before
+						wToUse = thisW # keep it
+				if wToUse: # if there was any weight above 0
+					tab.w[cIndex]=wToUse # use that clone weight instead of the base weight
+
 		######################################################################
 
 
@@ -1003,7 +1065,7 @@ class lexeme:
 		self.kind = kind # string specifying what kind of morpheme it is.  'root' 'suffix' 'prefix' etc. Optional
 		self.freq = 1   #initialize at zero, increase during learning.  This number reflects the actual frequency of the lexeme during learning, rather than the frequency in the training data
 		self.PFCs = [] # list of PFC objects, optional.
-		self.lexCs = [] # list of lexically indexed constraints, OR indexation values, optional
+		self.lexCindexes = [] # list of indexation values for lex C's, indexing into Grammar.lexCs
 		self.lastSeen = 0
 
 	def __str__(self):

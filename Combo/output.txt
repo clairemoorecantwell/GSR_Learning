@@ -1,28 +1,28 @@
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	*nCoda	FaithPlace	Max
-					0.03	0.03	0.01	0.01	0.01
-paN_po?ok	pampo?ok	0.0	0.33328889333291856	-0.04	0.0	1.0	0.0	1.0	0.0
-paN_po?ok	pamo?ok	1.0	0.340021775594278	-0.02	0.0	0.0	0.0	1.0	1.0
-paN_po?ok	paNpo?ok	0.0	0.32668933107280346	-0.06	1.0	1.0	0.0	0.0	0.0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	*nCoda	FaithPlace	Max
-					0.03	0.03	0.01	0.01	0.01
-paN_pighati?	pampighati?	0.0	0.33328889333291856	-0.04	0.0	1.0	0.0	1.0	0.0
-paN_pighati?	pamighati?	1.0	0.340021775594278	-0.02	0.0	0.0	0.0	1.0	1.0
-paN_pighati?	paNpighati?	0.0	0.32668933107280346	-0.06	1.0	1.0	0.0	0.0	0.0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	*nCoda	FaithPlace	Max
-					0.03	0.03	0.01	0.01	0.01
-paN_dinig	pandinig	1.0	0.335548099177705	-0.02	0.0	0.0	1.0	1.0	0.0
-paN_dinig	paninig	0.0	0.335548099177705	-0.02	0.0	0.0	0.0	1.0	1.0
-paN_dinig	paNdinig	0.0	0.32890380164459	-0.04	1.0	0.0	1.0	0.0	0.0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	*nCoda	FaithPlace	Max
-					0.03	0.03	0.01	0.01	0.01
-paN_dalaNin	pandalaNin	0.0	0.335548099177705	-0.02	0.0	0.0	1.0	1.0	0.0
-paN_dalaNin	panalaNin	1.0	0.335548099177705	-0.02	0.0	0.0	0.0	1.0	1.0
-paN_dalaNin	paNdalaNin	0.0	0.32890380164459	-0.04	1.0	0.0	1.0	0.0	0.0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	*nCoda	FaithPlace	Max
-					0.03	0.03	0.01	0.01	0.01
-paN_gawaj	paNgawaj	1.0	0.5024999791668749	-0.0	0.0	0.0	0.0	0.0	0.0
-paN_gawaj	paNawaj	0.0	0.497500020833125	-0.01	0.0	0.0	0.0	0.0	1.0
-input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	*nCoda	FaithPlace	Max
-					0.03	0.03	0.01	0.01	0.01
-paN_gindaj	paNgindaj	1.0	0.5024999791668749	-0.0	0.0	0.0	0.0	0.0	0.0
-paN_gindaj	paNindaj	0.0	0.497500020833125	-0.01	0.0	0.0	0.0	0.0	1.0
+input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	*nCoda	FaithPlace	Max	FaithPlace_listed	Max_listed
+					5.129999999999997	7.169999999999954	5.779999999999983	4.860000000000003	2.430000000000055	5.129999999999997	5.119999999999997
+paN_po?ok	pampo?ok	0.0	5.221756178732901e-05	-17.149999999999956	0.0	1.0	0.0	1.0	0.0	0.0	1.0
+paN_po?ok	pamo?ok	1.0	0.9999083172539955	-7.290000000000058	0.0	0.0	0.0	1.0	1.0	0.0	0.0
+paN_po?ok	paNpo?ok	0.0	3.9465184217323276e-05	-17.42999999999995	1.0	1.0	0.0	0.0	0.0	1.0	0.0
+input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	*nCoda	FaithPlace	Max	FaithPlace_listed	Max_listed
+					5.129999999999997	7.169999999999954	5.779999999999983	4.860000000000003	2.430000000000055	5.129999999999997	5.119999999999997
+paN_pighati?	pampighati?	0.0	0.008662604844054862	-12.029999999999957	0.0	1.0	0.0	1.0	0.0	0.0	0.0
+paN_pighati?	pamighati?	1.0	0.9912982697999931	-7.290000000000058	0.0	0.0	0.0	1.0	1.0	0.0	0.0
+paN_pighati?	paNpighati?	0.0	3.9125355952042644e-05	-17.42999999999995	1.0	1.0	0.0	0.0	0.0	1.0	0.0
+input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	*nCoda	FaithPlace	Max	FaithPlace_listed	Max_listed
+					5.129999999999997	7.169999999999954	5.779999999999983	4.860000000000003	5.109999999999998	5.129999999999997	5.119999999999997
+paN_dinig	pandinig	1.0	0.9840629548898472	-10.639999999999986	0.0	0.0	1.0	1.0	0.0	0.0	0.0
+paN_dinig	paninig	0.0	0.011492445121766181	-15.089999999999998	0.0	0.0	0.0	1.0	1.0	0.0	1.0
+paN_dinig	paNdinig	0.0	0.0044445999883866326	-16.039999999999978	1.0	0.0	1.0	0.0	0.0	1.0	0.0
+input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	*nCoda	FaithPlace	Max	FaithPlace_listed	Max_listed
+					5.129999999999997	7.169999999999954	5.779999999999983	4.860000000000003	2.430000000000055	5.129999999999997	5.119999999999997
+paN_dalaNin	pandalaNin	0.0	0.03388997593420791	-10.639999999999986	0.0	0.0	1.0	1.0	0.0	0.0	0.0
+paN_dalaNin	panalaNin	1.0	0.965956957246342	-7.290000000000058	0.0	0.0	0.0	1.0	1.0	0.0	0.0
+paN_dalaNin	paNdalaNin	0.0	0.00015306681945004676	-16.039999999999978	1.0	0.0	1.0	0.0	0.0	1.0	0.0
+input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	*nCoda	FaithPlace	Max	FaithPlace_listed	Max_listed
+					5.129999999999997	7.169999999999954	5.779999999999983	4.860000000000003	2.430000000000055	5.129999999999997	5.119999999999997
+paN_gawaj	paNgawaj	1.0	0.9994741665192033	-0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+paN_gawaj	paNawaj	0.0	0.0005258334807966126	-7.550000000000052	0.0	0.0	0.0	0.0	1.0	0.0	1.0
+input	candidate	obs.prob	pred.prob	H	Assimilate	*NC	*nCoda	FaithPlace	Max	FaithPlace_listed	Max_listed
+					5.129999999999997	7.169999999999954	5.779999999999983	4.860000000000003	2.430000000000055	5.129999999999997	5.119999999999997
+paN_gindaj	paNgindaj	1.0	0.9994741665192033	-0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0
+paN_gindaj	paNindaj	0.0	0.0005258334807966126	-7.550000000000052	0.0	0.0	0.0	0.0	1.0	0.0	1.0
