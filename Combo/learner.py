@@ -543,25 +543,33 @@ class Grammar:
 		self.generateCandidates = generateCandidates # defaults to False, meaning you'll use the given candidates IF they exist
 		self.addViolations = addViolations # whether or not to use the constraint file to add extra violations to each candidate
 		self.PFC_type = PFC_type # options are "none", "pseudo", "full"
-		self.p_useListed = 3  # If greater than 2, create a hidden structure tableau; if 0 don't allow lexical listing of whole forms at all
-		if self.p_useListed>2:
+		self.lexC_type = 4 #If it's a number, that's the max number of copies allowed for each constraint
+		self.pChangeIndexation = 0.2 # probability of changing a lexical item's indexation, rather than upating the weight
+		#self.maxLexCs = 4
+		self.lexCStartW = 5
+		self.p_useListed = 0  # If greater than 2, create a hidden structure tableau; if 0 don't allow lexical listing of whole forms at all
+		self.pToList = 0.75
+		if self.p_useListed>0:
 
 			self.cPairs = self.prepForUselisted() # this is a tuple, the second member is the reverse sorted _listed indices, for removing
 			#Now, the _listed versions have been removed from the constraint names vector
 		self.initializeWeights() # Initialize weights when Tableaux object is created (to zero, or some other vector depending on how you call this function.)
-
+		if self.lexC_type:
+			self.prepForLexC()
 
 	def prepForUselisted(self):
-		# create a list of tuples pairing up plain and listed versions of each relevant constraint
-		self.trainingData.constraintNames.append("UseListed")
-		UseListedIndex = self.trainingData.constraintNames.index("UseListed")
-		print("adding UseListed at index"+str(UseListedIndex))
-		# add a 1 for 'useListed' for every candidate in self.trainingData.tableaux
-		# we're assuming all candidates are unlisted at the start
-		for t in self.trainingData.tableaux:
-			for c in t.candidates:
-				c.violations.append(1)
+		UseListedIndex = None
+		if self.p_useListed>=2:
+			self.trainingData.constraintNames.append("UseListed")
+			UseListedIndex = self.trainingData.constraintNames.index("UseListed")
+			print("adding UseListed at index"+str(UseListedIndex))
+			# add a 1 for 'useListed' for every candidate in self.trainingData.tableaux
+			# we're assuming all candidates are unlisted at the start
+			for t in self.trainingData.tableaux:
+				for c in t.candidates:
+					c.violations.append(1)
 
+		# create a list of tuples pairing up plain and listed versions of each relevant constraint
 		indexPairs = []
 		toRemove = []
 		for name in self.trainingData.constraintNames:
@@ -572,12 +580,18 @@ class Grammar:
 				indexPairs.append((indexPlain,indexListed))
 				toRemove.append(indexListed)
 
-		# remove the 'listed' version from self.w
 		toRemove = sorted(toRemove,reverse=True)
 		for i in toRemove:
-			#self.w.pop(i)
 			self.trainingData.constraintNames.pop(i)
 		return indexPairs,toRemove,UseListedIndex
+
+	def prepForLexC(self):
+		self.w = [[i] for i in self.w]
+		# turn every constraint into a vector
+		if self.lexC_type == "inf":
+			self.lexC_type = length(self.trainingData.lexicon)**2
+			# make the max length the length of the lexicon squared.  Hopefully this is long enough to accommate whatever weird stuff you're up to!
+
 
 	def createLearningPlaylist(self,n):
 		# n is total number of learning simulations
@@ -611,17 +625,21 @@ class Grammar:
 		# Start with a learning datum
 		lexemes = datum[0]
 
-		# Note that we've encountered these two lexemes
-		for lex in lexemes:
-			lex.lastSeen = self.t
-			lex.freq += 1
 
-		# Decay the existing PFCs affiliated with each lexeme, and remove zero weighted ones
-		for lex in lexemes:
-			lex.decayPFC(self.t,self.PFC_decay,decayType="static")
-			if len(lex.PFCs)>len(self.featureSet.featureNames)*len(lex.segLabels)*4:
-				print("WARNING: too many PFCs")
-				break
+		# TODO this code is recapitulated inside Grammar.makeTableau()
+		# streamline?
+		if self.p_useListed==0: #If we're not doing useListed at all
+			# Note that we've encountered these two lexemes
+			for lex in lexemes:
+				lex.lastSeen = self.t
+				lex.freq += 1
+
+			# Decay the existing PFCs affiliated with each lexeme, and remove zero weighted ones
+			for lex in lexemes:
+				lex.decayPFC(self.t,self.PFC_decay,decayType="static")
+				if len(lex.PFCs)>len(self.featureSet.featureNames)*len(lex.segLabels)*4:
+					print("WARNING: too many PFCs")
+					break
 
 		# grab, create, or fill out the tableau
 		tab= self.makeTableau(datum)
@@ -636,18 +654,59 @@ class Grammar:
 			#print(self.w)
 			#################################################################
 			# update general weight: perceptron update
-			self.w = [float(wt)+(float(p)-float(o))*self.learningRate for wt,p,o in zip(self.w,pred.violations,obs.violations) ]
+			updateVector = [float(p)-float(o) for p,o in zip(pred.violations, obs.violations)]
+			self.w = [float(wt)+up*self.learningRate for wt,up in zip(self.w,updateVector) ]
 			self.w=[i if i>0 else 0 for i in self.w] # limit to positve constraint weights
 			#################################################################
-			print(self.w)
+			#print(self.w)
 
 			#################################################################
 			# useListed
 			if self.p_useListed>0:
 				# TODO figure out what to do with within-item variation
-				self.trainingData.lexicon["_".join([i.tag for i in datum[0]])] = lexeme("_".join([i.tag for i in datum[0]]),[character for character in obs.surfaceForm])
+				if random.random()<self.pToList:
+					self.trainingData.lexicon["_".join([i.tag for i in datum[0]])] = lexeme("_".join([i.tag for i in datum[0]]),[character for character in obs.surfaceForm])
+			##################################################################
 
 			##################################################################
+			# Lexically-indexed constraints
+			# choose a constraint that prefers the observed form
+			for u in range(0,len(updateVector)):
+				if updateVector[u]>0: # Constraint prefers observed forms
+					weights = self.w[u]  # vector of weights for that constraint
+					# figure out which lexeme(s) differ
+					# only apply new clones to lexemes that differ
+					parsed = obs.c.split("_")
+					parsedPred = pred.c.split("_")
+					if len(parsed)!=len(datum[0]) or len(parsedPred)!=len(datum[0]):
+						print(parsed)
+						print(datum[0])
+						print("ERROR: lexical indexation cannot be induced because morphemes in the candidate cannote be aligned with morphemes in the input")
+						exit
+					for i in range(0,len(datum[0])):
+						if parsed[i]!=parsedPred[i]:
+							#Ok, now we will change the indexation of lexeme i
+							currentIndex = datum[0][i].lexCs[u]
+							if random.random()<self.pChangeIndexation:
+								if weights[currentIndex]<max(weights):
+									w = weights[currentIndex]
+									s = sort(weights[1:]) # can't choose the base weight
+									currentInd = s.index(w)
+									while s[currentInd]==w:
+										s.pop(currentInd)
+									newWeight = s[currentInd]
+									datum[0][i].lexCs[u]=weights.index(newWeight)
+								elif len(weights)<self.lexC_type:
+									self.w[u].append(self.lexCStartW) # add a new lexC
+									datum[0][i].lexCs[u]=len(self.w[u])-1
+								else:
+									self.w[u][currentIndex] +=updateVector[u]*self.learningRate
+
+							else:
+								self.w[u][currentIndex] +=updateVector[u]*self.learningRate
+
+			##################################################################
+
 
 			##################################################################
 			# PFC stuff
@@ -808,22 +867,49 @@ class Grammar:
 		#print(tab)
 
 		############################### UseListed tableau creation
-		listed = False # Are we using a specially listed lexical item?  If False, we compose from extant lexical items
+		#listed = False # Are we using a specially listed lexical item?  If False, we compose from extant lexical items
 
 		# Check if we should use a listed form - is there a listed form in the lexicon?
 		listedTag = "_".join([i.tag for i in datum[0]]) if len(datum[0])>1 else False
 		r = random.random() # sample to determine whether we do listing or composition on this particular trial
-		if listedTag and listedTag in self.trainingData.lexicon and r< self.p_useListed:
+		if listedTag in self.trainingData.lexicon and 1<self.p_useListed<2: # we're sampling based on frequency
+			f_composed = [lex.freq for lex in datum[0]]
+			f_listed = self.trainingData.lexicon[listedTag].freq
+			#########################################################
+			## To change how listed forms are sampled based on frequency edit here
+			#########################################################
+			# choose the lowest frequency lexeme of the bunch
+			local_p_useListed = f_listed/(f_listed + min(f_composed))
+
+			# choose the root's frequency, if there is exactly one root
+			#roots = [1 if lex.kind =='root' else 0 for lex in datum[0] ]
+
+			#if sum(roots) == 1:
+			#	f_root = f_composed[roots.index(1)]
+			#	local_p_useListed = f_listed/(f_listed + f_root)
+			#else:
+			#	local_p_useListed = f_listed/(f_listed + min(f_composed))
+			#########################################################
+			print("f_composed:"+str(f_composed))
+			print("f_listed:"+str(f_listed))
+			print("p_uselisted")
+			print(local_p_useListed)
+		else:
+			local_p_useListed = self.p_useListed
+		if listedTag and listedTag in self.trainingData.lexicon and r< local_p_useListed:
 			# we're just updating BOTH the parts and the whole listed form's frequency
 			# (Parts updated above, in the main learning loop)
 			self.trainingData.lexicon[listedTag].lastSeen = self.t
 			self.trainingData.lexicon[listedTag].freq +=1
 
 			# Check if we are using hidden structure to do this, or choosing between listing and composing
-			if self.p_useListed>2: # for now, set p_uselisted to 2 or higher to indicate "use hidden structure"
+			if self.p_useListed>=2: # for now, set p_uselisted to 2 or higher to indicate "use hidden structure"
 				# Build hidden structure tableau
 				# note candidates as coming from one lexeme or another
 				# and copy candidates over
+				for lex in datum[0]:
+					lex.lastSeen = self.t
+					lex.freq += 1
 				origCandidates = tab.candidates[:]
 				for cand in origCandidates:
 					newC = cand.copy()
@@ -847,34 +933,46 @@ class Grammar:
 					tab.addCandidate(newC)
 
 
-			# TODO
-			elif r< self.p_useListed:
-				# Not using hidden structure, just choosing on each trial whether to use listed or composed forms
+			elif r< local_p_useListed:  # Only using the listed form in the tableau
+				print("Using the listed form only!")
+				useListedIndex = self.cPairs[2]
 				for cand in tab.candidates:
-					cand.violations[self.cPairs[2]] = 0
+					if useListedIndex != None:  # If the useListed constraint exists (for hidden structure only)
+						cand.violations[self.cPairs[2]] = 0 # setting the value for UseListed
 					for pair in self.cPairs[0]:
 						cand.violations[pair[0]] = cand.violations[pair[1]] #Only use the _listed version
 					for i in self.cPairs[1]:
 						cand.violations.pop(i)
 
-				
+
 				#lexemes = self.trainingData.lexicon[listedTag]
 
 
-		else: # no listed form - can get here if listing is just turned off, if we didn't randomly select to grab the
-		 	# listed form on this trial, or if the listed version doesn't exist in the dictionary yet
+		else:
+			'''no listed form - can get here 3 ways:
+			(1) if listing is turned off (p_useListed ==0)
+			(2) if listing was not selected on this trial
+			(3) if the listed version isn't in the lexicon yet
 			# exclude listeds if there are any - simply delete the column from the tableau
 			# remove their violations from every candidate
-			if self.cPairs:
+			'''
+			for lex in datum[0]:  # This little bit is redundant with above, and also in the main update() loop
+				lex.lastSeen = self.t
+				lex.freq += 1
+			if self.p_useListed:
 				for cand in tab.candidates:
 					for i in self.cPairs[1]:
 						cand.violations.pop(i)
 
 
 		#################################################################################
-		# Given a tableau, that we just need to fill out
-		# begin initializing the new tableau with copies of things
-		# here, grabbing the tableau from the training data that corresponds to the input string in our datum
+
+		######################################################################
+		# Adjust for lexically indexed C's
+		if
+		######################################################################
+
+
 
 		if method == "partial":
 			# Assign violations of dynamic constraints
@@ -903,8 +1001,9 @@ class lexeme:
 		# self.activitys = [.4, .5, .6, 1, 1, 1]
 		# self.linearSegOrder = [1, 1, 1, 2, 3, 4]
 		self.kind = kind # string specifying what kind of morpheme it is.  'root' 'suffix' 'prefix' etc. Optional
-		self.freq = 0   #initialize at zero, increase during learning.  This number reflects the actual frequency of the lexeme during learning, rather than the frequency in the training data
+		self.freq = 1   #initialize at zero, increase during learning.  This number reflects the actual frequency of the lexeme during learning, rather than the frequency in the training data
 		self.PFCs = [] # list of PFC objects, optional.
+		self.lexCs = [] # list of lexically indexed constraints, OR indexation values, optional
 		self.lastSeen = 0
 
 	def __str__(self):
