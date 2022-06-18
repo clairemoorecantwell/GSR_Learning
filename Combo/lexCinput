@@ -1,0 +1,9 @@
+input	candidate	obs.prob	tab.prob	doSyncope	Max
+hata_lu	hat_lu	1	1	0	1
+hata_lu	hata_lu	0	1	1	0
+heta_lu	het_lu	1	1	0	1
+heta_lu	heta_lu	0	1	1	0
+hata_ta	hat_ta	0	1	0	1
+hata_ta	hata_ta	1	1	1	0
+heta_ta	het_ta	0	1	0	1
+heta_ta	heta_ta	1	1	1	0

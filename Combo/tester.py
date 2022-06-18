@@ -27,3 +27,6 @@ newTab = g.makeTableau(t.learnData[1])
 g.p_useListed
 
 g.learn(1000,100)
+# Check output.txt
+# To see if each form is listed or not
+# plus, predicted probabilities and constraint weights

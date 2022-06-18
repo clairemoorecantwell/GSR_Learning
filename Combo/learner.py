@@ -540,11 +540,13 @@ class Grammar:
 		self.PFC_startW = 10
 		self.PFC_decay = 0.0001
 
+		self.decayRate = 0.001
+
 		self.generateCandidates = generateCandidates # defaults to False, meaning you'll use the given candidates IF they exist
 		self.addViolations = addViolations # whether or not to use the constraint file to add extra violations to each candidate
 		self.PFC_type = PFC_type # options are "none", "pseudo", "full"
-		self.lexC_type = 4 #If it's a number, that's the max number of copies allowed for each constraint
-		self.pChangeIndexation = 1 # probability of changing a lexical item's indexation, rather than upating the weight
+		self.lexC_type = 0 #If it's a number, that's the max number of copies allowed for each constraint
+		self.pChangeIndexation = 0.5 # probability of changing a lexical item's indexation, rather than upating the weight
 		#self.maxLexCs = 4
 		self.lexCStartW = 5
 		self.lexCs = []
@@ -646,6 +648,13 @@ class Grammar:
 					print("WARNING: too many PFCs")
 					break
 
+		if self.lexC_type:
+			#print("decaying")
+			for c in range(0,len(self.lexCs)):
+				self.lexCs[c] = [i-self.decayRate for i in self.lexCs[c]] # decay all lexC's
+				self.lexCs[c] = [i if i>0 else 0 for i in self.lexCs[c]]  # lower bound at zero
+			#print(self.lexCs)
+
 		# grab, create, or fill out the tableau
 		tab= self.makeTableau(datum)
 
@@ -688,17 +697,46 @@ class Grammar:
 					mn =False
 					mx =False
 
-				for lex in datum[0]:  # every lexeme is updated
+				obsParsed = obs.c.split("_")
+				predParsed = pred.c.split("_")
+				if len(obsParsed)!=len(predParsed) or len(obsParsed)!=len(datum[0]):
+					print("predicted: "+pred.c)
+					print("observed: " + obs.c)
+					print(datum[0])
+					print(" Error: predicted and/or observed cannot be aligned with lexemes - LexC induction will not work")
+					exit
+
+				updateIndices = []
+				for i in range(0,len(datum[0])):
+				# find the lexeme that differs between obs and pred
+				# and update it and adjacent lexemes only
+					if obsParsed[i] != predParsed[i] and i not in updateIndices:
+						updateIndices.append(i)
+					if i>0 and i-1 not in updateIndices: # if we're not already updating the previous lexeme
+						updateIndices.append(i-1)
+					if i<len(datum[0])-1 and i+1 not in updateIndices:
+						updateIndices.append(i+1)
+
+
+				# now updateIndices is just a list of indices of lexemes which need to be updated
+				for i in updateIndices:
+					lex = datum[0][i]
 					currentIndex = lex.lexCindexes[u] -1 # they start from 1
+					w = weights[currentIndex] if weights else 0 # current weight of the lexC indexed to this lexeme
+					if w==0:  # if a lexC has decayed to zero, it counts as not-existent and is removed from the lexeme
+						lex.lexCindexes[u] = 0
+						currentIndex = -1
+						#print("re-indexed to 0")
 					if random.random()<self.pChangeIndexation: # yes, we change indexation
 						#print("change Indexation...")
 						# the indexed C exists AND it is not the min/max already
 						# if currentIndex is not -1, then weights should not be []
 						# TODO add error-checking for this^
-						w = weights[currentIndex] if weights else 0 # current weight of the lexC indexed to this lexeme
+
 						if currentIndex>=0 and w!=mx and w!=mn:
 							# note that whichever (max or min) is not applicable will equal False, not a number
 							# we know we need to switch indexation
+
 							s = sorted(weights[:])
 							currentSpotInSort = s.index(w)
 							if mx: # obs preferring; move to next greater weight
@@ -716,25 +754,34 @@ class Grammar:
 
 							# change the index on the lexeme to the location of that new weight
 							lex.lexCindexes[u]=weights.index(newWeight)+1 # plus 1 because we're indexing into the original lex weight vector
+							#print("re-indexed from "+str(currentIndex+1) + " to "+str(lex.lexCindexes[u]))
 							# re-indexed!
 
-						elif len(weights)<self.lexC_type and not mn: # either the weight doesn't exist, or it's already at the min/max
+						elif len([w for w in weights if w>0])<self.lexC_type and not mn: # either the weight doesn't exist, or it's already at the min/max
 							# only induce if at the max
 							# still check whether we've already capped out our allowed number of weights
-							# Induce
-							self.lexCs[u].append(self.lexCStartW) # add a new lexC
-							lex.lexCindexes[u]=len(self.lexCs[u])-1 # index to the new weight
+							# Induce at the first index that's 0, or append to end
+							newIndex = 0 if 0 not in weights else weights.index(0)+1
+							if newIndex: # we're re-populating a slot that got decayed to zero
+								self.lexCs[u][newIndex] = self.lexCStartW
+								lex.lexCindexes[u]=newIndex
+							else: # we're appending
+								self.lexCs[u].append(self.lexCStartW) # add a new lexC
+								lex.lexCindexes[u]=len(self.lexCs[u])-1 # index to the new weight
 							print("New cloned copy of "+self.trainingData.constraintNames[u])
 
-						else: # Should only get here if we SHOULD induce but have already reached the max
+						elif currentIndex>=0: # Should only get here if we SHOULD induce but have already reached the max
 							# just update
 							# if weight needs to be lower than min, will just get updated down
+							# don't proceed if there is no lexC affiliated with this lexeme
 							self.lexCs[u][currentIndex+1] += updateVector[u]*self.learningRate
+							#print("updating at index "+str(currentIndex+1))
 
 					else: # we don't change indexation
-						if currentIndex>=0: # if lexC exists
+						if currentIndex>=0 and weights and weights[currentIndex]: # if lexC exists
 							# update
 							self.lexCs[u][currentIndex+1] += updateVector[u]*self.learningRate
+							#print("updating at index "+str(currentIndex+1))
 
 					##############################
 					# Decided not to do this part, because of Pater 2010
