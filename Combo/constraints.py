@@ -57,6 +57,8 @@ def Hiatus(rC,featureSet):
 			vowelLast = 0
 	return hiatus
 
+#lambda hiatus: 1 if re.search("VV") else 0
+
 alignR = constraint("align-R",lambda rC,f:0 if re.search('I$',re.sub('\(.*\)','',rC.c)) else 1)
 alignL = constraint("align-L",lambda rC,f:0 if re.search('^I',re.sub('\(.*\)','',rC.c)) else 1)
 nonFin = constraint("nonFin",lambda rC,f:0 if re.search('O$',re.sub('\(.*\)','',rC.c)) else 1)

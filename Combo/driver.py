@@ -4,6 +4,9 @@ Created on Wed Nov 10 11:10:01 2021
 
 @author: moore-cantwell
 """
+
+import importlib
+
 import learner as l
 
 # Testing the file input
@@ -37,6 +40,8 @@ g = l.Grammar("frequency_lexeme_input",c.constraints, c.operations, l.Features("
 t = l.trainingData("input.txt")
 
 g = l.Grammar("input_simple_voicing.txt",l.Features("features.txt"))
+
+g.learn(10000,100)
 
 
 g = l.Grammar("input.txt",l.Features("features.txt"))

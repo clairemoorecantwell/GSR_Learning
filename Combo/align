@@ -1,0 +1,106 @@
+def diffCands(cbase, cdiff,
+              skipChar='x'):  # Use Damerau-Levenshtein distance, but with n features different as 'weights'
+    # Takes richCand() objects
+    # This code adapted from gist.github.com/badocelot/5327337
+    # Explanation here: https://www.lemoda.net/text-fuzzy/damerau-levenshtein/index.html
+    # assumes cbase and cdiff use the same feature sets, so their .segs dictionaries all have the same length of feature vectors
+    # Used to prevent transposition for first characters
+    INF = len(cbase.segsList) * len(list(cbase.segsDict.values())[0]) + len(cdiff.segsList) * len(
+        list(cdiff.segsDict.values())[0])
+
+    # Matrix: (M+2) x (N+2)   M - len cbase, N - len cdiff
+    matrix = [[INF for n in range(len(cdiff.segsList) + 2)]]
+    matrix += [[INF] + [i * len(list(cdiff.segsDict.values())[0]) / 2 for i in range(len(cdiff.segsList) + 1)]]
+    matrix += [[INF, m * len(list(cbase.segsDict.values())[0]) / 2] + [0] * len(cdiff.segsList) for m in
+               range(1, len(cbase.segsList) + 1)]
+
+    # last_row = {} # Holds the last row each element was encountered
+
+    # Matrix to hold the changes that were chosen at each step - two levels smaller than the distance matrix - no INF col, and ignoring the initialized epenthesis/deleiton columns
+    # entries will be tuples (row_from,col_from,change)
+    # change is a tuple too - (TYPE,[features that were added/deleted/overwritten])
+
+    change_matrix = [[0] * (len(cdiff.segsList) + 2) for m in range(len(cbase.segsList) + 2)]
+    # Fill in Deletion and Epenthesis changes into change_matrix
+    i = 2
+    for seg in cdiff.segsList:
+        change_matrix[1][i] = (1, i - 1, ('EPEN'))
+        i += 1
+
+    i = 2
+    for seg in cbase.segsList:
+        change_matrix[i][1] = (
+            i - 1, 1, ('DEL', [f for f in cbase.segsDict[cbase.segsList[i - 2]] if f[0] != skipChar]))
+        i += 1
+
+    # Fill in costs
+    for row in range(1, len(cbase.segsList) + 1):
+        seg_base = [f for f in cbase.segsDict[cbase.segsList[row - 1]] if f[0] != skipChar]
+
+        # last_match_col = 0  # column of last match on this row
+
+        for col in range(1, len(cdiff.segsList) + 1):
+            seg_diff = [f for f in cdiff.segsDict[cdiff.segsList[col - 1]] if f[0] != skipChar]
+
+            # fill in last row:
+            # last_matching_row = last_row.get(tuple(seg_diff), 0)
+
+            # cost of substitution
+            d, ch1, ch2 = distSegs(cbase.segsDict[cbase.segsList[row - 1]], cdiff.segsDict[cdiff.segsList[col - 1]])
+            cost = 0 if seg_base == seg_diff else d
+
+            # compute substring distances
+            feat_change = matrix[row][col] + cost
+            epen = matrix[row + 1][col] + len(seg_diff) / 2
+            delete = matrix[row][col + 1] + len(seg_base) / 2
+            # TODO add as an option
+
+            # transpose = matrix[last_matching_row][last_match_col]
+            # + (row - last_matching_row - 1)*len(list(cbase.segs.values())[0]) + 1
+            # + (col - last_match_col -1)*len(list(cbase.segs.values())[0])
+
+            matrix[row + 1][col + 1] = min(feat_change, epen, delete)  # ,transpose)
+
+            # order of assumptions: epen, delete, feature change, transposition
+            # TODO: probly make this easily editable by the user
+            if epen == matrix[row + 1][col + 1]:
+                change_matrix[row + 1][col + 1] = (
+                    row + 1, col, ('EPEN'))  # ,seg_diff)) #writing down seg_diff here is useless
+
+            elif delete == matrix[row + 1][col + 1]:
+                change_matrix[row + 1][col + 1] = (row, col + 1, ('DEL', seg_base))
+
+            elif feat_change == matrix[row + 1][col + 1]:
+                change_matrix[row + 1][col + 1] = (row, col, ('CHANGE', ch2))
+
+        # elif transpose == matrix[row+1][col+1]:
+        #	change_matrix[row+1][col+1] = (last_matching_row,last_match_col,('TRANSPOSE'))
+
+        # matrix[row+1][col+1] = min(
+        #	matrix[row][col] + cost, # feature changes
+        #	matrix[row+1][col] +len(seg_diff),   # epenthesis
+        #	matrix[row][col+1] +len(seg_base),   # deletion
+
+        # transposition (metathesis)  NOTE: This assumes that any material between metathesized things is added/deleted
+        # matrix[last_matching_row][last_match_col]
+        #	+ (row - last_matching_row - 1)*len(list(cbase.segs.values())[0]) + 1
+        #	+ (col - last_match_col -1)*len(list(cbase.segs.values())[0])
+        # )
+
+        # if cost ==0:
+        #	last_match_col = col
+
+    # last_row[tuple(seg_base)] = row
+    # print(change_matrix, matrix)
+    i, j, change = change_matrix[-1][-1]
+    backtrace = [change]
+    # print(i,j)
+    while change_matrix[i][j] != 0:
+        i, j, change = change_matrix[i][j]
+        backtrace.append(change)
+    # print(i,j,change)
+
+    # Use segs identities from cbase, because that is the observed form, and therefore the form that we are trying to assert
+
+    return matrix[-1][-1], matrix, change_matrix, backtrace
+
