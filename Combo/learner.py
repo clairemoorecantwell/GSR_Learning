@@ -573,7 +573,7 @@ class Grammar:
         self.learningRate = 0.01
         self.activityUpdateRate = 0.05
         self.PFC_lrate = 0.1
-        self.PFC_startW = 10
+        self.PFC_startW = 10.0
         self.PFC_decay = 0.0001
 
         self.decayRate = 0.001
@@ -582,7 +582,7 @@ class Grammar:
         self.addViolations = addViolations  # whether or not to use the constraint file to add extra violations to each candidate
         self.PFC_type = PFC_type  # options are "none", "pseudo", "full"
         #####
-        self.lexC_type = 0  # If it's a number, that's the max number of copies allowed for each constraint
+        self.lexC_type = 5  # If it's a number, that's the max number of copies allowed for each constraint
         self.pChangeIndexation = 0.5  # probability of changing a lexical item's indexation, rather than upating the weight
         # self.maxLexCs = 4
         self.lexCStartW = 5
@@ -676,17 +676,20 @@ class Grammar:
         # TODO this code is recapitulated inside Grammar.makeTableau()
         # streamline?
         if self.p_useListed == 0:  # If we're not doing useListed at all
+            # Decay the existing PFCs affiliated with each lexeme, and remove zero weighted ones
+            for lex in lexemes:
+                lex.decayPFC(self.t, self.PFC_decay, decayType="static")
+                #print("decaying")
+                if len(lex.PFCs) > len(self.featureSet.featureNames) * len(lex.segLabels) * 4:
+                    print("WARNING: too many PFCs")
+                    break
+
             # Note that we've encountered these two lexemes
             for lex in lexemes:
                 lex.lastSeen = self.t
                 lex.freq += 1
 
-            # Decay the existing PFCs affiliated with each lexeme, and remove zero weighted ones
-            for lex in lexemes:
-                lex.decayPFC(self.t, self.PFC_decay, decayType="static")
-                if len(lex.PFCs) > len(self.featureSet.featureNames) * len(lex.segLabels) * 4:
-                    print("WARNING: too many PFCs")
-                    break
+
 
         if self.lexC_type:
             # print("decaying")
@@ -937,13 +940,13 @@ class Grammar:
             grammar_constraints_w.append(self.w)
             currentPFC_w = [0 for i in PFCs_w[-1]] if len(PFC_list) > 0 else []
             for lexeme in self.trainingData.lexicon.values():
-                if type(lexeme) == 'lexeme':
-                    for pfc in lexeme.PFCs:
-                        name = lexeme.tag + "_" + pfc.name
-                        if name not in PFC_list:
-                            PFC_list.append(name)
-                            currentPFC_w.append(0)  # make it the right length to accommodate the new PFCs
-                        currentPFC_w[PFC_list.index(name)] = pfc.w
+                #if type(lexeme) == 'lexeme':
+                for pfc in lexeme.PFCs:
+                    name = lexeme.tag + "_" + pfc.name
+                    if name not in PFC_list:
+                        PFC_list.append(name)
+                        currentPFC_w.append(0)  # make it the right length to accommodate the new PFCs
+                    currentPFC_w[PFC_list.index(name)] = pfc.w
             PFCs_w.append(currentPFC_w)
 
 
@@ -976,6 +979,12 @@ class Grammar:
             for ep in PFCs_w:
                 out += "\n" + "\t".join([str(pfc) for pfc in ep] + ["0" for i in PFC_list[len(ep):]])
             f.write(out)
+
+        with open("lexCs.txt","w") as f:
+        	out = ""
+        	for i in range(0,len(self.lexCs)):
+        		out += self.constraintList[i] + "\n"
+        		
 
     def makeTableau(self, datum):
         '''Make the tableau for learning, given all the parameters'''
@@ -1181,7 +1190,10 @@ class lexeme:
     def decayPFC(self, t, decayRate, decayType='static'):
         for pfc in self.PFCs:
             if decayType == 'static':
-                pfc.w -= (float(t) - self.lastSeen) * decayRate
+            	#print(pfc.w)
+            	#print((float(t) - self.lastSeen))
+            	pfc.w -= (float(t) - self.lastSeen) * decayRate
+            	#print(pfc.w)
             elif decayType == 'L1':
                 for i in range(self.lastSeen, t):
                     pfc.w -= decayRate * pfc.w
