@@ -983,8 +983,18 @@ class Grammar:
         with open("lexCs.txt","w") as f:
         	out = ""
         	for i in range(0,len(self.lexCs)):
-        		out += self.constraintList[i] + "\n"
-        		
+        		out += self.trainingData.constraintNames[i] + "\n"
+        		for j in range(1,len(self.lexCs[i])):
+        			out += str(self.lexCs[i][j]) + "\t"
+        			for l in self.trainingData.lexicon:
+        				if self.trainingData.lexicon[l].lexCindexes[i]==j:
+        					out += l + "\t"
+        			out += "\n"
+        		out += "\n"
+        		#out += "\t".join([str(w) for w in self.lexCs[i][1:]]) + "\n"
+
+
+        	f.write(out)
 
     def makeTableau(self, datum):
         '''Make the tableau for learning, given all the parameters'''
