@@ -757,10 +757,10 @@ class Grammar:
                          # and update it and adjacent lexemes only
                          if obsParsed[i] != predParsed[i] and i not in updateIndices:
                              updateIndices.append(i)
-                         if i > 0 and i - 1 not in updateIndices:  # if we're not already updating the previous lexeme
-                             updateIndices.append(i - 1)
-                         if i < len(datum[0]) - 1 and i + 1 not in updateIndices:
-                             updateIndices.append(i + 1)
+                         #if i > 0 and i - 1 not in updateIndices:  # if we're not already updating the previous lexeme
+                         #    updateIndices.append(i - 1)
+                         #if i < len(datum[0]) - 1 and i + 1 not in updateIndices:
+                         #    updateIndices.append(i + 1)
 
                      # now updateIndices is just a list of indices of lexemes which need to be updated
                      for i in updateIndices:
@@ -1593,13 +1593,19 @@ class trainingData:
 
         out = "Training Data: "
         out += '\n'
-        out += segform.format("lexemes", "surface", "training probability")
+        out += segform.format("input", "surface", "training probability")
         for i in trainTags:
             out += '\n'
             out += segform.format(*i)
 
         return out
 
+    def printLexicon(self):
+    	print(str(len(self.lexicon))+ " lexemes:")
+    	for l in self.lexicon:
+    		print(self.lexicon[l])
+
+    #what does this do??
     def decayLexemes(self):
         for lex in self.lexicon:
             self.lexicon[lex]

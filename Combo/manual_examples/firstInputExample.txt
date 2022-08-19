@@ -1,0 +1,11 @@
+input	candidate	obs.prob
+pat	pat	1
+pat	pad	0
+pat_ka	pat_ka	0.7
+pat_ka	pad_ka	0
+pat_ka	pad_ga	0.3
+taka	taka	0.3
+taka	taga	0.7
+taka_ka	taka_ka	0.3
+taka_ka	taga_ka	0.7
+pat_ka	pa_ka	0

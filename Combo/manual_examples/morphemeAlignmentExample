@@ -1,0 +1,8 @@
+input	lexeme	candidate	surface	obs.prob
+PLAY_INF	pat_ka	pat_ka	pat_ka	1
+PLAY_INF	pat_ka	patS_ka	patS_ka	0
+PLAY_1SG_PL	pat_i_ka	pat_i_ka	pat_i_ka	0
+PLAY_1SG_PL	pat_i_ka	patS_i_ka	patS_i_ka	1
+PLAY_1SG_PL	pat_i_ka	pat__ka	pat__ka	0
+PLAY	pat	pat	pat	1
+PLAY	pat	patS	patS	0
