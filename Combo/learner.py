@@ -1486,12 +1486,15 @@ class trainingData:
             self.constraintNames = header[constraintsStartAt:]
 
         inpt_s = []
+        lineNo = 0
         for i in lines[1:]:
+        	lineNo ++
             l = [j.strip() for j in i.split('\t')]
             inpt = l[iIndex]
 
             # Add lexemes
             lex = inpt.split("_")
+            nMorphs = len(lex)
             if specialLex:
                 splex = l[lIndex].split("_")
                 parsed = []
@@ -1511,8 +1514,8 @@ class trainingData:
                             segments = split[m]
                             act = [1 for c in split[m]]
                             parsed.append([segments, act])
-                if len(parsed) != len(lex):
-                    continue
+                if len(parsed) != nMorphs:
+                    raise Exception("The number of morphemes in the lexeme column does not match the number in the input column. Problem: "+inpt + " "+ l[lIndex]+ "line no. "+str(lineNo))
                 # TODO functionality for if the input has a LOT of ambiguous material '-asdhjk-' split over multiple morphemes
                 splex = parsed
 
@@ -1538,8 +1541,7 @@ class trainingData:
                     else:
                         p = 1
 
-                    self.tabProb.append(
-                        p)  # Note that only the first tab.prob value in a tableau with many candidates will be recorded.
+                    self.tabProb.append(p)  # Note that only the first tab.prob value in a tableau with many candidates will be recorded.
                     self.tableaux.append(Tableau(inpt, p, hidden, lexemes=lexList))
                     self.tableaux[
                         -1].constraintNames = self.constraintNames  # Assign each tableau the constraint names from the input file
@@ -1548,7 +1550,11 @@ class trainingData:
 
             if candidates:  # If there are candidates, populate the tableaux
                 c = l[cIndex]
+                if len(c.split("_")) != nMorphs:
+                	raise Exception("A candidate does not have the same number of morphemes as the input column.  Problem at: "+ inpt + " "+ c+ "line no. "+str(lineNo))
                 s = l[sIndex] if hidden else c  # surface form, defaults to candidate form if no hidden struct
+                if len(s.split("_")) != nMorphs:
+                	raise Exception("A surface form does not have the same number of morphemes as the input column.  Problem at: "+ inpt + " "+ s+ "line no. "+str(lineNo))
                 v = [float(viol) for viol in l[constraintsStartAt:]]  # Note that this could be empty
                 self.tableaux[-1].addCandidate(candidate(c, v, l[oIndex], s))
 
@@ -1572,6 +1578,7 @@ class trainingData:
             else:
                 self.sampler.append(float(l[oIndex]))
 
+        f.close()
         self.sampler = [s / sum(self.sampler) for s in self.sampler]  # convert to a well-formed distribution
 
     # TODO do I have to worry about these getting too small

@@ -1,0 +1,17 @@
+input	candidate	obs.prob	tab.prob	*x#	*Y
+POCH_INF	pux_en	1	1	0	0
+POCH_INF	puY_en	0	1	0	1
+ZOOG_INF	zox_en	0	1	0	0
+ZOOG_INF	zoY_en	1	1	0	1
+ZOOG2_INF	zox_en	0	1	0	0
+ZOOG2_INF	zoY_en	1	1	0	1
+ZOOG3_INF	zox_en	0	1	0	0
+ZOOG3_INF	zoY_en	1	1	0	1
+POCH	pux	1	1	0	0
+POCH	puY	0	1	1	1
+ZOOG	zox	1	1	0	0
+ZOOG	zoY	0	1	1	1
+ZOOG2	zox	1	1	0	0
+ZOOG2	zoY	0	1	1	1
+ZOOG3	zox	1	1	0	0
+ZOOG3	zoY	0	1	1	1
