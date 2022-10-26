@@ -563,8 +563,7 @@ class Tableau:
 
 
 class Grammar:
-	def __init__(self, filename, featureSet, constraints=None, operations=None, generateCandidates=False,
-				 addViolations=False, PFC_type="none"):
+	def __init__(self, filename, featureSet, constraints=None, operations=None, generateCandidates=False,addViolations=False, PFC_type="none"):
 		self.trainingData = trainingData(
 			filename)  # A list of lists. Each entry is [[lexeme1,lexeme2,...],'correctSurface','UR']
 		self.featureSet = featureSet
@@ -593,7 +592,7 @@ class Grammar:
 		self.lexCs = []
 
 
-		######        
+		######
 		self.p_useListed = 3  # If greater than 2, create a hidden structure tableau; if 0 don't allow lexical listing of whole forms at all
 		self.pToList = 0.75
 		if self.p_useListed > 0:
@@ -602,7 +601,7 @@ class Grammar:
 		self.initializeWeights()  # Initialize weights when Tableaux object is created (to zero, or some other vector depending on how you call this function.)
 		if self.lexC_type:
 			self.prepForLexC()
-		self.noisy = True
+		self.noisy = False
 
 	def prepForUselisted(self):
 		UseListedIndex = None
@@ -1017,8 +1016,6 @@ class Grammar:
 		''' it has the form [[lexeme1, lexeme2,...], surface string, input string]'''
 		''' 'input string' is from the input column of the spreadsheet '''
 
-		#print("Tableau " + str(self.t))
-
 		obsOutput = datum[1] #second member of datum is the surface string observed for this set of lexemes
 
 
@@ -1059,14 +1056,14 @@ class Grammar:
 					obsProb = 1 if newC == obsOutput else 0
 					containsObsOut = 1 if newC == obsOutput else 0
 
-					fcs.append(richCand(newC, [], obsProb, newSegsDict, newSegsList, None, newActivitys, newSuprasegmentals,surfaceForm=newC))                
+					fcs.append(richCand(newC, [], obsProb, newSegsDict, newSegsList, None, newActivitys, newSuprasegmentals,surfaceForm=newC))
 
 				else:
 					fcs.append("_".join([i for i in fc]))
 			return fcs
 
 		# def generateCandidates(cands):  <- candidate generation goes here
-		
+
 
 		def assemble(faithCands):
 
@@ -1078,7 +1075,7 @@ class Grammar:
 				# UR should be richCand
 				# generate candidates
 				# assign violations
-				# 
+				#
 				print('deNovo')
 
 			else:
@@ -1086,8 +1083,8 @@ class Grammar:
 				tab = self.trainingData.tableaux[self.trainingData.tableauxTags.index(datum[2])].copy()
 				tab.w = self.w[:]
 				tab.constraintList = self.trainingData.constraintNames[:]
-				if self.noisy:
-					print(tab)
+				#if self.noisy:
+					#print(tab)
 
 				if method == "partial":
 					print("assembling partial taleau")
@@ -1102,12 +1099,17 @@ class Grammar:
 								cand.violations.append(min(viols)) # assume the closest matched faithful option
 							else:
 								cand.violations.append(con.assignViolations(cand))
-			
+
 					# TODO if using richCands
 					# if using activity levels
 
 				#if method == "full":
 					# we're done?
+
+				# make sure all candidates have the right number of violations
+				for cand in tab.candidates:
+					nEmptyViolations = len(self.w)-len(cand.violations)
+					cand.violations += [0]*nEmptyViolations
 				return tab
 
 
@@ -1122,7 +1124,7 @@ class Grammar:
 		method = "deNovo"
 			# "deNovo": create a brand new tableau, with generated candidates.  For this we need operations, and constraints defined as functions
 			# "partial": use user-defined candidates, but add violations of a few markedness constraints
-			# "full": completely user-defined, except for perhaps the PFCs  
+			# "full": completely user-defined, except for perhaps the PFCs
 
 		if not self.generateCandidates:
 			if not self.addViolations:
@@ -1172,22 +1174,22 @@ class Grammar:
 
 				else:  # we will return a hidden structure tableau
 					print("Making hidden structure tableau")
-					
+
 
 					# Create list of faithful cands for composed
 					fcs_composed = lexemesToFaithCands(datum[0])
 
 					# Create list of faithful cands for listed
-					fcs_listed = lexemesToFaithCands(self.trainingData.lexicon[listedTag])
+					fcs_listed = lexemesToFaithCands([self.trainingData.lexicon[listedTag]])
 
 					# merge tableaux, and  assign _composed vs. _listed violations correctly
 					# self.cPairs is a tuple (list_of_pairs, reverse_sorted_indices_of_listed, UseListed violation index before _listed removal)
 					tab = assemble(fcs_composed)
 					tab_listed = assemble(fcs_listed)
 
-					for cand in tab:
+					for cand in tab.candidates:
 						cand.violations[useListedIndex] = 1
-					for cand in tab_listed:
+					for cand in tab_listed.candidates:
 						cand.violations[useListedIndex] = 0
 
 					for pair in self.cPairs[0]:
@@ -1199,7 +1201,7 @@ class Grammar:
 							cand.violations[pair[0]] = cand.violations[pair[1]]
 
 					## Now merge
-					for cand in tab_listed:
+					for cand in tab_listed.candidates:
 						tab.candidates.append(cand)
 
 					for i in self.cPairs[1]:
@@ -1258,7 +1260,7 @@ class Grammar:
 				# crucially must take place before we remove _listed violations
 				for cand in tab.candidates:
 					cand.violations[useListedIndex] = 1
-			
+
 
 
 			# update frequencies of lexeme(s) used
@@ -1928,8 +1930,7 @@ def createTableau(lexemes, constraints, operations, featureSet, obsOutput, w=Non
 # test code:
 
 
-def diffCands(cbase, cdiff,
-			  skipChar='x'):  # Use Damerau-Levenshtein distance, but with n features different as 'weights'
+def diffCands(cbase, cdiff,skipChar='x'):  # Use Damerau-Levenshtein distance, but with n features different as 'weights'
 	# Takes richCand() objects
 	# This code adapted from gist.github.com/badocelot/5327337
 	# Explanation here: https://www.lemoda.net/text-fuzzy/damerau-levenshtein/index.html
