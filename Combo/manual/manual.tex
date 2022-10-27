@@ -1,0 +1,84 @@
+\documentclass[12]{article}
+
+\usepackage{tipa,gb4e}
+
+
+\title{Manual: The Gradient Lexicon and Phonology Learner}
+\author{Claire Moore-Cantwell}
+\date{\today}
+
+
+\begin{document}
+
+\maketitle
+
+\section{Quick Start}
+
+\section{Details of Theories Implemented}
+	\subsection{Preliminaries}
+		\subsubsection{Theories of \textsc{Eval}}
+
+		\subsubsection{Perceptron Learning}
+	\subsection{UseListed}
+		UseListed is a theory that many researchers implicitly or explicitly use as a default approach to exceptionality in phonology, but as far as I know no learning model has been developed.  The theory can easily be summarized as "We memorize exceptions."
+		
+		This theory assumes two things:
+		\begin{enumerate}
+			\item We memorize morphologically complex words, at least sometimes
+			\item We can therefore produce morphologically complex forms in two ways:
+			\begin{itemize}
+				\item {\bf Composed} forms are created by accessing multiple morphemes and realizing them together according to the morphological and phonological grammar
+				\item {\bf Listed} forms are accessed whole, and realized according to their lexical entry and the phonological grammar
+			\end{itemize}
+		\end{enumerate}
+	
+		A couple of examples: 
+		
+			In Tagalog, morphemes often undergo 'nasal substitution' in which the final nasal of a prefix coalesces with the initial consonant of the root, forming a single sound.
+					In Tagalog, morphemes often undergo 'nasal substitution' in which the final nasal of a prefix coalesces with the initial consonant of the root, forming a single sound.
+					
+							In Tagalog, morphemes often undergo 'nasal substitution' in which the final nasal of a prefix coalesces with the initial consonant of the root, forming a single sound.
+							
+									In Tagalog, morphemes often undergo 'nasal substitution' in which the final nasal of a prefix coalesces with the initial consonant of the root, forming a single sound.
+									
+									
+		In Tagalog, morphemes often undergo 'nasal substitution' in which the final nasal of a prefix coalesces with the initial consonant of the root, forming a single sound.
+		
+		
+		\begin{exe}
+			\ex
+				\begin{xlist}
+					\ex \gll {\bf d}in\'i\textscriptg  \hspace{3ex} /pa{\bf \textipa{N}}+{\bf d}in\'i\textscriptg/ \hspace{8ex} $\rightarrow$ pa{\bf n}-{\bf d}in\'i\textscriptg   \hspace{7ex} \textsc{Assimilation}\\
+					{\it audible} {} {} {} {\it sense of hearing}\\
+					\ex \gll {\bf d}al\'a\textipa{N}in \hspace{0.1ex} /i+pa{\bf \textipa{N}}+{\bf d}al\'a\textipa{N}in+in/  $\rightarrow$ \textglotstop i-pa-{\bf n}al\'a\textipa{N}in-in \hspace{0.5ex} \textsc{Substitution}\\
+					{\it prayer} {} {} {} {\it to pray}\\
+				\end{xlist}
+			
+		\end{exe}
+		
+		
+		
+		If we have both a {\bf Composed} form and a {\bf Listed} form available, there are many different ways we could decide between them.  
+		
+		
+
+	\subsection{Lexically Indexed Constraints}
+
+	\subsection{UR-constraints}
+
+	\subsection{Representational Strength Theory}
+
+	\subsection{Gradient Symbolic Representations}
+
+
+\section{Supplementary details}
+	\subsection{Dealing with hidden Structure}
+	\subsection{Simulating \textsc{Gen}}
+	\subsection{Applying constraints}
+
+\section{Input file details}
+
+\section{Classes and Methods}
+
+
+\end{document}

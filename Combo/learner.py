@@ -130,7 +130,7 @@ class Features:
 class candidate:
 	def __init__(self, c, violations, observedProb, surfaceForm=None):  # removed: activitylevel
 		self.c = c  # the actual candidate
-		self.surfaceForm = surfaceForm if surfaceForm else c
+		self.surfaceForm = surfaceForm if surfaceForm else re.sub("_","",c)
 		self.violations = violations  # list of violations, in same order as constraints
 		self.observedProb = observedProb  # The observed probability of the candidate
 		try:  # make sure observedProb is a float, or can be converted to float
@@ -1156,11 +1156,11 @@ class Grammar:
 			listedTag = "_".join([i.tag for i in datum[0]]) if len(datum[0]) > 1 else False
 			if listedTag in self.trainingData.lexicon:
 				# Now, we check how we are doing UseListed
-				if self.p_useListed < 1: # we sample completely randomly
+				if self.p_useListed <= 1: # we sample completely randomly
 					if random.random()< self.p_useListed:
 						listing = 1
 
-				elif self.p_useListed < 2: # we sample based on frequency
+				elif self.p_useListed <= 2: # we sample based on frequency
 					f_composed = [lex.freq for lex in datum[0]]
 					f_listed = self.trainingData.lexicon[listedTag].freq
 

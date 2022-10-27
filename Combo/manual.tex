@@ -79,12 +79,20 @@
 		If we have both a {\bf Composed} form and a {\bf Listed} form available, there are many different ways we could decide between them.  GLaPL can learn using any of these.
 		
 		\begin{itemize}
-			\item[] {\bf Option 1:} Always use the listed form, if available
+			\item[] {\bf Option 1:} Always use the listed form, if available.  OR use the listed form with some static probability
 			\item[] {\bf Option 2:} Do whatever is easier.  If it is easy to find the listed form, use it, but if it is easier to compose, use the composed form.
 			\item[] {\bf Option 3:} Directly compare the Composed and Listed derivations in the same tableau.
 		\end{itemize}
 
-		Option 1 is the simplest version of this theory, but is psychologically implausible, at least as a hard constraint.  
+		To do {\bf Option 1}, set \texttt{p\_useListed} to 1 or less.  That will be the probability that a \textsc{Predict} step will use the listed form, if available.
+		
+		To do {\bf Option 2}, set \texttt{p\_useListed} to 2. There are many possible ways to implement `easier' here, but for now the implementation is based on lexical frequency.  The probability that the listed form will be chosen is related to both the frequency of the listed form itself and the frequency of the lowest-frequency morpheme in the composed form.  
+		
+		\[
+		P(listed) = \frac{freq_{listed}}{freq_{listed} + min(\{freq_{composed1}, freq_{composed2}\ldots freq_{composedx}\})}
+		\]
+		
+		%Let's take the comparatives as an example.  Some adjectives occur often in comparative form (tall, large) while others occur in the comparative only rarely (fresh, cozy)
 
 	\subsection{Lexically Indexed Constraints}
 
