@@ -1,7 +1,9 @@
 \documentclass[12]{article}
 
-\usepackage{tipa,gb4e}
+\usepackage[round]{natbib}
+\usepackage{tipa,gb4e,setspace}
 
+\doublespacing
 
 \title{Manual: The Gradient Lexicon and Phonology Learner}
 \author{Claire Moore-Cantwell}
@@ -33,15 +35,7 @@
 		\end{enumerate}
 	
 		A couple of examples: 
-		
-			In Tagalog, morphemes often undergo 'nasal substitution' in which the final nasal of a prefix coalesces with the initial consonant of the root, forming a single sound.
-					In Tagalog, morphemes often undergo 'nasal substitution' in which the final nasal of a prefix coalesces with the initial consonant of the root, forming a single sound.
-					
-							In Tagalog, morphemes often undergo 'nasal substitution' in which the final nasal of a prefix coalesces with the initial consonant of the root, forming a single sound.
 							
-									In Tagalog, morphemes often undergo 'nasal substitution' in which the final nasal of a prefix coalesces with the initial consonant of the root, forming a single sound.
-									
-									
 		In Tagalog, morphemes often undergo 'nasal substitution' in which the final nasal of a prefix coalesces with the initial consonant of the root, forming a single sound.
 		
 		
@@ -55,12 +49,42 @@
 				\end{xlist}
 			
 		\end{exe}
+	
+		These examples come from \citet{zuraw10}.  In (1a), the underlying velar nasal assimilates in place to the following stop, but in (1b), the two sounds have completely merged, leaving an [n] with the nasality of the [\textipa{N}] and the place of the [d].
+		
+		As the example suggests, the phonological shape of the individual words cannot completely predict whether the nasal will substitute or just assimilate.  There are lexical trends, but no categorical rules.  Importantly, individual words do not vary, the variation is entirely from word to word.
+		
+		A UseListed approach to this pattern would say that both pa{\bf n}-{\bf d}in\'i\textscriptg\ and \textglotstop i-pa-{\bf n}al\'a\textipa{N}in-in are memorized as their own lexical entries.  When speakers want to say the meaning {\it `sense of hearing'}, or {\it `to pray'}, they access those meanings directly in their lexicon, and produce them according to the idiosyncratic phonological form that is listed - one with substitution, and one without.
+		
+		\hspace{2ex}
+		
+		A second example: 
+		
+		English comparatives come in two forms, the `periphrastic', using {\it more}, and the `morphological', using {\it -er}.  Both are available for most adjectives: {\it fouler} and {\it more foul} are about equally attested in a corpus, for example.  However, higher-frequency adjectives exhibit idiosyncratic preferences \citet{smithmoorecantwell17}.
+		
+		\begin{exe}
+			\ex \begin{xlist}
+				\ex simpler (96\%) $\gg$ more simple (4\%)
+				\ex more stable (98\%) $\gg$ stabler (2\%)
+			\end{xlist}
+		\end{exe}
+		
+		While a variety of phonological factors condition the choice between these two versions of the comparative, {\it simple} and {\it stable} are similar on all relevant dimensions\footnote{They are 2-syllable words with initial stress, ending in [l], and are about the same lexical frequency.}.  English speakers therefore must memorize that the meaning {\it simple + \textsc{Comparative}} is pronounced with {\it -er}, while {\it stable + \textsc{Comparative}} is pronounced with {\it more}.
+		
+		Unlike in the case of Tagalog nasal substitution, many individual words do vary, and low-frequency words seem to follow the predictions of a probabilistic grammar.  Even extreme cases like those in (2) still exhibit the minority form occasionally.  One was to imagine what is happening here is that speakers have memorized the majority form for both words, but every so often they fail to use that memorized form and compose the comparative on the fly instead.
+		
+		\hspace{2ex}
 		
 		
+		If we have both a {\bf Composed} form and a {\bf Listed} form available, there are many different ways we could decide between them.  GLaPL can learn using any of these.
 		
-		If we have both a {\bf Composed} form and a {\bf Listed} form available, there are many different ways we could decide between them.  
-		
-		
+		\begin{itemize}
+			\item[] {\bf Option 1:} Always use the listed form, if available
+			\item[] {\bf Option 2:} Do whatever is easier.  If it is easy to find the listed form, use it, but if it is easier to compose, use the composed form.
+			\item[] {\bf Option 3:} Directly compare the Composed and Listed derivations in the same tableau.
+		\end{itemize}
+
+		Option 1 is the simplest version of this theory, but is psychologically implausible, at least as a hard constraint.  
 
 	\subsection{Lexically Indexed Constraints}
 
