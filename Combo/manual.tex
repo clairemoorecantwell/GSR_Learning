@@ -1,7 +1,18 @@
 \documentclass[12]{article}
 
+\usepackage{xcolor} % for whatever reason, need to call xcolor before minted
+
+\usepackage{minted} % and minted definitely has to precede gb4e
+
+
+\usepackage{gb4e}
+
 \usepackage[round]{natbib}
-\usepackage{tipa,gb4e,setspace}
+\usepackage{tipa,setspace}
+
+
+
+
 
 \doublespacing
 
@@ -104,6 +115,32 @@
 
 
 \section{Supplementary details}
+	\subsection{How Tableaux are constructed}
+	Tableaux are constructed in real time during learning. At each learning iteration, a tableau is constructed for that input-output pair.  Here is a breakdown of how the \texttt{Grammar.makeTableau()} function operates.
+	
+	\texttt{Grammar.makeTableau()}'s first argument is a {\bf datum}, which is an entry in \texttt{Grammar.trainingData.learnData}, a list.
+	
+	\begin{exe}
+		\ex {\bf datum:}  [[\texttt{lexeme\textsubscript{1}}, \texttt{lexeme\textsubscript{2}}, \ldots \texttt{lexeme\textsubscript{n}}], surface string, input]
+	\end{exe}
+
+	The surface string and input (also a string) both come directly from the input file.  The surface string comes either from your `candidate' column, or from your `surface' column, if you have one.  The input string comes from your `input' column.
+	
+	{\bf datum}'s first entry is a list of \texttt{lexeme} objects involved in this learning datum.  Note that if you are using UseListed, these won't always be the actual lexemes used to generate the tableau - the function may try to use the listed form instead.
+	
+	The first step in creating a tableau is to generate faithful candidates from the input lexemes.  In most cases, this will be a single faithful candidate, but not always.  The inner function \texttt{lexemesToFaithCands()} accomplishes this.
+	
+	In order to directly test \texttt{lexemesToFaithCands()} behaviour on a list of lexemes, run \texttt{makeTableau()} with the option \texttt{textFcs=True}.
+	
+	\begin{minted}[linenos,autogobble,bgcolor=lightgray]{python}
+		import learner as l
+		g = l.Grammar("lexemes_sampler.txt", l.Features("features.txt"))
+		g.makeTableau([lexemes],testFcs=True)
+		g.makeTableau([l.exlex_petit(),l.exlex_ami()],rich=True,testFcs=True)
+	\end{minted}
+	
+	You can find ``lexemes\_sampler.txt" in the manual\_examples folder
+	
 	\subsection{Dealing with hidden Structure}
 	\subsection{Simulating \textsc{Gen}}
 	\subsection{Applying constraints}

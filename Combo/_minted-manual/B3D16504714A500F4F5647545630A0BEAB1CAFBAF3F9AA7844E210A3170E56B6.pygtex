@@ -1,0 +1,5 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import} \PYG{n+nn}{learner} \PYG{k}{as} \PYG{n+nn}{l}
+\PYG{n}{g} \PYG{o}{=} \PYG{n}{l}\PYG{o}{.}\PYG{n}{Grammar}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}lexemes\PYGZus{}sampler.txt\PYGZdq{}}\PYG{p}{,} \PYG{n}{l}\PYG{o}{.}\PYG{n}{Features}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}features.txt\PYGZdq{}}\PYG{p}{))}
+\PYG{n}{g}\PYG{o}{.}\PYG{n}{makeTableau}\PYG{p}{([}\PYG{n}{lexemes}\PYG{p}{],}\PYG{n}{testFcs}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+\end{Verbatim}

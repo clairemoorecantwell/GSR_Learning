@@ -11,7 +11,7 @@ class constraint:
 def ident(UR,SR):
     '''compares an input and output string, no need to define an operation'''
     violations = 0
-    if UR!=re.sub("_","",SR.c):
+    if UR!=SR.c:
         violations+=1
     #print(UR)
     #print(SR.c)

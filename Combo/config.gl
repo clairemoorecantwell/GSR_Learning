@@ -1,0 +1,77 @@
+# training data filename
+trainingData: CshapedStartState.txt
+
+# starting weights: numbers, separated by commas.  
+# Use a single 0 to initialize all weights at 0
+weights: 0
+
+# features file
+featureSet: features.txt
+
+# add violations
+addViolations: True
+# constraints filename
+constraints: constraints_Cshaped
+
+# generate candidates
+generateCandidates: False
+# operations True or False (read off constraints file)
+operations: False
+
+
+# Learning Rate
+learningRate: 0.01
+# Decay Rate  -- used for lexically indexed constraints, PFC's, and UR constraints
+decayRate: 0.0001
+
+# should learning be noisy?
+noisy: yes
+#noisy: no
+
+################
+# Parameters for UseListed
+# UseListed type  (choose one)
+#useListedType: hidden_structure
+#useListedType: sample_using_frequency
+useListedType: sample_flat_rate
+
+# If you're sampling at a flat rate, what is the rate?
+# Make sure you always keep this one after the useListedType parameter
+# ignored if you're not using sample_flat_rate above
+useListedRate: 0.75
+
+# probability to list a form on error (during learning):
+pToList: 0.75
+
+
+
+################
+# Parameters for Lexical Indexation
+# Number of copies allowed of each constraint (use string "inf" to allow a maximum of one copy per lexical item)
+# lexC_type
+nLexCs: 0
+# Probability of changing a lexical item's indexation on error (rather than updating the weight of the indexed C)
+pChangeIndexation: 0.5
+# Lexical constraint start weight
+lexCStartW: 5
+
+
+###############
+# Parameters for representational strength theory
+# Type of PFC learning to do
+PFC_type: none
+#PFC_type: pseudo
+#PFC_type: full
+
+# PFC learning rate
+PFC_lrate: 0.1
+# PFC start weight
+PFC_startW: 10.0
+
+
+
+###############
+# Parameters for GSR learning
+# activity update rate
+activityUpdateRate: 0.05
+

@@ -1,7 +1,20 @@
 \documentclass[12]{article}
 
-\usepackage{tipa,gb4e}
+\usepackage{xcolor} % for whatever reason, need to call xcolor before minted
 
+\usepackage{minted} % and minted definitely has to precede gb4e
+
+
+\usepackage{gb4e}
+
+\usepackage[round]{natbib}
+\usepackage{tipa,setspace}
+
+
+
+
+
+\doublespacing
 
 \title{Manual: The Gradient Lexicon and Phonology Learner}
 \author{Claire Moore-Cantwell}
@@ -33,15 +46,7 @@
 		\end{enumerate}
 	
 		A couple of examples: 
-		
-			In Tagalog, morphemes often undergo 'nasal substitution' in which the final nasal of a prefix coalesces with the initial consonant of the root, forming a single sound.
-					In Tagalog, morphemes often undergo 'nasal substitution' in which the final nasal of a prefix coalesces with the initial consonant of the root, forming a single sound.
-					
-							In Tagalog, morphemes often undergo 'nasal substitution' in which the final nasal of a prefix coalesces with the initial consonant of the root, forming a single sound.
 							
-									In Tagalog, morphemes often undergo 'nasal substitution' in which the final nasal of a prefix coalesces with the initial consonant of the root, forming a single sound.
-									
-									
 		In Tagalog, morphemes often undergo 'nasal substitution' in which the final nasal of a prefix coalesces with the initial consonant of the root, forming a single sound.
 		
 		
@@ -55,12 +60,51 @@
 				\end{xlist}
 			
 		\end{exe}
+	
+		These examples come from \citet{zuraw10}.  In (1a), the underlying velar nasal assimilates in place to the following stop, but in (1b), the two sounds have completely merged, leaving an [n] with the nasality of the [\textipa{N}] and the place of the [d].
+		
+		As the example suggests, the phonological shape of the individual words cannot completely predict whether the nasal will substitute or just assimilate.  There are lexical trends, but no categorical rules.  Importantly, individual words do not vary, the variation is entirely from word to word.
+		
+		A UseListed approach to this pattern would say that both pa{\bf n}-{\bf d}in\'i\textscriptg\ and \textglotstop i-pa-{\bf n}al\'a\textipa{N}in-in are memorized as their own lexical entries.  When speakers want to say the meaning {\it `sense of hearing'}, or {\it `to pray'}, they access those meanings directly in their lexicon, and produce them according to the idiosyncratic phonological form that is listed - one with substitution, and one without.
+		
+		\hspace{2ex}
+		
+		A second example: 
+		
+		English comparatives come in two forms, the `periphrastic', using {\it more}, and the `morphological', using {\it -er}.  Both are available for most adjectives: {\it fouler} and {\it more foul} are about equally attested in a corpus, for example.  However, higher-frequency adjectives exhibit idiosyncratic preferences \citet{smithmoorecantwell17}.
+		
+		\begin{exe}
+			\ex \begin{xlist}
+				\ex simpler (96\%) $\gg$ more simple (4\%)
+				\ex more stable (98\%) $\gg$ stabler (2\%)
+			\end{xlist}
+		\end{exe}
+		
+		While a variety of phonological factors condition the choice between these two versions of the comparative, {\it simple} and {\it stable} are similar on all relevant dimensions\footnote{They are 2-syllable words with initial stress, ending in [l], and are about the same lexical frequency.}.  English speakers therefore must memorize that the meaning {\it simple + \textsc{Comparative}} is pronounced with {\it -er}, while {\it stable + \textsc{Comparative}} is pronounced with {\it more}.
+		
+		Unlike in the case of Tagalog nasal substitution, many individual words do vary, and low-frequency words seem to follow the predictions of a probabilistic grammar.  Even extreme cases like those in (2) still exhibit the minority form occasionally.  One was to imagine what is happening here is that speakers have memorized the majority form for both words, but every so often they fail to use that memorized form and compose the comparative on the fly instead.
+		
+		\hspace{2ex}
 		
 		
+		If we have both a {\bf Composed} form and a {\bf Listed} form available, there are many different ways we could decide between them.  GLaPL can learn using any of these.
 		
-		If we have both a {\bf Composed} form and a {\bf Listed} form available, there are many different ways we could decide between them.  
+		\begin{itemize}
+			\item[] {\bf Option 1:} Always use the listed form, if available.  OR use the listed form with some static probability
+			\item[] {\bf Option 2:} Do whatever is easier.  If it is easy to find the listed form, use it, but if it is easier to compose, use the composed form.
+			\item[] {\bf Option 3:} Directly compare the Composed and Listed derivations in the same tableau.
+		\end{itemize}
+
+		To do {\bf Option 1}, set \texttt{p\_useListed} to 1 or less.  That will be the probability that a \textsc{Predict} step will use the listed form, if available.
 		
+		To do {\bf Option 2}, set \texttt{p\_useListed} to 2. There are many possible ways to implement `easier' here, but for now the implementation is based on lexical frequency.  The probability that the listed form will be chosen is related to both the frequency of the listed form itself and the frequency of the lowest-frequency morpheme in the composed form.  
 		
+		\[
+		P(listed) = \frac{freq_{listed}}{freq_{listed} + min(\{freq_{composed1}, freq_{composed2}\ldots freq_{composedx}\})}
+		\]
+		
+		Hay 2003, Forster and Chambers 1973, Whaley 1987 % refs from Liu 2022?
+		%Let's take the comparatives as an example.  Some adjectives occur often in comparative form (tall, large) while others occur in the comparative only rarely (fresh, cozy)
 
 	\subsection{Lexically Indexed Constraints}
 
@@ -72,6 +116,32 @@
 
 
 \section{Supplementary details}
+	\subsection{How Tableaux are constructed}
+	Tableaux are constructed in real time during learning. At each learning iteration, a tableau is constructed for that input-output pair.  Here is a breakdown of how the \texttt{Grammar.makeTableau()} function operates.
+	
+	\texttt{Grammar.makeTableau()}'s first argument is a {\bf datum}, which is an entry in \texttt{Grammar.trainingData.learnData}, a list.
+	
+	\begin{exe}
+		\ex {\bf datum:}  [[\texttt{lexeme\textsubscript{1}}, \texttt{lexeme\textsubscript{2}}, \ldots \texttt{lexeme\textsubscript{n}}], surface string, input]
+	\end{exe}
+
+	The surface string and input (also a string) both come directly from the input file.  The surface string comes either from your `candidate' column, or from your `surface' column, if you have one.  The input string comes from your `input' column.
+	
+	{\bf datum}'s first entry is a list of \texttt{lexeme} objects involved in this learning datum.  Note that if you are using UseListed, these won't always be the actual lexemes used to generate the tableau - the function may try to use the listed form instead.
+	
+	The first step in creating a tableau is to generate faithful candidates from the input lexemes.  In most cases, this will be a single faithful candidate, but not always.  The inner function \texttt{lexemesToFaithCands()} accomplishes this.
+	
+	In order to directly test \texttt{lexemesToFaithCands()} behaviour on a list of lexemes, run \texttt{makeTableau()} with the option \texttt{textFcs=True}.
+	
+	\begin{minted}[linenos,autogobble,bgcolor=lightgray]{python}
+		import learner as l
+		g = l.Grammar("lexemes_sampler.txt", l.Features("features.txt"))
+		g.makeTableau([lexemes],testFcs=True)
+		g.makeTableau([l.exlex_petit(),l.exlex_ami()],rich=True,testFcs=True)
+	\end{minted}
+	
+	You can find ``lexemes\_sampler.txt" in the manual\_examples folder
+	
 	\subsection{Dealing with hidden Structure}
 	\subsection{Simulating \textsc{Gen}}
 	\subsection{Applying constraints}
