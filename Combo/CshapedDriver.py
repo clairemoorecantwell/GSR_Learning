@@ -9,7 +9,10 @@ Created on Tue Aug 23 15:06:14 2022
 import learner as l
 import constraints_Cshaped as c
 
-g = l.Grammar("CshapedStartState.txt",l.Features("features.txt"),c.constraints,addViolations=True)
+g = l.Grammar()
+
+#outdated
+#g = l.Grammar("CshapedStartState.txt",l.Features("features.txt"),c.constraints,addViolations=True)
 
 
 

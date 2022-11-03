@@ -232,92 +232,6 @@ def exampleCandDup():
     return richCand('iau', [1, 0, 1], 1, segs, order, suprasegmentals=suprasegmentals)
 
 
-# class Tableaux:
-#     def __init__(self, filename, noisy=False):
-#         self.tableaux = []  # list for tableaux to go into
-#         self.hidden = False
-#         self.tabProb = False
-#         self.constraintNames = []
-#         self.read(filename, noisy)
-
-#     def read(self, filename, noisy=True):
-#         print('reading in tableaux from file...')
-#         with open(filename, "r") as f:
-#             lines = f.readlines()
-
-#         # parse what kind of file this is
-#         line1 = lines.pop(0)
-#         line1 = line1.split('\t')
-#         line1 = [label.strip() for label in
-#                  line1]  # strip out leading and trailing whitespace for each entry in header row
-
-#         if line1[0] != 'input':
-#             print("WARNING: your first column is not labelled 'input' ... treating as input anyway")
-#         if line1[1] != 'candidate':
-#             print("WARNING: your second column is not labelled 'candidate' ... treating as candidate anyway")
-#         if line1[2] != 'obs.prob':
-#             if line1[2] != 'surface':
-#                 try:
-#                     float(lines[0].split('\t')[2])
-#                     print(
-#                         "WARNING: your third column is not labelled either 'obs.prob' or 'surface' ... column can be treated as float, so I'm assuming it's supposed to be obs.prob")
-#                 except ValueError:
-#                     print(
-#                         "WARNING: your third column is not labelled either 'obs.prob' or 'surface' ... column cannot be treated as float, so I'm assuming it's supposed to be surface")
-#                     self.hidden = True
-#                     print("~~~~~~~~~~~ Hidden Structure is active ~~~~~~~~~~~~")
-#             else:
-#                 print("Third column is labelled 'surface'")
-#                 self.hidden = True
-#                 print("~~~~~~~~~~~ Hidden Structure is active ~~~~~~~~~~~~")
-#                 if line1[3] != 'obs.prob':
-#                     try:
-#                         float(lines[0].split('\t')[2])
-#                         print(
-#                             "WARNING: your third column is labelled 'surface' but your fourth column is not labelled 'obs'prob' ... attempting to treat as obs.prob anyway")
-#                     except ValueError:
-#                         print(
-#                             "ERROR: your third columns is labelled 'surface' but your fourth column is not labeleld 'obs.prob', and cannot be converted to float.  Exiting...")
-#                         return
-#         offset = 1 if self.hidden else 0
-#         if line1[3 + offset] != 'tab.prob':
-#             print("No 'tab.prob' column ... assuming all tableaux should be equally probable")
-#         else:
-#             self.tabProb = True
-
-#         self.constraintNames = line1[4 + offset:]
-
-#         # read in all the lines
-#         # create a new tableau when the input changes
-#         inpt = ''
-#         for line in lines:
-#             l = [entry.strip() for entry in line.split('\t')]
-#             p = l[3 + offset] if self.tabProb else 1
-#             if l[0] != inpt:  # if it's a new input - inputs have to be contiguous in the input file
-#                 inpt = l[0]
-#                 self.tableaux.append(Tableau(l[0], p))
-#                 self.tableaux[-1].constraintNames = self.constraintNames
-
-#             s = l[2] if self.hidden else None
-#             self.tableaux[-1].addCandidate(candidate(l[1], [float(i) for i in l[4 + offset:]], float(l[2 + offset]), s))
-#             if p != self.tableaux[-1].prob:
-#                 print("WARNING: not all tab.prob entries for tableau " + self.tableaux[
-#                     -1].tag + " are equal.  ...using the first one.")
-#             # check if all tab.prob entries are the same for a given input - if not print a warning
-
-#         if noisy:
-#             for t in self.tableaux:
-#                 print(t)
-
-#         wellFormed = True
-#         for t in self.tableaux:
-#             wellFormed = True if t.rect(userChoice=True) else False
-#         # Run tableau rectification on all tableau
-#         # Other checks
-
-#         return wellFormed  # return a bool for whether all tableaux are well formed or not
-
-
 class Tableau:
     def __init__(self, tag, prob=1, hiddenStructure=False, lexemes=[], w=[]):
         self.tag = tag  # Human-readable tag to let the user know which tableau this is
@@ -351,6 +265,8 @@ class Tableau:
         cform = '{:>' + str(longCand) + 's} '
         form = '{:3s} ' + cform + '{:5s} ' * 3 + vform * len(self.candidates[0].violations)
         out = "Tableau " + self.tag + "\n"
+        # add functionality for multi-input tableaux
+        out += "Using lexemes "+ " ".join([l.tag for l in self.lexemes]+"\n")
         # expect constraintNames to be a list of strings
         if self.constraintList:
             names = [i[0] if type(i) == tuple else i for i in self.constraintList]
@@ -370,18 +286,47 @@ class Tableau:
             out += '\n' + form.format(*[str(j) for j in row])
         return out
 
-    def toFile(self, w):
+    def toFile(self):#, w):
         # calculate harmonies, and predicted values
         # add in constraint weights, including PFC weights
         # add in lexeme labels somewhere
         # create an 'input' column
-        self.predictProbsMaxEnt(w)
-        out = '\t'.join(["input", "candidate", "obs.prob", "pred.prob", "H"] + [i[0] if type(i) == tuple else i for i in
-                                                                                self.constraintList])
-        out += '\n' + '\t'.join(["", "", "", "", ""] + [str(j) for j in w])
+        #self.predictProbsMaxEnt(w)
+        urs = [""]*len(self.candidates)
+        if type(self.lexemes)==list:
+            try:
+                out = "Using lexemes "+"\t"+ "\t".join([l.tag for l in self.lexemes])+"\n"
+            except:
+                out = ""
+                #print("\t".join([l.tag for l in self.lexemes]))
+        elif type(self.lexemes)==tuple:
+            out = ""
+            # put lexemes together in a list in same order as candidates
+            allIndices = []
+            allLexemes = []
+            for i,j in zip(self.lexemes[1],self.lexemes[0]):
+                allIndices+=i
+                allLexemes+=[j]*len(i)
+            # should be e.g.
+            # [1,2,3,7,8,9,4,5,6]
+            # [a,a,a,c,c,c,b,b,b]
+            #print(allIndices)
+            #print(allLexemes)
+            lexemeOrderList = []
+            for i in range(0,len(allIndices)):
+                lex =allLexemes[allIndices.index(i)]
+                lexemeOrderList += [", ".join([l.tag for l in lex])]
+            #print(lexemeOrderList)
+            urs = lexemeOrderList
+        else:
+            print("\n WARNING: One of your tableaux has a lexemes object that is not recognizable")
+            out = ""
+
+        out += '\t'.join(["input","lexeme(s)_used","candidate", "obs.prob", "pred.prob", "H"] + [i[0] if type(i) == tuple else i for i in self.constraintList])
+        out += '\n' +'\t'+ '\t'.join(["", "", "", "", ""] + [str(j) for j in self.w])
         for c in self.candidates:
             out += '\n' + '\t'.join(
-                [str(j) for j in [self.tag, c.c, c.observedProb, c.predictedProb, c.harmony] + c.violations])
+                [str(j) for j in [self.tag,urs.pop(0), c.c, c.observedProb, c.predictedProb, c.harmony] + c.violations])
 
         return out
 
@@ -550,19 +495,18 @@ class Tableau:
         obsOutput = self.surfaceCands[np.random.choice(range(0, len(self.surfaceCands)), 1, p=self.obsProbsList)[0]]
         return obsOutput
 
-    def compareObsPred(self, w, theory='MaxEnt'):
+    def compareObsPred(self, w, theory='MaxEnt',threshold=1):
         predCandidate = self.getPredWinner(w=w, theory=theory)
+        if predCandidate.observedProb> threshold:
+            return 0, predCandidate, predCandidate
+
         obsCandidate = self.getObsCandidate(w=w, theory=theory)
-        #       for c in self.candidates:
-        #            if c.c==obs:
-        #                obsCandidate = c
-        # ^^ why is this here?  Is it necessary for something?
 
         error = (0 if obsCandidate.surfaceForm == predCandidate.surfaceForm else 1)
 
         return error, obsCandidate, predCandidate
 
-#sampleGrammar = 
+#sampleGrammar =
 
 class Grammar:
     def __init__(self, config = "config.gl"):
@@ -580,7 +524,7 @@ class Grammar:
 
                     if len(param) != 2:
                         print(Fore.RED + "\nERROR: Row " + str(row) + " of " + config + " has the wrong number of entries.  It should have the form parameterName: parameterValue"+ Style.RESET_ALL)
-                    
+
                     if param[0]=="trainingData":
                         self.trainingDatafile = param[1]
                         try:
@@ -593,7 +537,7 @@ class Grammar:
                             self.w = []
                         else:
                             weights = weights.split(",")
-                            
+
                             try:
                                 weights = [float(w) for w in weights]
                                 self.w = weights
@@ -644,7 +588,7 @@ class Grammar:
                                 self.operations = constraints.operations
                             else:
                                 print("\nWARNING: you have specified operations as 'True' but no operations could be read off the constraints module.\n Ensure that your constraints module " + self.constraints +" exists, and contains an object called 'operations'.\n No operations are in effect.")
-                    
+
                     elif param[0]=="learningRate":
                         try:
                             self.learningRate = float(param[1])
@@ -658,6 +602,15 @@ class Grammar:
                         except:
                             print("\nWARNING: decayRate could not be converted to float.  Using 0.0001")
                             self.decayRate = 0.0001
+
+                    elif param[0]=="threshold":
+                        try:
+                            self.comparisonThreshold = float(param[1])
+                        except:
+                            print("\WARNING: threshold could not be converted to float.  Using default value of 1.  This means that observed forms will always be sampled \n(This has no effect if your dataset does not contain within-item variation)")
+                            self.comparisonThreshold = 1
+                        if self.comparisonThreshold > 1:
+                            print("\nWARNING: You specified a threshold value of more than 1.  This will be treated as 1")
 
                     elif param[0]=="noisy":
                         if param[1]=="yes":
@@ -760,6 +713,8 @@ class Grammar:
         print(printform.format(*[str(i) for i in self.w])+Style.RESET_ALL)
 
     def prepForUselisted(self):
+        with open("listing.txt","w") as f:
+            f.write("lexemes \t segments \t listed_at_timestep")
         UseListedIndex = None
         if self.p_useListed >= 2:
             self.trainingData.constraintNames.append("UseListed")
@@ -869,7 +824,7 @@ class Grammar:
             print(tab)
 
         # Predict an output and compare to observed
-        e, obs, pred = tab.compareObsPred(tab.w)
+        e, obs, pred = tab.compareObsPred(tab.w,threshold=self.comparisonThreshold)
 
         if self.noisy:
             print("error" if e else "correct")
@@ -884,15 +839,20 @@ class Grammar:
             self.w = [float(wt) + up * self.learningRate for wt, up in zip(self.w, updateVector)]
             self.w = [i if i > 0 else 0 for i in self.w]  # limit to positve constraint weights
             #################################################################
-            print(self.w)
+            #print(self.w)
 
             #################################################################
             # useListed
             if self.p_useListed > 0:
                 # TODO figure out what to do with within-item variation
-                if random.random() < self.pToList:
-                    self.trainingData.lexicon["_".join([i.tag for i in datum[0]])] = lexeme("_".join([i.tag for i in datum[0]]), [character for character in re.sub("_","",obs.surfaceForm)])
-                    print(obs.surfaceForm)
+                #print(tab.tag)
+                if len(datum[0])>1 and random.random() < self.pToList: # list
+                    tag = "_".join([i.tag for i in datum[0]])
+                    segmentlist = [character for character in re.sub("_","",obs.surfaceForm)]
+                    self.trainingData.lexicon[tag] = lexeme(tag, segmentlist)
+                    with open("listing.txt","a") as f:
+                        f.write("\n" + tag + "\t" + "".join(segmentlist) + "\t" + str(self.t))
+                    #print(obs.surfaceForm)
 
             ##################################################################
 
@@ -1106,7 +1066,7 @@ class Grammar:
         # print(playlist)
         for i in range(0, nEpochs):
             rate = self.epoch(playlist, nIterations, start=nIterations * i)
-            print(rate)
+            print(Fore.CYAN + "Epoch " + str(i+1) +": " + str(rate*100) + " % errors"+ Style.RESET_ALL)
 
             grammar_constraints_w.append(self.w)
             currentPFC_w = [0 for i in PFCs_w[-1]] if len(PFC_list) > 0 else []
@@ -1120,26 +1080,29 @@ class Grammar:
                     currentPFC_w[PFC_list.index(name)] = pfc.w
             PFCs_w.append(currentPFC_w)
 
+        print(Fore.BLUE + Back.WHITE +"\n Final constraint weights:")
+        printform= ''.join([('{:^'+str(len(cname)+3)+'s} ') for cname in self.trainingData.constraintNames])
+        print( '\n'+printform.format(*[str(i) for i in self.trainingData.constraintNames]))
+        print(printform.format(*[str(round(i,2)) for i in self.w])+Style.RESET_ALL)
+
 
 
         #print("PFC_list")
         #print(PFC_list)
         #print("PFCs_w")
         #print(PFCs_w)
-        results = []
-        resultsData = []
-        self.noisy=False
-        for datum in self.trainingData.learnData:
-            if datum[0] not in resultsData:
-                resultsData.append(datum[0])  # datum[0] is the list of lexemes as the input e.g. [paN, po?ok]
-                tab = self.makeTableau(datum)
-                results.append(tab.toFile(tab.w))
 
+        # saving all tableau to output file
+        print("predicting")
+        obs, pred = self.predictAll()
+        results = [t.toFile() for t in pred]
+        #print(results)
         with open("output.txt", 'w') as f:
             f.write('\n'.join(results))
+        print("Saving output predictions to "+Fore.CYAN+"output.txt")
 
         with open("weights.txt", "w") as f:
-            print(grammar_constraints_w)
+            #print(grammar_constraints_w)
             out = ""
             for ep in grammar_constraints_w:
                 out += "\n" + "\t".join([str(w) for w in ep])
@@ -1168,6 +1131,7 @@ class Grammar:
 
 
             f.write(out)
+
 
     def makeTableau(self,datum,rich=False,testFcs=False):
         '''Make the tableau for learning '''
@@ -1345,7 +1309,7 @@ class Grammar:
                         listing = 1
 
                 else:  # we will return a hidden structure tableau
-                    print("Making hidden structure tableau")
+                    #print("Making hidden structure tableau")
 
 
                     # Create list of faithful cands for composed
@@ -1361,8 +1325,10 @@ class Grammar:
 
                     for cand in tab.candidates:
                         cand.violations[useListedIndex] = 1
+                        cand.c = cand.c+"_composed"
                     for cand in tab_listed.candidates:
                         cand.violations[useListedIndex] = 0
+                        cand.c = cand.c+"_listed"
 
                     for pair in self.cPairs[0]:
                         for cand in tab:
@@ -1373,18 +1339,23 @@ class Grammar:
                             cand.violations[pair[0]] = cand.violations[pair[1]]
 
                     ## Now merge
+                    # first, get indices of candidates derived from non-listed lexemes
+                    composedCandIndices = list(range(0,len(tab.candidates)))
                     for cand in tab_listed.candidates:
                         tab.candidates.append(cand)
+                    listedCandIndices = list(range(max(composedCandIndices)+1,len(tab.candidates)))
 
                     for i in self.cPairs[1]:
                         for cand in tab.candidates:
                             cand.violations.pop(i)
                             # remove _listed violations
 
+                    tab.hiddenStructure = True
                     multipleInputs = 1
                     multiInputType = 'useListed'
-                    urList = [datum[0],self.trainingData.lexicon[listedTag]]
+                    urList = [datum[0],[self.trainingData.lexicon[listedTag]]]
 
+                    tab.lexemes = (urList,(composedCandIndices,listedCandIndices))
                     return tab
 
 
@@ -1396,6 +1367,7 @@ class Grammar:
 
                 # create a tableau
                 tab = assemble(lexemesToFaithCands(datum[0]))
+                tab.lexemes = datum[0][:]  #Note the lexemes that were used
 
                  # Assign UseListed violations (always 0)
                 # crucially must take place before we remove _listed violations
@@ -1411,6 +1383,8 @@ class Grammar:
 
             elif not listedTag: # we've only got one morpheme
                 tab = assemble(lexemesToFaithCands(datum[0]))
+                tab.lexemes = datum[0][:]  #Note the lexemes that were used
+
                  # Assign UseListed violations (always 0)
                 # crucially must take place before we remove _composed violations
                 #print(tab)
@@ -1428,6 +1402,7 @@ class Grammar:
 
             else:
                 tab = assemble(lexemesToFaithCands(datum[0]))
+                tab.lexemes = datum[0][:]  #Note the lexemes that were used
                 # create a tableau
 
                 # Assign UseListed violations (all 1 because we're never listed)
@@ -1488,6 +1463,61 @@ class Grammar:
         # Apply PFCs, including to multiple distinct inputs if we have a multi-input tableau
 
         return tab
+
+
+    def predictAll(self):
+        globalNoise = self.noisy
+        self.noisy=False
+
+        tracker =[]
+        observed = []
+        predictions = []
+        for datum in self.trainingData.learnData:
+            if datum[0] not in tracker:
+                tracker.append(datum[0])
+                observed.append(datum)
+                tab = self.makeTableau(datum)
+                tab.predictProbsMaxEnt(tab.w)
+                predictions.append(tab)
+
+        # reset noisy value
+        self.noisy = globalNoise
+
+        return observed, predictions
+
+    def SSE(self):
+        observed, predictions = self.predictAll()
+        sse = 0
+        for tab in predictions:
+            obs = tab.obsProbsList
+            if tab.hiddenStructure:
+                pred = []
+                for s in tab.surfaceCands:
+                    pred += [sum([c.predictedProb for c in tab.candidates if c.surfaceForm == s])]
+                    print(pred)
+                    # sum predicted probs of same surface forms
+            else:
+                pred = tab.predProbsList
+            sse += sum([(o-p)**2 for o,p in zip(obs,pred)])
+        return sse
+
+    def logLikelihood(self):
+        observed, predictions = self.predictAll()
+        loglik = 0
+        for tab in predictions:
+            obs = tab.obsProbsList
+            if tab.hiddenStructure:
+                print(obs)
+                pred = []
+                for s in tab.surfaceCands:
+                    pred += [sum([c.predictedProb for c in tab.candidates if c.surfaceForm == s])]
+                print([math.log(p)*o for o,p in zip(obs,pred)])                    # sum predicted probs of same surface forms
+            else:
+                pred = tab.predProbsList
+            loglik += sum([math.log(p)*o for o,p in zip(obs,pred)])
+
+        return loglik
+
 
 class lexeme:
     def __init__(self, tag, segmentList=None, kind=None):
@@ -1582,85 +1612,6 @@ class lexeme:
 
 
 
-# class Lexicon:
-
-#     def __init__(self, filename=None, sheetNo=1):
-#         self.lexemeList = {}  # dict will have the structure {tag: lexeme}
-#         self.freqList = []  # empty list for storing each lexeme's frequency - used for sampling
-#         if filename is not None:
-#             self.read_input(filename, sheetNo)
-
-#     def add_lexeme(self, l):
-#         # Add a lexeme to the lexemeList
-#         self.lexemeList[l.tag] = l
-#         self.freqList.append(l.freq)
-
-#     def update_freqList(self):
-#         # update freqList with all lexemes' frequencies, in case they have changed
-#         self.freqList = []
-#         for l in self.lexemeList:
-#             self.freqList.append(l.freq)
-
-#     def read_input(self, file_name, sheet_number):  # sheet_number starts from 1
-#         # TODO add functionality to check if its an excel file or .txt; and then also be able to read .txt
-#         # TODO further, add try... except to check for proper loading of pandas, and if not, throw up a useful error
-#         # reading excel into dataframe
-#         input_dt_frame = read_excel(file_name, sheet_number - 1)  # this is for the sheet#1;
-#         # dataframe into np array
-#         input_np = input_dt_frame.to_numpy()
-
-#         cpyarr = input_np.tolist()
-#         roots = []  # |
-#         suffix = []
-#         suffix_helper = []  # |
-#         them_c_helper = []
-#         them_c = []
-#         allomorphs = []
-
-#         # thematic c =(['t','n','f','g','m','l','s','q']) Note of list of all the thematic C's
-#         for x in range(
-#                 len(cpyarr)):  # looping through Julia's numpy array and separating roots, suffix, and them_c columns
-#             roots.append(cpyarr[x][6])
-#             suffix_helper.append(cpyarr[x][3])
-#             them_c_helper.append(cpyarr[x][2])
-
-#         suffix = list(set(suffix_helper))
-#         them_c = list(set(them_c_helper))
-#         them_c = list(filter(lambda x: str(x) != 'nan', them_c))  # to not generate something like "tagiNA"
-
-#         for x in range(len(roots)):  # looping through roots column
-#             allomorphs = []
-#             for y in them_c:  # concat each root with all possible them_c
-#                 allomorphs.append([roots[x] + y] + [0])
-#             self.add_lexeme(lexeme(roots[x], allomorphs, 'root'))
-
-#         tag = 'ina'
-#         allomorphs = [['ina', 0], ['a', 0]]
-#         for y in them_c:
-#             allomorphs.append([y + 'ia'] + [0])
-#         self.add_lexeme(lexeme(tag, allomorphs, 'suffix'))
-
-#         tag = 'aga'
-#         allomorphs = [['ga', 0]]
-#         for y in them_c:
-#             allomorphs.append([y + 'aga'] + [0])
-#         self.add_lexeme(lexeme(tag, allomorphs, 'suffix'))
-
-#         tag = 'aqi'
-#         allomorphs = []
-#         for y in them_c:
-#             allomorphs.append([y + 'aqi'] + [0])
-#         self.add_lexeme(lexeme(tag, allomorphs, 'suffix'))
-
-#         tag = 'i'
-#         allomorphs = []
-#         for y in them_c:
-#             allomorphs.append([y + 'i'] + [0])
-#         self.add_lexeme(lexeme(tag, allomorphs, 'suffix'))
-
-#         tag = 'zero'
-#         allomorphs = ['']
-#         self.add_lexeme(lexeme(tag, allomorphs, 'suffix'))
 
 
 def exlex_joli():
@@ -1914,7 +1865,7 @@ class trainingData:
             elif candidates:
                 self.learnData.append([lexList, l[cIndex], inpt])
             else:
-                print(Fore.RED + 
+                print(Fore.RED +
                     "\nERROR: no column with surface forms in it.  Please add either a 'candidate' column, or a 'surface' column"+Style.RESET_ALL)
                 sys.exit()
             if freq_weighted:

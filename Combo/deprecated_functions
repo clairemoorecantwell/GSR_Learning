@@ -1,0 +1,167 @@
+# class Lexicon:
+
+#     def __init__(self, filename=None, sheetNo=1):
+#         self.lexemeList = {}  # dict will have the structure {tag: lexeme}
+#         self.freqList = []  # empty list for storing each lexeme's frequency - used for sampling
+#         if filename is not None:
+#             self.read_input(filename, sheetNo)
+
+#     def add_lexeme(self, l):
+#         # Add a lexeme to the lexemeList
+#         self.lexemeList[l.tag] = l
+#         self.freqList.append(l.freq)
+
+#     def update_freqList(self):
+#         # update freqList with all lexemes' frequencies, in case they have changed
+#         self.freqList = []
+#         for l in self.lexemeList:
+#             self.freqList.append(l.freq)
+
+#     def read_input(self, file_name, sheet_number):  # sheet_number starts from 1
+#         # TODO add functionality to check if its an excel file or .txt; and then also be able to read .txt
+#         # TODO further, add try... except to check for proper loading of pandas, and if not, throw up a useful error
+#         # reading excel into dataframe
+#         input_dt_frame = read_excel(file_name, sheet_number - 1)  # this is for the sheet#1;
+#         # dataframe into np array
+#         input_np = input_dt_frame.to_numpy()
+
+#         cpyarr = input_np.tolist()
+#         roots = []  # |
+#         suffix = []
+#         suffix_helper = []  # |
+#         them_c_helper = []
+#         them_c = []
+#         allomorphs = []
+
+#         # thematic c =(['t','n','f','g','m','l','s','q']) Note of list of all the thematic C's
+#         for x in range(
+#                 len(cpyarr)):  # looping through Julia's numpy array and separating roots, suffix, and them_c columns
+#             roots.append(cpyarr[x][6])
+#             suffix_helper.append(cpyarr[x][3])
+#             them_c_helper.append(cpyarr[x][2])
+
+#         suffix = list(set(suffix_helper))
+#         them_c = list(set(them_c_helper))
+#         them_c = list(filter(lambda x: str(x) != 'nan', them_c))  # to not generate something like "tagiNA"
+
+#         for x in range(len(roots)):  # looping through roots column
+#             allomorphs = []
+#             for y in them_c:  # concat each root with all possible them_c
+#                 allomorphs.append([roots[x] + y] + [0])
+#             self.add_lexeme(lexeme(roots[x], allomorphs, 'root'))
+
+#         tag = 'ina'
+#         allomorphs = [['ina', 0], ['a', 0]]
+#         for y in them_c:
+#             allomorphs.append([y + 'ia'] + [0])
+#         self.add_lexeme(lexeme(tag, allomorphs, 'suffix'))
+
+#         tag = 'aga'
+#         allomorphs = [['ga', 0]]
+#         for y in them_c:
+#             allomorphs.append([y + 'aga'] + [0])
+#         self.add_lexeme(lexeme(tag, allomorphs, 'suffix'))
+
+#         tag = 'aqi'
+#         allomorphs = []
+#         for y in them_c:
+#             allomorphs.append([y + 'aqi'] + [0])
+#         self.add_lexeme(lexeme(tag, allomorphs, 'suffix'))
+
+#         tag = 'i'
+#         allomorphs = []
+#         for y in them_c:
+#             allomorphs.append([y + 'i'] + [0])
+#         self.add_lexeme(lexeme(tag, allomorphs, 'suffix'))
+
+#         tag = 'zero'
+#         allomorphs = ['']
+#         self.add_lexeme(lexeme(tag, allomorphs, 'suffix'))
+
+
+
+
+# class Tableaux:
+#     def __init__(self, filename, noisy=False):
+#         self.tableaux = []  # list for tableaux to go into
+#         self.hidden = False
+#         self.tabProb = False
+#         self.constraintNames = []
+#         self.read(filename, noisy)
+
+#     def read(self, filename, noisy=True):
+#         print('reading in tableaux from file...')
+#         with open(filename, "r") as f:
+#             lines = f.readlines()
+
+#         # parse what kind of file this is
+#         line1 = lines.pop(0)
+#         line1 = line1.split('\t')
+#         line1 = [label.strip() for label in
+#                  line1]  # strip out leading and trailing whitespace for each entry in header row
+
+#         if line1[0] != 'input':
+#             print("WARNING: your first column is not labelled 'input' ... treating as input anyway")
+#         if line1[1] != 'candidate':
+#             print("WARNING: your second column is not labelled 'candidate' ... treating as candidate anyway")
+#         if line1[2] != 'obs.prob':
+#             if line1[2] != 'surface':
+#                 try:
+#                     float(lines[0].split('\t')[2])
+#                     print(
+#                         "WARNING: your third column is not labelled either 'obs.prob' or 'surface' ... column can be treated as float, so I'm assuming it's supposed to be obs.prob")
+#                 except ValueError:
+#                     print(
+#                         "WARNING: your third column is not labelled either 'obs.prob' or 'surface' ... column cannot be treated as float, so I'm assuming it's supposed to be surface")
+#                     self.hidden = True
+#                     print("~~~~~~~~~~~ Hidden Structure is active ~~~~~~~~~~~~")
+#             else:
+#                 print("Third column is labelled 'surface'")
+#                 self.hidden = True
+#                 print("~~~~~~~~~~~ Hidden Structure is active ~~~~~~~~~~~~")
+#                 if line1[3] != 'obs.prob':
+#                     try:
+#                         float(lines[0].split('\t')[2])
+#                         print(
+#                             "WARNING: your third column is labelled 'surface' but your fourth column is not labelled 'obs'prob' ... attempting to treat as obs.prob anyway")
+#                     except ValueError:
+#                         print(
+#                             "ERROR: your third columns is labelled 'surface' but your fourth column is not labeleld 'obs.prob', and cannot be converted to float.  Exiting...")
+#                         return
+#         offset = 1 if self.hidden else 0
+#         if line1[3 + offset] != 'tab.prob':
+#             print("No 'tab.prob' column ... assuming all tableaux should be equally probable")
+#         else:
+#             self.tabProb = True
+
+#         self.constraintNames = line1[4 + offset:]
+
+#         # read in all the lines
+#         # create a new tableau when the input changes
+#         inpt = ''
+#         for line in lines:
+#             l = [entry.strip() for entry in line.split('\t')]
+#             p = l[3 + offset] if self.tabProb else 1
+#             if l[0] != inpt:  # if it's a new input - inputs have to be contiguous in the input file
+#                 inpt = l[0]
+#                 self.tableaux.append(Tableau(l[0], p))
+#                 self.tableaux[-1].constraintNames = self.constraintNames
+
+#             s = l[2] if self.hidden else None
+#             self.tableaux[-1].addCandidate(candidate(l[1], [float(i) for i in l[4 + offset:]], float(l[2 + offset]), s))
+#             if p != self.tableaux[-1].prob:
+#                 print("WARNING: not all tab.prob entries for tableau " + self.tableaux[
+#                     -1].tag + " are equal.  ...using the first one.")
+#             # check if all tab.prob entries are the same for a given input - if not print a warning
+
+#         if noisy:
+#             for t in self.tableaux:
+#                 print(t)
+
+#         wellFormed = True
+#         for t in self.tableaux:
+#             wellFormed = True if t.rect(userChoice=True) else False
+#         # Run tableau rectification on all tableau
+#         # Other checks
+
+#         return wellFormed  # return a bool for whether all tableaux are well formed or not

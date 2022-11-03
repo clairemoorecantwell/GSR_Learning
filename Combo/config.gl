@@ -1,7 +1,7 @@
 # training data filename
 trainingData: CshapedStartState.txt
 
-# starting weights: numbers, separated by commas.  
+# starting weights: numbers, separated by commas.
 # Use a single 0 to initialize all weights at 0
 weights: 0
 
@@ -23,17 +23,20 @@ operations: False
 learningRate: 0.01
 # Decay Rate  -- used for lexically indexed constraints, PFC's, and UR constraints
 decayRate: 0.0001
+# Threshold for considering a prediction an error
+# Any prediction with an observed probability below threshold will be considered an error
+threshold: .1
 
 # should learning be noisy?
-noisy: yes
-#noisy: no
+#noisy: yes
+noisy: no
 
 ################
 # Parameters for UseListed
 # UseListed type  (choose one)
-#useListedType: hidden_structure
+useListedType: hidden_structure
 #useListedType: sample_using_frequency
-useListedType: sample_flat_rate
+#useListedType: sample_flat_rate
 
 # If you're sampling at a flat rate, what is the rate?
 # Make sure you always keep this one after the useListedType parameter
@@ -74,4 +77,3 @@ PFC_startW: 10.0
 # Parameters for GSR learning
 # activity update rate
 activityUpdateRate: 0.05
-

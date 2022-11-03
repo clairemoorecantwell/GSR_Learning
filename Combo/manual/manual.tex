@@ -1,6 +1,6 @@
 \documentclass[12]{article}
 
-\usepackage{xcolor} % for whatever reason, need to call xcolor before minted
+\usepackage{xcolor,rotating,multirow} % for whatever reason, need to call xcolor before minted
 
 \usepackage{minted} % and minted definitely has to precede gb4e
 
@@ -143,6 +143,30 @@
 	You can find ``lexemes\_sampler.txt" in the manual\_examples folder
 	
 	\subsection{Dealing with hidden Structure}
+	
+	Hidden structure problems can arise in any theory you are using, but UR-constraint models, UseListed with the \textsc{UseListed} constraint, and GSR models with segment blending all require hidden structure to operate.  GLaPL follows the principles of Jarosz (2013)'s Expectation-Maximization algorithm ot learn hidden structure.  
+	
+	Let's look at an example using \textsc{UseListed}.  UR-constraints would function similarly. 
+	
+	  \begin{exe}
+	  	\ex Tableau for made-up multi-morphemic word, based on Pater et al, 2012.
+	  	
+	  	\begin{tabular}{llll|ccc|cc}
+	  		
+	  		  &          &                    &*VTV & Ident-Voice & UseListed &   &  \\
+	  		  &          &        weights:    &  1  &  2          &   1       & H & p \\  
+	  		  \hline   
+\multirow{2}{*}{\rotatebox{90}{Composed}}	  		&a.& /mot/+/a/& $\rightarrow$ mota &  1  &  0          &   1    	  & -2&0.11 \\
+	  		&b.& /mot/+/a/& $\rightarrow$ moda &  0  &  1          &   1       & -3&0.04\\
+\multirow{2}{*}{\begin{sideways}Listed\end{sideways}}		  	&	c.& /moda/   & $\rightarrow$ mota &  1  &  1          &   0       & -3&0.04\\
+	  		&d.& /moda/   & $\rightarrow$ moda &  0  &  0          &   0       & 0 &0.81\\
+	  	
+	  	\end{tabular}
+	  
+	  \end{exe}
+	  
+	  
+	  
 	\subsection{Simulating \textsc{Gen}}
 	\subsection{Applying constraints}
 
