@@ -15,6 +15,7 @@ class Features:
     def __init__(self, filename, skipChar='x'):
         f = open(filename, "r")
         lines = f.readlines()
+        self.filename = filename
         self.featureNames = [i.strip() for i in lines[0].split('\t')[1:]]
         self.featureValues = {}
         self.skipChar = skipChar
@@ -112,7 +113,10 @@ class Features:
             #   segs["_"] = [('1','morphBoundary')] # give this guy a feature
             #   order.append("_")
             # else:
-            segs[k] = [j for j in zip(self.featureValues[string[i]], self.featureNames)]
+            try:
+                segs[k] = [j for j in zip(self.featureValues[string[i]], self.featureNames)]
+            except KeyError:
+                print('\nERROR: '+string[i]+' does not exist in '+self.filename)
             order.append(k)
 
         return segs, order
@@ -233,7 +237,7 @@ def exampleCandDup():
 
 
 class Tableau:
-    def __init__(self, tag, prob=1, hiddenStructure=False, lexemes=[], w=[]):
+    def __init__(self, tag, prob=1, hiddenStructure=False, lexemes=[], w=[], constraintNames=[]):
         self.tag = tag  # Human-readable tag to let the user know which tableau this is
         self.prob = prob  # Corresponds to tab.prob in input file
         self.candidates = []  # To be filled during tableau creation
@@ -245,12 +249,12 @@ class Tableau:
         self.obsProbsList = []  # list of each candidate's observed probability; used in sampling
         self.HList = []  # list of each candidate's harmony; for straight or Noisy HG
         self.winner = None
-        self.constraintList = None  # this will generally wind up being a bunch of strings, followed by a bunch of tuples, for the PFCs
+        self.constraintList = constraintNames  # this will generally wind up being a bunch of strings, followed by a bunch of tuples, for the PFCs
         self.hiddenStructure = hiddenStructure
         self.surfaceCands = []  # a place to hold the unique surface candidates
         # Note: if hidden structure is active, then obsProbsList corresponds to surfaceCands.
         # Otherwise, it corresponds simply to candidates
-        self.lexemes = lexemes  # only required for applyPFCs()
+        self.lexemes = lexemes  # required for applyPFCs() and applyLexCs()
         self.w = w
         self.pfcIndex = len(self.w)
         self.negCrossEntropy = 0  # Just for this tableau.  Can multiply by self.prob to get neg log likelihood
@@ -266,8 +270,10 @@ class Tableau:
         form = '{:3s} ' + cform + '{:5s} ' * 3 + vform * len(self.candidates[0].violations)
         out = "Tableau " + self.tag + "\n"
         # add functionality for multi-input tableaux
-        out += "Using lexemes "+ " ".join([l.tag for l in self.lexemes]+"\n")
-        # expect constraintNames to be a list of strings
+        print("lexemes:")
+        print("".join([l.tag for l in self.lexemes]))
+        out += "Using lexemes "+ " ".join([l.tag for l in self.lexemes])+"\n"
+        # expect constraintList to be a list of some strings and some tuples
         if self.constraintList:
             names = [i[0] if type(i) == tuple else i for i in self.constraintList]
             vform = ''.join([('{:^' + str(len(i)) + 's} ') for i in names])
@@ -402,6 +408,162 @@ class Tableau:
         # what else?
         return bool(l and s)
 
+    def lexemesToFaithCands(self,rich=False,features=None):
+        individualCands = []
+        for l in self.lexemes:
+            if rich:
+                c = l.toRichCand(features)
+            else:
+                c = l.toFaithString()
+            individualCands.append(c)
+
+        if len(self.lexemes) > 1:
+            faiths = list(itertools.product(*[i for i in individualCands]))
+        else:
+            faiths = individualCands
+        # faiths is a list of tuples, each tuple is faithful candidates from each morpheme
+        fcs =[]
+        for fc in faiths:
+            if rich:
+                # begin creating the new richCand
+                firstFaithCand = fc[0]
+                newSegsList = firstFaithCand.segsList[:]
+                newSegsDict = firstFaithCand.segsDict.copy()
+                newActivitys = firstFaithCand.activitys[:]
+                newSuprasegmentals = firstFaithCand.suprasegmentals[:]
+                # add in material from each subsequent morpheme's faith cand
+                for i in range(1, len(fc)): # start with 1 because we've already got info from fc[0]
+                    segs = fc[i].segsList[:]
+                    segsDict = fc[i].segsDict.copy()
+                    activs = fc[i].activitys[:]
+                    supr = fc[i].suprasegmentals[:]
+
+                    # add in the current morpheme to the richCand
+                    suff = '_w' + str(i+1) # _w2 for the second morpheme, _w3 for third, etc.
+                    # create segment labels
+                    newSegsList += [seg + suff for seg in segs]
+                    for seg in segs:
+                        newSegsDict[seg + suff] = segsDict[seg][:]
+                    newActivitys += activs
+                    newSuprasegmentals += supr
+
+                # now make the new richCand
+                newC = features.featureToS(newSegsDict, newSegsList)
+                obsProb = 1 if newC == obsOutput else 0
+
+                # violations are empty, for now, and order is None, because newSegsList already encodes the correct order
+                rcand = richCand(newC, [], obsProb, newSegsDict, newSegsList, None, newActivitys, newSuprasegmentals, surfaceForm=newC)
+                fcs.append(rcand)
+
+            else:
+                fcs.append("_".join([i for i in fc]))
+
+        return fcs
+
+
+    def applyOneLexC(self,constraint,lexeme,lexCname=None, fcs=None,localityRestrictionType="overlap"):
+        #print(lexeme)
+        #print(type(lexeme))
+        #print(lexeme.tag)
+        if lexCname is None:
+            lexCname = constraint.name + '_' + lexeme.tag
+
+        self.constraintList.append(lexCname)
+
+        if fcs is None:
+            fcs = self.lexemesToFaithCands()
+            # TODO should take rich, features as arguments too
+
+        #print(fcs)
+
+        if localityRestrictionType=="presence_only":
+            self.applyOneConstraint(constraint,fcs)
+            return
+
+        for cand in self.candidates:
+            #print(cand.c)
+            # get the violation, save to v, indices
+            if constraint.MF == 'F':
+                vsums = [] # floats
+                viols = [] # lists of violations
+                indicesSets = [] # list of tuples, start,end indices of each violation
+                for fc in fcs: # faithful candidates
+                    #print(fc)
+                    vsum, viol, indices = constraint.assignViolations(fc,cand.c)
+                    vsums.append(vsum)
+                    viols.append(viol)
+                    indicesSets.append(indices)
+                minv = min(vsums) # assume the closest matched faithful office
+                vs = viols[vsums.index(minv)]
+                indices = indicesSets[vsums.index(minv)]
+
+            else:
+                vsum, viol, indices = constraint.assignViolations(cand.c)
+                vs = viol
+            # Now, we have vs, a list of violations
+            # and indices, a list of index tuples
+            #print(indices)
+
+            lexIndex = self.lexemes.index(lexeme)
+            morphemeEdges = [[0]]
+            for m in re.finditer('_',cand.c):
+                boundary = m.start(0) #index of the '_'
+                morphemeEdges[-1].append(boundary-1)
+                morphemeEdges.append([boundary+1])
+            morphemeEdges[-1].append(len(cand.c))
+            relevantIndices = morphemeEdges[lexIndex]
+            #print(relevantIndices)
+
+
+            # check for overlap with the relevant morpheme
+            totalV = 0 # each v in vs that is sufficiently local is added to the total
+            for v,i in zip(vs,indices):
+                #print(v)
+                #print(i)
+                overlap = [False,False]
+                for j in (0,1):
+                    if i[j] >= relevantIndices[0] and i[j]<= relevantIndices[1]:
+                        # L/R edge of the violation overlaps with the morpheme
+                        overlap[j] = True
+
+                #print(overlap)
+
+                if localityRestrictionType=="overlap":
+                    if overlap[0] or overlap[1]: # for overlap, violation is assigned iff only one edge overlaps with the morpheme
+                        totalV+=v
+                elif localityRestrictionType=="strict":
+                    if overlap[0] and overlap[1]: # for 'strict' the violation must ONLY come from the indexed morpheme
+                        totalV+=v
+            #print(totalV)
+
+            cand.violations.append(totalV)
+
+    def applyOneConstraint(self,constraint,fcs=None):
+        #print("applying...")
+        #print(fcs)
+        if fcs is None:
+            fcs = self.lexemesToFaithCands()
+            # TODO should take rich, features as arguments too
+        for cand in self.candidates:
+            if constraint.MF == 'F':
+                viols = []
+                for fc in fcs: # faithful candidates
+                    #print(fc)
+                    #print(cand.c)
+                    viol = constraint.assignViolations(fc,cand.c)
+                    #print(viol)
+                    if type(viol) == float:
+                        viols.append(viol)
+                    else:
+                        viols.append(viol[0]) # assume the first result is always the number
+                cand.violations.append(min(viols)) # assume the closest matched faithful office
+            else:
+                viol = constraint.assignViolations(cand.c)
+                if type(viol) == float:
+                    cand.violations.append(viol)
+                else:
+                    cand.violations.append(viol[0]) # assume the first result is always the number
+
     def applyPFCs(self):
         self.pfcIndex = len(self.w)
         # fill out constraintList with placeholders if it's not long enough
@@ -421,6 +583,44 @@ class Tableau:
                         print("Failed to apply PFC: " + pfc.name)
                 self.constraintList.append((pfc.name, pfc))
                 self.w.append(pfc.w)
+
+    def applyLexCs(self,lexCs,gram, fcs=None,localityRestrictionType="overlap"):
+        self.lexCindex = len(self.w) # assume we haven't applied LexCs or PFCs yet
+        # need the filling out that's happening in applyPFCs?
+
+        for lexeme in self.lexemes:
+            cIndex = 0  # we're iterating through constraints 
+            cFunctionsStartAfter = gram.cfunctionStartIndex
+            for index, weightList, cname in zip(lexeme.lexCindexes,lexCs,gram.trainingData.constraintNames):
+                # look for indexation on a constraint
+                if index >0: # if this lexeme has an indexed version
+                    lexCw = weightList[index] # get its weight
+                    lexCname = cname + '_' + str(index) + '_' + lexeme.tag # e.g. Syncope_2_ta
+
+                    if cIndex >= cFunctionsStartAfter: # if it's a function
+                        constraint = gram.constraints[cIndex]
+                        #print("isFunction")
+                        # now apply it to candidates
+                        # according to Paterian locality rules, must overlap with the relevant morpheme
+                        # This will be handled inside applyOnelexC
+                        self.applyOneLexC(constraint,lexeme,lexCname,localityRestrictionType=localityRestrictionType)
+                        #print(self)
+                    else:
+                        constraint = cIndex # not a function,
+                        # just an index we can use to copy the violation over
+                        for cand in self.candidates:
+                            lexCviol = cand.violations[constraint]
+                            cand.violations.append(lexCviol)
+                        self.constraintList.append(lexCname)
+
+                    self.w.append(lexCw)
+
+                cIndex += 1 
+
+            # is the constraint a function?
+                # if yes, apply it according to candidates' lexeme membership
+                # if no, apply its violation to the whole candidate
+
 
     def calculateHarmony(self, w):
         '''Takes a vector of weights, equal in length to the violation vectors of the candidates.  Populates the harmony parameter of each candidate based on the weight vector w'''
@@ -524,13 +724,18 @@ class Grammar:
 
                     if len(param) != 2:
                         print(Fore.RED + "\nERROR: Row " + str(row) + " of " + config + " has the wrong number of entries.  It should have the form parameterName: parameterValue"+ Style.RESET_ALL)
+                        exit()
 
                     if param[0]=="trainingData":
                         self.trainingDatafile = param[1]
                         try:
                             self.trainingData = trainingData(self.trainingDatafile)
+                            self.cfunctionStartIndex = len(self.trainingData.constraintNames)
+
                         except:
                             print(Fore.RED + "\nERROR: No training data file read in.  Please check the format and path to your file: " + self.trainingDatafile + Style.RESET_ALL)
+                            exit()
+                            
                     elif param[0] == "weights":
                         weights = param[1]
                         if float(weights) == 0:
@@ -546,8 +751,8 @@ class Grammar:
                                 print("Using default weights of 0 instead"+ Style.RESET_ALL)
                                 self.w = []
 
-
                     elif param[0]=="featureSet":
+                        self.featuresFileName=(param[1])
                         try:
                             self.featureSet = Features(param[1])
                         except:
@@ -561,15 +766,22 @@ class Grammar:
                             self.addViolations = False
 
                     elif param[0]=="constraints":
-                        self.constraints = param[1]
-                        if self.constraints != "None":
+                        self.constraintsModule = param[1]
+                        if self.constraintsModule != "None" and self.addViolations:
                             try:
-                                constraints = importlib.import_module(self.constraints)
+                                constraints = importlib.import_module(self.constraintsModule)
                                 self.constraints = constraints.constraints
+                                self.cfunctionStartIndex = len(self.trainingData.constraintNames)
                                 self.trainingData.constraintNames+= [c.name for c in self.constraints]
                             except Exception as e:
                                 print("\nWARNING: no constraints module found called " + self.constraints)
                                 self.constraints = "None"
+
+                        # initialize weights now that we have all the constraints,
+                        # but before initializing LexCs
+                        if len(self.w)==0:
+                            self.initializeWeights()
+
                     elif param[0]=="generateCandidates":
                         try:
                             self.generateCandidates = eval(param[1])
@@ -577,17 +789,11 @@ class Grammar:
                             print("\nWARNING: generateCandidates must be set to 'True' or 'False'.  Using default value of 'False'")
                             self.generateCandidates = False
 
-                    elif param[0]=="operations":
-                        try:
-                            self.operations = eval(param[1])
-                        except:
-                            print("\nWARNING: Operations should be 'True' or 'False'.  Using default value of 'False'.")
-                            self.operations = False
-                        if self.operations:
+                        if self.generateCandidates:
                             if self.constraints != "None":
                                 self.operations = constraints.operations
                             else:
-                                print("\nWARNING: you have specified operations as 'True' but no operations could be read off the constraints module.\n Ensure that your constraints module " + self.constraints +" exists, and contains an object called 'operations'.\n No operations are in effect.")
+                                print("\nWARNING: you have specified generateCandidates as 'True' but no operations could be read off the constraints module.\n Ensure that your constraints module " + self.constraints +" exists, and contains an object called 'operations'.\n No operations are in effect.")
 
                     elif param[0]=="learningRate":
                         try:
@@ -607,7 +813,7 @@ class Grammar:
                         try:
                             self.comparisonThreshold = float(param[1])
                         except:
-                            print("\WARNING: threshold could not be converted to float.  Using default value of 1.  This means that observed forms will always be sampled \n(This has no effect if your dataset does not contain within-item variation)")
+                            print("\nWARNING: threshold could not be converted to float.  Using default value of 1.  This means that observed forms will always be sampled \n(This has no effect if your dataset does not contain within-item variation)")
                             self.comparisonThreshold = 1
                         if self.comparisonThreshold > 1:
                             print("\nWARNING: You specified a threshold value of more than 1.  This will be treated as 1")
@@ -637,13 +843,56 @@ class Grammar:
                         if self.p_useListed > 0:
                             self.cPairs = self.prepForUselisted()
 
+                        if self.p_useListed == 0:
+                            # remove _listed versions of each constraint
+                            indexPairs = []
+                            toRemove = []
+                            for name in self.trainingData.constraintNames:
+                                if re.search("_listed", name):
+                                    cname = re.sub('_listed', '', name)
+                                    indexPlain = self.trainingData.constraintNames.index(cname)
+                                    indexListed = self.trainingData.constraintNames.index(name)
+                                    indexPairs.append((indexPlain, indexListed))
+                                    toRemove.append(indexListed)
+
+                            toRemove = sorted(toRemove, reverse=True)
+                            # check whether to also remove constraint weights
+                            if len(self.w) == len(self.trainingData.constraintNames):
+                                cDrop = True
+                            for i in toRemove:
+                                self.trainingData.constraintNames.pop(i)
+                                if cDrop:
+                                    self.w.pop(i)
+                                for tableau in self.trainingData.tableaux:
+                                    for candidate in tableau.candidates:
+                                        candidate.violations.pop(i)
+
                     elif param[0]=="useListedRate":
-                        if self.p_useListed <= 1:
+                        if self.p_useListed <= 1 and self.p_useListed>0:
                             try:
                                 self.p_useListed = float(param[1])
                             except:
                                 print("\nWARNING: useListedRate cannot be converted to float.  Using default value of 1, always use listed form if available.")
                                 self.p_useListed = 1
+
+                    elif param[0]=="flip":
+                        if self.p_useListed>0:
+                            try:
+                                self.flip = eval(param[1])
+                            except:
+                                print("\nWARNING: flip must be True or False.  Using default of False.")
+                                self.flip = False
+
+                    elif param[0]=="simpleListing":
+                        if self.p_useListed>0:
+                            try:
+                                self.simpleListing = eval(param[1])
+                            except:
+                                print("\nWARNING: simpleListing must be True or False.  Using default value of True.")
+                                self.simpleListing = True
+
+                            if self.simpleListing and self.flip:
+                                print("\nWARNING: simpleListing and flip are mutually exclusive.  Setting flip to False.")
 
                     elif param[0]=="pToList":
                         try:
@@ -658,9 +907,9 @@ class Grammar:
                         except:
                             print("\nWARNING: nLexCs could not be converted to float. Not using Lexically indexed constraints.")
                             self.lexC_type = 0
+                        
                         if self.lexC_type:
                             self.prepForLexC()
-                            self.lexCs = []
 
                     elif param[0]=="pChangeIndexation":
                         try:
@@ -673,7 +922,14 @@ class Grammar:
                             self.lexCStartW = float(param[1])
                         except:
                             print("\nWARNING: lexCStartW could not be converted to float.  Using default value of 5.0")
+                        self.lexCjumpParameter = self.pChangeIndexation**(1/self.lexCStartW)
 
+                    elif param[0]=="locality":
+                        try:
+                            self.localityRestrictionType = param[1]
+                        except:
+                            print("\nWARNING: localityRestrictionType not assigned.  Using default value of 'overlap'")
+                            self.localityRestrictionType = "overlap"
                     elif param[0]=="PFC_type":
                         self.PFC_type = param[1]
                         if self.PFC_type not in ["none","pseudo","full"]:
@@ -703,8 +959,35 @@ class Grammar:
                     else:
                         print("\n WARNING: I don't recognize the parameter " + param[0])
 
-        if len(self.w)==0:
-            self.initializeWeights()
+        # check if all the parameters are there that should be
+        print("Training from file: "+self.trainingDatafile)
+        print("Feature set: "+self.featuresFileName)
+
+        try:
+            if self.addViolations:
+                try:
+                    print("Violations will be added from "+ self.constraintsModule)
+                except:
+                    print(Fore.RED +"\n ERROR: no constraints module found!  Specify the name under parameter 'constraints'."+Style.RESET_ALL)
+            else:
+                print("Constraint violations come only from input file")
+        except:
+            print("\n WARNING: You have not specified whether constraint violations should be added to your tableaux via function (using 'addViolations').  Violations will be taken directly from your input file only.")
+
+        try:
+            if self.generateCandidates:
+                try:
+                    print("Candidates will be generated, using module "+ self.constraintsModule)
+                except:
+                    print(Fore.RED +"\n ERROR: no constraints module found!  Specify the name under parameter 'constraints'."+Style.RESET_ALL)
+            else:
+                print("Candidates will not be generated")
+        except:
+            print("\n WARNING: You have not specified whether constraint violations should be added to your tableaux via function (using 'addViolations').  Violations will be taken directly from your input file only.")
+        
+
+        # self.w
+        # TODO finish this up
 
         # Print out constraint names and weights at end of read-in
         print(Fore.BLUE + Back.WHITE +"\nYour constraints and starting weights:")
@@ -716,15 +999,6 @@ class Grammar:
         with open("listing.txt","w") as f:
             f.write("lexemes \t segments \t listed_at_timestep")
         UseListedIndex = None
-        if self.p_useListed >= 2:
-            self.trainingData.constraintNames.append("UseListed")
-            UseListedIndex = self.trainingData.constraintNames.index("UseListed")
-            print("\n ...adding UseListed at index " + str(UseListedIndex))
-            # add a 1 for 'useListed' for every candidate in self.trainingData.tableaux
-            # we're assuming all candidates are unlisted at the start
-            #for t in self.trainingData.tableaux:
-            #    for c in t.candidates:
-            #        c.violations.append(1)
 
         # create a list of tuples pairing up plain and listed versions of each relevant constraint
         indexPairs = []
@@ -738,8 +1012,21 @@ class Grammar:
                 toRemove.append(indexListed)
 
         toRemove = sorted(toRemove, reverse=True)
+        if len(self.w) == len(self.trainingData.constraintNames):
+            cDrop = True
         for i in toRemove:
             self.trainingData.constraintNames.pop(i)
+            if cDrop:
+                self.w.pop(i)
+
+        if self.p_useListed > 2:
+            self.trainingData.constraintNames.append("UseListed")
+            self.w.append(0)
+            
+            UseListedIndex = self.trainingData.constraintNames.index("UseListed")
+            print("\n ...adding UseListed at index " + str(UseListedIndex))
+
+
         return indexPairs, toRemove, UseListedIndex
 
     def prepForLexC(self):
@@ -829,6 +1116,10 @@ class Grammar:
         if self.noisy:
             print("error" if e else "correct")
 
+        #print(tab)
+        #print(obs.violations)
+        #print(pred.violations)
+        #print(tab.candidates[1].violations)
         # print(constraintList)
         if e:
             # print(e,tab.tag, obs.c,pred.c,obs.violations,pred.violations,obs.harmony,obs.predictedProb,pred.harmony,pred.predictedProb)
@@ -836,6 +1127,7 @@ class Grammar:
             #################################################################
             # update general weight: perceptron update
             updateVector = [float(p) - float(o) for p, o in zip(pred.violations, obs.violations)]
+            #print(updateVector)
             self.w = [float(wt) + up * self.learningRate for wt, up in zip(self.w, updateVector)]
             self.w = [i if i > 0 else 0 for i in self.w]  # limit to positve constraint weights
             #################################################################
@@ -849,137 +1141,36 @@ class Grammar:
                 if len(datum[0])>1 and random.random() < self.pToList: # list
                     tag = "_".join([i.tag for i in datum[0]])
                     segmentlist = [character for character in re.sub("_","",obs.surfaceForm)]
-                    self.trainingData.lexicon[tag] = lexeme(tag, segmentlist)
-                    with open("listing.txt","a") as f:
-                        f.write("\n" + tag + "\t" + "".join(segmentlist) + "\t" + str(self.t))
-                    #print(obs.surfaceForm)
+                    if (tag not in self.trainingData.lexicon) or self.flip:
+                        self.trainingData.lexicon[tag] = lexeme(tag, segmentlist)
+                        with open("listing.txt","a") as f:
+                            f.write("\n" + tag + "\t" + "".join(segmentlist) + "\t" + str(self.t))
+                    elif not self.simpleListing: # ok, it's listed but the listed form isn't what we just observed
+                        nTag = 2
+                        # start with 2, add another copy of the lexeme with a tag that doesn't exist yet
+                        while tag+"_"+str(nTag) in self.trainingData.lexicon:
+                           nTag +=1
+                        tag += "_"+str(nTag) # e.g. tag_5 for the fifth copy
 
+                        # options for how we could have done this:
+                        # turn the entry of [tag] into a list of lexemes?
+                        # -->update the dictionary to have entry tag_i or something
+                        #       how many copies do we look for? <- any string of digits
+                        # create a second dictionary, with all the extra entries?
+                        # turn the lexeme into a list of segmentlists?
+                        # just leave it how it was, switching back and forth?
+
+
+                    #print(obs.surfaceForm)
+            #print(self.w)
             ##################################################################
 
             ##################################################################
             # Lexically-indexed constraints
             if self.lexC_type:
-                 for u in [j for j in range(0, len(updateVector)) if updateVector[j] != 0]:  # go through constraints that matter
-                     # u is an index, into constraints and violations, and indexation values on lexemes
-                     weights = self.lexCs[u][1:]  # vector of indexed C's for that constraint; empty if there are none
-                     if weights and updateVector[u] > 0:
-                         mx = max(weights)
-                         mn = False
-                     elif weights and updateVector[u] < 0:
-                         mn = min(weights)
-                         mx = False
-                     else:
-                         mn = False
-                         mx = False
+                self.lexCupdate(obs, pred, updateVector, datum[0],tab)
 
-                     obsParsed = obs.c.split("_")
-                     predParsed = pred.c.split("_")
-                     if len(obsParsed) != len(predParsed) or len(obsParsed) != len(datum[0]):
-                         print("predicted: " + pred.c)
-                         print("observed: " + obs.c)
-                         print(datum[0])
-                         print(
-                             " Error: predicted and/or observed cannot be aligned with lexemes - LexC induction will not work")
-                         exit
 
-                     updateIndices = []
-                     for i in range(0, len(datum[0])):
-                         # find the lexeme that differs between obs and pred
-                         # and update it and adjacent lexemes only
-                         if obsParsed[i] != predParsed[i] and i not in updateIndices:
-                             updateIndices.append(i)
-                         #if i > 0 and i - 1 not in updateIndices:  # if we're not already updating the previous lexeme
-                         #    updateIndices.append(i - 1)
-                         #if i < len(datum[0]) - 1 and i + 1 not in updateIndices:
-                         #    updateIndices.append(i + 1)
-
-                     # now updateIndices is just a list of indices of lexemes which need to be updated
-                     for i in updateIndices:
-                         lex = datum[0][i]
-                         currentIndex = lex.lexCindexes[u] - 1  # they start from 1
-                         w = weights[currentIndex] if weights else 0  # current weight of the lexC indexed to this lexeme
-                         if w == 0:  # if a lexC has decayed to zero, it counts as not-existent and is removed from the lexeme
-                             lex.lexCindexes[u] = 0
-                             currentIndex = -1
-                         # print("re-indexed to 0")
-                         if random.random() < self.pChangeIndexation:  # yes, we change indexation
-                             # print("change Indexation...")
-                             # the indexed C exists AND it is not the min/max already
-                             # if currentIndex is not -1, then weights should not be []
-                             # TODO add error-checking for this^
-
-                             if currentIndex >= 0 and w != mx and w != mn:
-                                 # note that whichever (max or min) is not applicable will equal False, not a number
-                                 # we know we need to switch indexation
-
-                                 s = sorted(weights[:])
-                                 currentSpotInSort = s.index(w)
-                                 if mx:  # obs preferring; move to next greater weight
-                                     direction = 1
-                                 else:  # pred preferring; move to next lower weight
-                                     direction = -1
-
-                                 move = 1
-                                 while move:
-                                     newWeight = s[currentSpotInSort + direction * move]
-                                     if newWeight != w:
-                                         move = 0
-                                     else:
-                                         move += 1
-
-                                 # change the index on the lexeme to the location of that new weight
-                                 lex.lexCindexes[u] = weights.index(
-                                     newWeight) + 1  # plus 1 because we're indexing into the original lex weight vector
-                             # print("re-indexed from "+str(currentIndex+1) + " to "+str(lex.lexCindexes[u]))
-                             # re-indexed!
-
-                             elif len([w for w in weights if
-                                       w > 0]) < self.lexC_type and not mn:  # either the weight doesn't exist, or it's already at the min/max
-                                 # only induce if at the max
-                                 # still check whether we've already capped out our allowed number of weights
-                                 # Induce at the first index that's 0, or append to end
-                                 newIndex = 0 if 0 not in weights else weights.index(0) + 1
-                                 if newIndex:  # we're re-populating a slot that got decayed to zero
-                                     self.lexCs[u][newIndex] = self.lexCStartW
-                                     lex.lexCindexes[u] = newIndex
-                                 else:  # we're appending
-                                     self.lexCs[u].append(self.lexCStartW)  # add a new lexC
-                                     lex.lexCindexes[u] = len(self.lexCs[u]) - 1  # index to the new weight
-                                 print("New cloned copy of " + self.trainingData.constraintNames[u])
-
-                             elif currentIndex >= 0:  # Should only get here if we SHOULD induce but have already reached the max
-                                 # just update
-                                 # if weight needs to be lower than min, will just get updated down
-                                 # don't proceed if there is no lexC affiliated with this lexeme
-                                 self.lexCs[u][currentIndex + 1] += updateVector[u] * self.learningRate
-                             # print("updating at index "+str(currentIndex+1))
-
-                         else:  # we don't change indexation
-                             if currentIndex >= 0 and weights and weights[currentIndex]:  # if lexC exists
-                                 # update
-                                 self.lexCs[u][currentIndex + 1] += updateVector[u] * self.learningRate
-                             # print("updating at index "+str(currentIndex+1))
-
-                     ##############################
-                     # Decided not to do this part, because of Pater 2010
-                     # Need lexemes to be able to dictate what happens outside their borders for Yine
-                     # figure out which lexeme(s) differ
-                     # only apply new clones to lexemes that differ
-                     # parsed = obs.c.split("_")
-                     # parsedPred = pred.c.split("_")
-                     # if len(parsed)!=len(datum[0]) or len(parsedPred)!=len(datum[0]):
-                     #  print(parsed)
-                     #  print(datum[0])
-                     #  print("ERROR: lexical indexation cannot be induced because morphemes in the candidate cannote be aligned with morphemes in the input")
-                     #  exit
-                     # for i in range(0,len(datum[0])):
-                     #  if parsed[i]!=parsedPred[i]:
-                     #      #Ok, now we will change the indexation of lexeme i
-                     #      etcetera
-                     # TODO possible way to split the difference on locality:
-                     # find the lexeme(s) that differ from obs to pred, and only update those and adjacent lexemes
-
-            ##################################################################
 
             ##################################################################
             # PFC stuff
@@ -1130,7 +1321,7 @@ class Grammar:
                     #out += "\t".join([str(w) for w in self.lexCs[i][1:]]) + "\n"
 
 
-            f.write(out)
+                f.write(out)
 
 
     def makeTableau(self,datum,rich=False,testFcs=False):
@@ -1197,7 +1388,8 @@ class Grammar:
 
 
         def assemble(faithCands):
-
+            #print("faithCands")
+            #print(faithCands)
             # 'UR' could be:
             #   list of faithful candidates
             #       - richCands or plain strings
@@ -1218,18 +1410,10 @@ class Grammar:
                     #print(tab)
 
                 if method == "partial":
-                    #print("assembling partial taleau")
+                    #print("assembling partial tableau")
                     # if using simple strings
-                    for cand in tab.candidates:
-                        for con in self.constraints:
-                            if con.MF =='F':
-                                viols = []
-                                for fc in faithCands:
-                                    #print(fc)
-                                    viols.append(con.assignViolations(fc,cand))
-                                cand.violations.append(min(viols)) # assume the closest matched faithful option
-                            else:
-                                cand.violations.append(con.assignViolations(cand))
+                    for con in self.constraints:
+                        tab.applyOneConstraint(con,faithCands)
 
                     # TODO if using richCands
                     # if using activity levels
@@ -1241,6 +1425,7 @@ class Grammar:
                 for cand in tab.candidates:
                     nEmptyViolations = len(self.w)-len(cand.violations)
                     cand.violations += [0]*nEmptyViolations
+
                 return tab
 
 
@@ -1268,14 +1453,14 @@ class Grammar:
             elif self.constraints:  # constraint functions must exist for them to be used to assign new violations
                 method = "partial"
             else:
-                print("ERROR: you must define a set of constraint functions")
+                print("\nERROR: you must define a set of constraint functions")
                 exit
         else:
             if self.constraints and self.operations:
                 # TODO fill this out for UseListed; it might not work as expected at the moment.
                 return createTableau(lexemes, self.constraints, self.operations, self.featureSet, datum[1], w=self.w[:])
             else:
-                print("ERROR: you cannot generate candidates without predefined operations and constraints")
+                print("\nERROR: you cannot generate candidates without predefined operations and constraints")
 
         multipleInputs = 0
 
@@ -1291,6 +1476,15 @@ class Grammar:
             # check if a listed form exists for this input
             listedTag = "_".join([i.tag for i in datum[0]]) if len(datum[0]) > 1 else False
             if listedTag in self.trainingData.lexicon:
+                # If the item has been listed at least once, look for other copies:
+                listedTagsList = [listedTag]
+                nCopies = 2
+                while listedTag+"_"+str(nCopies) in self.trainingData.lexicon:
+                    nCopies +=1
+                    listedTagsList.append(listedTag+"_"+str(nCopies))
+                # set the official listed tag to a randomly selected one from the list
+                listedTag = random.choice(listedTagsList)
+
                 # Now, we check how we are doing UseListed
                 if self.p_useListed <= 1: # we sample completely randomly
                     if random.random()< self.p_useListed:
@@ -1315,13 +1509,47 @@ class Grammar:
                     # Create list of faithful cands for composed
                     fcs_composed = lexemesToFaithCands(datum[0])
 
+
                     # Create list of faithful cands for listed
                     fcs_listed = lexemesToFaithCands([self.trainingData.lexicon[listedTag]])
+                    #print("fcs_listed")
+                    #print(fcs_listed)
 
                     # merge tableaux, and  assign _composed vs. _listed violations correctly
-                    # self.cPairs is a tuple (list_of_pairs, reverse_sorted_indices_of_listed, UseListed violation index before _listed removal)
+                    # self.cPairs is a tuple (list_of_pairs, reverse_sorted_indices_of_listed, UseListed violation index )
                     tab = assemble(fcs_composed)
                     tab_listed = assemble(fcs_listed)
+                    #for cand in tab_listed.candidates:
+                    #    cand.c = re.sub("_","",cand.c)
+                    #print(tab_listed)
+
+
+
+                    for pair in self.cPairs[0]:
+                        for cand in tab.candidates:
+                            # set both columns equal to the _composed violation
+                            cand.violations[pair[1]] = cand.violations[pair[0]]
+                        for cand in tab_listed.candidates:
+                            # set both columns equal to the _listed violation
+                            cand.violations[pair[0]] = cand.violations[pair[1]]
+
+                    for i in self.cPairs[1]:
+                        for cand in tab.candidates:
+                            cand.violations.pop(i)
+                            # remove _listed violations
+                    for i in self.cPairs[1]:
+                        for cand in tab_listed.candidates:
+                            cand.violations.pop(i)
+                            # remove _listed violations
+
+                    # make sure all candidates have the right number of violations
+                    for cand in tab.candidates:
+                        nEmptyViolations = len(self.w)-len(cand.violations)
+                        cand.violations += [0]*nEmptyViolations
+                    # make sure all candidates have the right number of violations
+                    for cand in tab_listed.candidates:
+                        nEmptyViolations = len(self.w)-len(cand.violations)
+                        cand.violations += [0]*nEmptyViolations
 
                     for cand in tab.candidates:
                         cand.violations[useListedIndex] = 1
@@ -1330,25 +1558,12 @@ class Grammar:
                         cand.violations[useListedIndex] = 0
                         cand.c = cand.c+"_listed"
 
-                    for pair in self.cPairs[0]:
-                        for cand in tab:
-                            # set both columns equal to the _composed violation
-                            cand.violations[pair[1]] = cand.violations[pair[0]]
-                        for cand in tab_listed:
-                            # set both columns equal to the _listed violation
-                            cand.violations[pair[0]] = cand.violations[pair[1]]
-
                     ## Now merge
                     # first, get indices of candidates derived from non-listed lexemes
                     composedCandIndices = list(range(0,len(tab.candidates)))
                     for cand in tab_listed.candidates:
                         tab.candidates.append(cand)
                     listedCandIndices = list(range(max(composedCandIndices)+1,len(tab.candidates)))
-
-                    for i in self.cPairs[1]:
-                        for cand in tab.candidates:
-                            cand.violations.pop(i)
-                            # remove _listed violations
 
                     tab.hiddenStructure = True
                     multipleInputs = 1
@@ -1369,28 +1584,31 @@ class Grammar:
                 tab = assemble(lexemesToFaithCands(datum[0]))
                 tab.lexemes = datum[0][:]  #Note the lexemes that were used
 
-                 # Assign UseListed violations (always 0)
-                # crucially must take place before we remove _listed violations
-                if useListedIndex:
-                    for cand in tab.candidates:
-                        cand.violations[useListedIndex] = 0
-
                 # set _composed columns equal to _listed violations
                 # (later, we'll remove the _listed violations)
                 for cand in tab.candidates:
                     for pair in self.cPairs[0]:
                          cand.violations[pair[0]] = cand.violations[pair[1]]
 
-            elif not listedTag: # we've only got one morpheme
-                tab = assemble(lexemesToFaithCands(datum[0]))
-                tab.lexemes = datum[0][:]  #Note the lexemes that were used
+                for i in self.cPairs[1]:
+                    for cand in tab.candidates:
+                        cand.violations.pop(i)
+                        # remove _listed violations
 
-                 # Assign UseListed violations (always 0)
-                # crucially must take place before we remove _composed violations
-                #print(tab)
+                # Assign UseListed violations (always 0)
+                # make sure all candidates have the right number of violations
+                for cand in tab.candidates:
+                    nEmptyViolations = len(self.w)-len(cand.violations)
+                    cand.violations += [0]*nEmptyViolations
+
                 if useListedIndex:
                     for cand in tab.candidates:
                         cand.violations[useListedIndex] = 0
+
+            elif not listedTag: # we've only got one morpheme
+                tab = assemble(lexemesToFaithCands(datum[0]))
+                #print(tab)
+                tab.lexemes = datum[0][:]  #Note the lexemes that were used
 
                 # set _composed columns equal to _listed violations
                 # (later, we'll remove the _listed violations)
@@ -1399,19 +1617,49 @@ class Grammar:
                 for cand in tab.candidates:
                     for pair in self.cPairs[0]:
                          cand.violations[pair[0]] = cand.violations[pair[1]]
+ 
+                for i in self.cPairs[1]:
+                    for cand in tab.candidates:
+                        cand.violations.pop(i)
+                        # remove _listed violations
+                        
+                # Assign UseListed violations (always 0)
+                # make sure all candidates have the right number of violations
+                for cand in tab.candidates:
+                    nEmptyViolations = len(self.w)-len(cand.violations)
+                    cand.violations += [0]*nEmptyViolations
+
+                if useListedIndex:
+                    for cand in tab.candidates:
+                        cand.violations[useListedIndex] = 0
+
 
             else:
                 tab = assemble(lexemesToFaithCands(datum[0]))
+                #print(tab)
+                #print(tab.candidates[0].violations)
                 tab.lexemes = datum[0][:]  #Note the lexemes that were used
                 # create a tableau
 
+
+                for i in self.cPairs[1]:
+                    for cand in tab.candidates:
+                        cand.violations.pop(i)
+                        # remove _listed violations
+
+                # make sure all candidates have the right number of violations
+                for cand in tab.candidates:
+                    nEmptyViolations = len(self.w)-len(cand.violations)
+                    cand.violations += [0]*nEmptyViolations
+
+                #print(tab.candidates[0].violations)
                 # Assign UseListed violations (all 1 because we're never listed)
                 # crucially must take place before we remove _listed violations
                 if useListedIndex:
                     for cand in tab.candidates:
                         cand.violations[useListedIndex] = 1
 
-
+                #print(tab)
 
             # update frequencies of lexeme(s) used
             # Note that if we did a listed tableau, these will only update the listed form's lexical entry
@@ -1419,10 +1667,7 @@ class Grammar:
                 lex.lastSeen = self.t
                 lex.freq += 1
 
-            for i in self.cPairs[1]:
-                for cand in tab.candidates:
-                    cand.violations.pop(i)
-                    # remove _listed violations
+
 
             return tab
             #...............................................#
@@ -1432,6 +1677,12 @@ class Grammar:
 
         if self.p_useListed:
                 tab = useListedTabCreation()
+        else:
+            # create a plain tableau
+            fcs = lexemesToFaithCands(datum[0])
+            tab = assemble(fcs)
+
+
       ########################################################################
 
 
@@ -1457,12 +1708,213 @@ class Grammar:
         #tab=assemble(lexemesToFaithCands(datum[0]))
 
 
-
         # Adjust for lexically indexed C's
+        if self.lexC_type:
+            tab.applyLexCs(self.lexCs,self,fcs,self.localityRestrictionType)
 
         # Apply PFCs, including to multiple distinct inputs if we have a multi-input tableau
 
         return tab
+
+    def lexCupdate(self,obs,pred,updateVector,lexemes,tab):
+        # print("updating lexCs")
+
+        def updateLexCweight(self,weights,conIndex,thisLexemeIndex,update):
+            #print(thisLexemeIndex)
+            if thisLexemeIndex >= 0 and weights and weights[thisLexemeIndex]:
+                self.lexCs[conIndex][thisLexemeIndex + 1] += update * self.learningRate
+
+        def getMaxOrMinW(self,weights,update):
+            if weights and update > 0:
+                mn = False
+                mx = max(weights) # keep max weight around if we're headed up
+            elif weights and update < 0:
+                mn = min(weights) # keep min weight around if we're headed down
+                mx = False
+            else: # we'll get here if weights is []
+                mn = False
+                mx = False
+
+            return (mn,mx)
+
+        def getDiffLexemes(self,obs,pred,lexemes):
+
+            # parse candidates into morphemes
+            obsParsed = obs.c.split("_")
+            predParsed = pred.c.split("_")
+            if len(obsParsed) != len(predParsed) or len(obsParsed) != len(lexemes):
+                print(Fore.RED+ "\n ERROR: predicted and/or observed cannot be aligned with lexemes")
+                print("predicted: " + pred.c)
+                print("observed: " + obs.c)
+                print("lexemes: " + ", ".join([l.tag for l in lexemes]))
+                print(Style.RESET_ALL)
+
+            diffLexemes = []
+            for li in range(0, len(lexemes)):
+                # find the lexeme that differs between obs and pred
+                # update it and adjacent lexemes
+                # If locality is set to 'overlap' or 'presence_only'
+
+                if obsParsed[li] != predParsed[li] and li not in diffLexemes:
+                    diffLexemes.append(li)
+                if self.localityRestrictionType != "strict":
+                    if li > 0 and li-1 not in diffLexemes:
+                        diffLexemes.append(li-1)
+                    if li < (len(lexemes) - 1) and li + 1 not in diffLexemes:
+                        diffLexemes.append(li+1)
+
+            return diffLexemes
+
+
+        def induceOne(self,weights,genCindex,lex):
+            newIndex = 0 if 0 not in weights else weights.index(0)+1
+            if newIndex: # we're repopulating a slot that got decayed to zero
+                self.lexCs[genCindex][newIndex] = self.lexCStartW
+                lex.lexCindexes[genCindex] = newIndex
+            else: # we're appending
+                self.lexCs[genCindex].append(self.lexCStartW)
+                lex.lexCindexes[genCindex] = len(self.lexCs[genCindex]) - 1
+
+            weights = self.lexCs[genCindex][1:] # update the weights vector
+            return weights
+
+
+        def induce(self,obs,pred,lexemes,con,weights,update,lexCsInTableau):
+            diffLexemes = getDiffLexemes(self,obs,pred,lexemes)
+            for dli in diffLexemes:
+                lex = lexemes[dli]
+
+                # check whether this lexeme has an indexed version already
+                currentIndex = lex.lexCindexes[con] -1 # will be -1 if no indexed constraint yet
+                #print(currentIndex)
+
+                w = weights[currentIndex] if (weights and currentIndex>=0) else 0
+
+                # if a lexC has decayed to zero, remove the indexation from the lexeme
+                if w == 0:
+                    lex.lexCindexes[con] = 0
+                    currentIndex = -1
+                    # print("re-indexed to zero")
+
+                maxNreached = bool(len([w for w in weights if w > 0]) >= self.lexC_type)
+                        
+                if currentIndex == -1: # if there's not a lexC already
+                    if not maxNreached:
+                        weights = induceOne(self,weights,con,lex)
+                    else:
+                        return
+
+                else: # if there is a lexC already, move the index instead
+                    # first, find out if the indexed version actually makes a difference
+                    realUpdate = False
+                    genConstraintName = self.trainingData.constraintNames[con]
+                    for l in lexCsInTableau:
+                        if l[1] == genConstraintName and l[3] == lex.tag:
+                            realUpdate = l[0]
+                    if realUpdate: # if the indexed version actually distinguished between candidates
+                        moveIndex(self,lex,weights,realUpdate,con)
+                        # execute change indexation instead
+                    else:
+                        if type(realUpdate)== bool:
+                            print(realUpdate)
+                            print(lex.tag)
+                            print(genConstraintName)
+                            print(lexCsInTableau)
+                            exit
+                
+        def moveIndex(self,lex,weights,update,genCindex):
+            currentIndex = lex.lexCindexes[genCindex]-1
+            w = weights[currentIndex]
+            s = sorted(weights[:])
+            currentSpotInSort = s.index(w)
+
+            mn, mx = getMaxOrMinW(self,weights,update)
+            if mx: # obs preferring -> reindex to greater weighted copy
+                direction = 1
+            else:  # pred preferring -> reindex to lower weighted copy
+                direction = -1
+
+            if w == mx:
+                maxNreached = bool(len([w for w in weights if w > 0]) >= self.lexC_type)
+                if not maxNreached:
+                    # go induce on THIS lexeme only
+                    weights = induceOne(self,weights,genCindex,lex)
+                    return
+
+                else:
+                    updateLexCweight(self,weights,genCindex,currentIndex,update)
+                    return
+            
+            elif w == mn:
+                updateLexCweight(self,weights,genCindex,currentIndex,update)
+                return
+
+            # (else) find the next best weight
+            move = 1
+            while move:
+                newWeight = s[currentSpotInSort + direction*move]
+                if newWeight != w: # if we've actually changed weight
+                    # we can leave the loop
+                    move = 0
+                else: # try moving a little farther
+                    move += 1
+
+            # whether to actually jump?
+            wDiff = abs(newWeight - w)
+            p_jump = (self.lexCjumpParameter)**wDiff
+            # correct for pChangeIndexation
+            p_jump = p_jump/self.pChangeIndexation
+
+            if random.random() < p_jump:
+                lex.lexCindexes[genCindex] = weights.index(newWeight) + 1
+
+
+        updateVectorIndices = [j for j in range(0,len(updateVector))]
+        # this contains violations of indexed constraints as well, and possibly other stuff
+
+        #print(tab)
+        # get tuples of (update, indexedCname, indexedCindex, lextag)
+        lexCsInTableau = []
+        for u in updateVectorIndices:
+            if u >=len(self.w): # it's an indexed c
+
+                label = tab.constraintList[u]
+                parsedLabel = label.split("_")
+                name = parsedLabel[0]
+                index = int(parsedLabel[1])
+                lexTag = parsedLabel[2]
+
+                lexCsInTableau.append((updateVector[u],name,index,lexTag))
+
+
+        constrIndicesThatMatter = [u for u in updateVectorIndices if updateVector[u] != 0 ]
+        for con in constrIndicesThatMatter:  # go through updates that matter
+            update = updateVector[con]
+
+            if con >= len(self.w): # it's already an indexed constraint
+                lexCinfo = lexCsInTableau[con-len(self.w)]
+                update = lexCinfo[0]
+                cname = lexCinfo[1]
+                thisLexemeIndex = lexCinfo[2]-1
+                lexTag = lexCinfo[3]
+                genCindex = self.trainingData.constraintNames.index(cname)
+                weights = self.lexCs[genCindex][1:]
+
+                if random.random()< self.pChangeIndexation:
+                    lex = self.trainingData.lexicon[lexTag]
+                    moveIndex(self,lex,weights,update,genCindex)
+
+                else: # update weights
+                    updateLexCweight(self,weights,genCindex,thisLexemeIndex,update)
+
+            else: # we're looking at a general constraint
+                #print(self.lexCs)
+                #print(con)
+                weights = self.lexCs[con][1:] # vector of weights of indexed C's available for this constraint
+                
+                # should we induce?
+                if random.random()<self.pChangeIndexation and update > 0: #only induce if the constraint needs to move *up*
+                    induce(self,obs,pred,lexemes,con,weights,update,lexCsInTableau)
 
 
     def predictAll(self):
@@ -1597,6 +2049,7 @@ class lexeme:
             rcs.append(richCand(''.join(c), [], 0, segsDict, segsList, activitys=a))
         return rcs
 
+
     def toFaithString(self):
         # A B C
         # 1 3 2
@@ -1605,10 +2058,10 @@ class lexeme:
             if i in self.linearSegOrder:
                 # check that the order is unique
                 if len([j for j in self.linearSegOrder if j==i]) >1:
-                    raise Exception("You have more than one segment in the "+i+"'th spot.  Please use richCand instead of lexeme.toUR()")
+                    raise Exception("You have more than one segment in the "+i+"'th spot.  Please use lexeme.toRichCand instead of lexeme.toFaithString()")
                 ind = self.linearSegOrder.index(i)
                 UR += self.segmentList[ind]
-        return UR
+        return [UR]
 
 
 
@@ -1837,9 +2290,8 @@ class trainingData:
                         p = 1
 
                     self.tabProb.append(p)  # Note that only the first tab.prob value in a tableau with many candidates will be recorded.
-                    self.tableaux.append(Tableau(inpt, p, hidden, lexemes=lexList))
-                    self.tableaux[
-                        -1].constraintNames = self.constraintNames  # Assign each tableau the constraint names from the input file
+                    self.tableaux.append(Tableau(inpt, p, hidden, lexemes=lexList,constraintNames=self.constraintNames))
+                    self.tableaux[-1].constraintList = self.constraintNames  # Assign each tableau the constraint names from the input file
                     self.tableauxTags.append(self.tableaux[-1].tag)
                 # create a new Tableau object for a unique input
 

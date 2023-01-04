@@ -1,5 +1,9 @@
 # training data filename
-trainingData: CshapedStartState.txt
+#trainingData: cshaped_syncope
+#trainingData: lexCinput
+#trainingData: useListed_input
+#trainingData: type_token_inpt
+trainingData: manual/manual_examples/freqMatchingInput.txt
 
 # starting weights: numbers, separated by commas.
 # Use a single 0 to initialize all weights at 0
@@ -9,23 +13,22 @@ weights: 0
 featureSet: features.txt
 
 # add violations
-addViolations: True
+addViolations: False
 # constraints filename
 constraints: constraints_Cshaped
 
-# generate candidates
+# generate candidates, using operations in the constraints module specified above
 generateCandidates: False
-# operations True or False (read off constraints file)
-operations: False
 
 
 # Learning Rate
 learningRate: 0.01
 # Decay Rate  -- used for lexically indexed constraints, PFC's, and UR constraints
 decayRate: 0.0001
+#decayRate: 0.0
 # Threshold for considering a prediction an error
 # Any prediction with an observed probability below threshold will be considered an error
-threshold: .1
+threshold: 1
 
 # should learning be noisy?
 #noisy: yes
@@ -34,29 +37,48 @@ noisy: no
 ################
 # Parameters for UseListed
 # UseListed type  (choose one)
-useListedType: hidden_structure
+#useListedType: hidden_structure
 #useListedType: sample_using_frequency
 #useListedType: sample_flat_rate
+useListedType: none
 
 # If you're sampling at a flat rate, what is the rate?
 # Make sure you always keep this one after the useListedType parameter
 # ignored if you're not using sample_flat_rate above
-useListedRate: 0.75
+useListedRate: 1
+
+# What to do with within-item variation?
+# If flip is True, just keep listing whatever correct output you heard on that trial
+# Lexical representations will keep 'flipping' back and forth between output variants
+flip: True
+# Simplest possible version: just encode the first version you hear
+simpleListing: False
+
+# flip, and simpleListing are mutually exclusive.
+# If both are set to True, the learner will use simpleListing
+# If both are False,
+# learner will encode multiple copies of the UR, and sample uniformly among them in production
+
 
 # probability to list a form on error (during learning):
-pToList: 0.75
+pToList: 0.2
 
 
 
 ################
 # Parameters for Lexical Indexation
 # Number of copies allowed of each constraint (use string "inf" to allow a maximum of one copy per lexical item)
-# lexC_type
 nLexCs: 0
 # Probability of changing a lexical item's indexation on error (rather than updating the weight of the indexed C)
-pChangeIndexation: 0.5
+pChangeIndexation: 0.8
 # Lexical constraint start weight
 lexCStartW: 5
+# Locality restriction type
+locality: overlap
+# locality: strict
+#locality: presence_only
+
+
 
 
 ###############

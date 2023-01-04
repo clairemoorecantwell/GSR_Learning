@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n}{g} \PYG{o}{=} \PYG{n}{l}\PYG{o}{.}\PYG{n}{Grammar}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}myURCsConfig.gl\PYGZdq{}}\PYG{p}{)}
+\end{Verbatim}

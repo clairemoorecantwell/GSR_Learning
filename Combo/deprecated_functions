@@ -165,3 +165,131 @@
 #         # Other checks
 
 #         return wellFormed  # return a bool for whether all tableaux are well formed or not
+
+
+
+
+
+
+                 for u in [j for j in range(0, len(self.w)) if updateVector[j] != 0]:  # go through constraints that matter
+                     # u is an index, into constraints and violations, and indexation values on lexemes
+                     weights = self.lexCs[u][1:]  # vector of indexed C's for that constraint; empty if there are none
+                     if weights and updateVector[u] > 0:
+                         mx = max(weights)
+                         mn = False
+                     elif weights and updateVector[u] < 0:
+                         mn = min(weights)
+                         mx = False
+                     else:
+                         mn = False
+                         mx = False
+
+                     obsParsed = obs.c.split("_")
+                     predParsed = pred.c.split("_")
+                     if len(obsParsed) != len(predParsed) or len(obsParsed) != len(datum[0]):
+                         print("predicted: " + pred.c)
+                         print("observed: " + obs.c)
+                         print(datum[0])
+                         print(
+                             Fore.RED + "\nERROR: predicted and/or observed cannot be aligned with lexemes - LexC induction will not work"+ Style.RESET_ALL)
+                         exit
+
+                     updateIndices = []
+                     for i in range(0, len(datum[0])):
+                         # find the lexeme that differs between obs and pred
+                         # and update it and adjacent lexemes only
+                         if obsParsed[i] != predParsed[i] and i not in updateIndices:
+                             updateIndices.append(i)
+                         #if i > 0 and i - 1 not in updateIndices:  # if we're not already updating the previous lexeme
+                         #    updateIndices.append(i - 1)
+                         #if i < len(datum[0]) - 1 and i + 1 not in updateIndices:
+                         #    updateIndices.append(i + 1)
+
+                     # now updateIndices is just a list of indices of lexemes which need to be updated
+                     for i in updateIndices:
+                         lex = datum[0][i]
+                         currentIndex = lex.lexCindexes[u] - 1  # they start from 1
+                         w = weights[currentIndex] if weights else 0  # current weight of the lexC indexed to this lexeme
+                         if w == 0:  # if a lexC has decayed to zero, it counts as not-existent and is removed from the lexeme
+                             lex.lexCindexes[u] = 0
+                             currentIndex = -1
+                         # print("re-indexed to 0")
+                         if random.random() < self.pChangeIndexation:  # yes, we change indexation
+                             # print("change Indexation...")
+                             # the indexed C exists AND it is not the min/max already
+                             # if currentIndex is not -1, then weights should not be []
+                             # TODO add error-checking for this^
+
+                             if currentIndex >= 0 and w != mx and w != mn:
+                                 # note that whichever (max or min) is not applicable will equal False, not a number
+                                 # we know we need to switch indexation
+
+                                 s = sorted(weights[:])
+                                 currentSpotInSort = s.index(w)
+                                 if mx:  # obs preferring; move to next greater weight
+                                     direction = 1
+                                 else:  # pred preferring; move to next lower weight
+                                     direction = -1
+
+                                 move = 1
+                                 while move:
+                                     newWeight = s[currentSpotInSort + direction * move]
+                                     if newWeight != w:
+                                         move = 0
+                                     else:
+                                         move += 1
+
+                                 # change the index on the lexeme to the location of that new weight
+                                 lex.lexCindexes[u] = weights.index(
+                                     newWeight) + 1  # plus 1 because we're indexing into the original lex weight vector
+                             # print("re-indexed from "+str(currentIndex+1) + " to "+str(lex.lexCindexes[u]))
+                             # re-indexed!
+
+                             elif len([w for w in weights if
+                                       w > 0]) < self.lexC_type and not mn:  # either the weight doesn't exist, or it's already at the min/max
+                                 # only induce if at the max
+                                 # still check whether we've already capped out our allowed number of weights
+                                 # Induce at the first index that's 0, or append to end
+                                 newIndex = 0 if 0 not in weights else weights.index(0) + 1
+                                 if newIndex:  # we're re-populating a slot that got decayed to zero
+                                     self.lexCs[u][newIndex] = self.lexCStartW
+                                     lex.lexCindexes[u] = newIndex
+                                 else:  # we're appending
+                                     self.lexCs[u].append(self.lexCStartW)  # add a new lexC
+                                     lex.lexCindexes[u] = len(self.lexCs[u]) - 1  # index to the new weight
+                                 print("New cloned copy of " + self.trainingData.constraintNames[u])
+
+                             elif currentIndex >= 0:  # Should only get here if we SHOULD induce but have already reached the max
+                                 # just update
+                                 # if weight needs to be lower than min, will just get updated down
+                                 # don't proceed if there is no lexC affiliated with this lexeme
+                                 self.lexCs[u][currentIndex + 1] += updateVector[u] * self.learningRate
+                             # print("updating at index "+str(currentIndex+1))
+
+                         else:  # we don't change indexation
+                             if currentIndex >= 0 and weights and weights[currentIndex]:  # if lexC exists
+                                 # update
+                                 self.lexCs[u][currentIndex + 1] += updateVector[u] * self.learningRate
+                             # print("updating at index "+str(currentIndex+1))
+
+                     ##############################
+                     # Decided not to do this part, because of Pater 2010
+                     # Need lexemes to be able to dictate what happens outside their borders for Yine
+                     # figure out which lexeme(s) differ
+                     # only apply new clones to lexemes that differ
+                     # parsed = obs.c.split("_")
+                     # parsedPred = pred.c.split("_")
+                     # if len(parsed)!=len(datum[0]) or len(parsedPred)!=len(datum[0]):
+                     #  print(parsed)
+                     #  print(datum[0])
+                     #  print("ERROR: lexical indexation cannot be induced because morphemes in the candidate cannote be aligned with morphemes in the input")
+                     #  exit
+                     # for i in range(0,len(datum[0])):
+                     #  if parsed[i]!=parsedPred[i]:
+                     #      #Ok, now we will change the indexation of lexeme i
+                     #      etcetera
+                     # TODO possible way to split the difference on locality:
+                     # find the lexeme(s) that differ from obs to pred, and only update those and adjacent lexemes
+
+            ##################################################################
+
